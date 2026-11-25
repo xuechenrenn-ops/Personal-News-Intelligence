@@ -85,6 +85,12 @@
 
 ## 手动测试
 
+### 第一步：单独检查信息源（不调用模型、不发送消息）
+
+GitHub → Actions → Check News Sources → Run workflow。该流程只访问 RSS、官方公告页和会议来源页，输出 HTTP 状态、RSS 条目数、页面链接数和失败原因，不需要任何 API Secret，也不会推送微信。
+
+### 第二步：运行完整简报（保持安全模式）
+
 GitHub → Actions → Daily News Push → Run workflow：
 
 1. 选择 `push_enabled=false`。
