@@ -42,6 +42,24 @@ def main():
                 status = getattr(getattr(exc, "response", None), "status_code", None)
                 print(f"FAIL | {source['label']} | HTTP={status or 'unknown'} | {type(exc).__name__}: {exc}")
 
+    print("\n=== PubMed E-utilities connectivity ===")
+    total += 1
+    try:
+        response = requests.get(
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+            params={"db": "pubmed", "term": 'orthopedics[MeSH Terms] AND ("last 30 days"[Date - Publication])',
+                    "retmode": "json", "retmax": 1},
+            headers=headers, timeout=20
+        )
+        response.raise_for_status()
+        count = int(response.json().get("esearchresult", {}).get("count", 0))
+        print(f"OK | PubMed E-utilities | HTTP {response.status_code} | recent_records={count}")
+        ok += 1
+    except Exception as exc:
+        failed += 1
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        print(f"FAIL | PubMed E-utilities | HTTP={status or 'unknown'} | {type(exc).__name__}: {exc}")
+
     print("\n=== Official page connectivity ===")
     for source in sources.get("official_pages", []):
         if source.get("enabled", True) is False:
