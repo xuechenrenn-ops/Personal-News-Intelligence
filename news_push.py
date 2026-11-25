@@ -575,7 +575,12 @@ def _normalize_seen_records(data, now=None):
         except (TypeError, ValueError):
             continue
         if stamp >= cutoff:
-            kept.append({'url': url, 'last_seen_at': stamp.astimezone(timezone.utc).isoformat()})
+            normalized = {'url': url, 'last_seen_at': stamp.astimezone(timezone.utc).isoformat()}
+            if record.get('pmid'):
+                normalized['pmid'] = str(record['pmid'])
+            if record.get('doi'):
+                normalized['doi'] = str(record['doi']).lower().replace('https://doi.org/', '').replace('http://doi.org/', '')
+            kept.append(normalized)
             seen.add(url)
     return kept
 
@@ -606,11 +611,56 @@ def save_seen_urls(urls):
     _write_seen_records(_normalize_seen_records({'records': records}))
 
 
-def remove_previously_pushed(candidates, seen_urls):
-    result = [item for item in candidates if item.get('url') not in seen_urls]
+def load_seen_identifiers():
+    records = _normalize_seen_records(_read_seen_state())
+    pmids = {str(record['pmid']) for record in records if record.get('pmid')}
+    dois = {str(record['doi']).lower() for record in records if record.get('doi')}
+    return pmids, dois
+
+
+def save_seen_items(items):
+    records = _normalize_seen_records(_read_seen_state())
+    by_url = {record['url']: record for record in records}
+    now = datetime.now(timezone.utc).isoformat()
+    for item in items:
+        source = item.get('_source', {}) if isinstance(item, dict) else {}
+        evidence = source.get('article_evidence') or {}
+        pubmed = evidence.get('pubmed_record') or source.get('pubmed_record') or {}
+        url = source.get('url')
+        pmid = pubmed.get('pmid')
+        doi = pubmed.get('doi') or evidence.get('doi') or source.get('doi')
+        if doi:
+            doi = str(doi).lower().replace('https://doi.org/', '').replace('http://doi.org/', '')
+        if not url and not pmid and not doi:
+            continue
+        record = by_url.get(url) if url else None
+        if record is None:
+            record = {'url': url, 'last_seen_at': now} if url else {'last_seen_at': now}
+            records.append(record)
+            if url:
+                by_url[url] = record
+        if pmid:
+            record['pmid'] = str(pmid)
+        if doi:
+            record['doi'] = doi
+    _write_seen_records(_normalize_seen_records({'records': records}))
+
+
+def remove_previously_pushed(candidates, seen_urls, seen_pmids=None, seen_dois=None):
+    seen_pmids = seen_pmids or set()
+    seen_dois = seen_dois or set()
+    result = []
+    for item in candidates:
+        record = item.get('pubmed_record') or (item.get('article_evidence') or {}).get('pubmed_record') or {}
+        pmid = str(record.get('pmid') or '')
+        doi = str(record.get('doi') or item.get('doi') or '').lower()
+        doi = doi.replace('https://doi.org/', '').replace('http://doi.org/', '')
+        if item.get('url') in seen_urls or (pmid and pmid in seen_pmids) or (doi and doi in seen_dois):
+            continue
+        result.append(item)
     removed = len(candidates) - len(result)
     if removed:
-        print(f'跨日去重：过滤已推送候选{removed}条', flush=True)
+        print(f'跨日去重：过滤已推送候选{removed}条（URL/PMID/DOI）', flush=True)
     return result
 
 def _run_pipeline():
@@ -627,6 +677,7 @@ def _run_pipeline():
 
     print('开始采集新闻……', flush=True)
     seen_urls = load_seen_urls()
+    seen_pmids, seen_dois = load_seen_identifiers()
     tavily_data = {"medical": [], "general": [], "nsfc": []}
     tavily_key = os.environ.get("TAVILY_KEY", "").strip()
     if tavily_key:
@@ -649,7 +700,7 @@ def _run_pipeline():
         medical.extend(fetch_official_page_candidates(medical_official))
     except Exception as exc:
         print(f'国内外医疗监管来源模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
-    medical = remove_previously_pushed(medical, seen_urls)
+    medical = remove_previously_pushed(medical, seen_urls, seen_pmids, seen_dois)
 
     general = fetch_candidates(GENERAL_FEEDS, 'G', 48)
     general.extend(tavily_data["general"])
@@ -682,10 +733,11 @@ def _run_pipeline():
         print(f'DeepSeek综合新闻模块失败：{type(exc).__name__}: {exc}', flush=True)
 
     nsfc_items = []
-    if tavily_data["nsfc"]:
+    nsfc_candidates = remove_previously_pushed(tavily_data["nsfc"], seen_urls)
+    if nsfc_candidates:
         try:
             nsfc_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
-                'Baichuan-M3-Plus', NSFC_PROMPT, tavily_data["nsfc"], 0.1)
+                'Baichuan-M3-Plus', NSFC_PROMPT, nsfc_candidates, 0.1)
             print(f"百川NSFC筛选完成：{len(nsfc_items)}条", flush=True)
         except Exception as exc:
             print(f"NSFC分析失败，不影响新闻主流程：{type(exc).__name__}", flush=True)
@@ -714,10 +766,6 @@ def _run_pipeline():
             print(f"入选标题：{item.get('headline', src.get('title', '未命名'))[:120]}｜{src.get('url', '')}", flush=True)
 
     if not push_enabled:
-        if due_meetings:
-            print("单独会议提醒预览：", flush=True)
-            for event in due_meetings:
-                print(f"- {event.get('name')}｜{event.get('start_date')}｜{event.get('url')}", flush=True)
         print('安全模式：仅生成预览，不发送微信，也不更新已推送去重记录。', flush=True)
         return 0
 
@@ -730,9 +778,7 @@ def _run_pipeline():
     result = response.json()
     if str(result.get('code')) != '200':
         raise RuntimeError('PushPlus返回非成功状态：' + json.dumps(result, ensure_ascii=False))
-    selected_urls = [item['_source']['url'] for item in med_items + news_items
-                     if item.get('_source', {}).get('url')]
-    save_seen_urls(seen_urls.union(selected_urls))
+    save_seen_items(med_items + nsfc_items + news_items)
     print('PushPlus已确认接受每日简报；已更新跨日去重状态。', flush=True)
 
     return 0
