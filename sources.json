@@ -136,6 +136,33 @@
         "新技术"
       ],
       "max_items": 5
+    },
+    {
+      "label": "FDA-AI-enabled medical devices",
+      "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+      "category": "国际医疗AI与监管",
+      "keywords": [
+        "artificial intelligence",
+        "AI-enabled",
+        "device",
+        "software",
+        "machine learning"
+      ],
+      "max_items": 6
+    },
+    {
+      "label": "FDA-Press Announcements",
+      "url": "https://www.fda.gov/news-events/fda-newsroom/press-announcements",
+      "category": "国际医疗监管",
+      "keywords": [
+        "device",
+        "medical",
+        "AI",
+        "approval",
+        "authorization",
+        "drug"
+      ],
+      "max_items": 4
     }
   ]
 }
