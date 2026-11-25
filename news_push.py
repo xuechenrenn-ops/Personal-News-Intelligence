@@ -531,11 +531,17 @@ def main():
         medical.extend(fetch_pubmed_candidates())
     except Exception as exc:
         print(f'PubMed发现模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
+    medical_official = [x for x in OFFICIAL_PAGE_SOURCES if x.get('pipeline') == 'medical']
+    general_official = [x for x in OFFICIAL_PAGE_SOURCES if x.get('pipeline') != 'medical']
+    try:
+        medical.extend(fetch_official_page_candidates(medical_official))
+    except Exception as exc:
+        print(f'国内外医疗监管来源模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
     medical = remove_previously_pushed(medical, seen_urls)
 
     general = fetch_candidates(GENERAL_FEEDS, 'G', 48)
     try:
-        general.extend(fetch_official_page_candidates(OFFICIAL_PAGE_SOURCES))
+        general.extend(fetch_official_page_candidates(general_official))
     except Exception as exc:
         print(f'国内官方来源模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
     general = remove_previously_pushed(general, seen_urls)
