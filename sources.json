@@ -84,7 +84,8 @@
         "医疗质量",
         "医学技术"
       ],
-      "max_items": 5
+      "max_items": 5,
+      "pipeline": "general"
     },
     {
       "label": "国家卫健委-新闻动态",
@@ -101,7 +102,8 @@
         "医师",
         "医疗质量"
       ],
-      "max_items": 5
+      "max_items": 5,
+      "pipeline": "general"
     },
     {
       "label": "国家药监局-医疗器械公告",
@@ -119,7 +121,8 @@
         "植入",
         "超声"
       ],
-      "max_items": 6
+      "max_items": 6,
+      "pipeline": "medical"
     },
     {
       "label": "国家医保局-政策法规",
@@ -135,7 +138,8 @@
         "创新",
         "新技术"
       ],
-      "max_items": 5
+      "max_items": 5,
+      "pipeline": "general"
     },
     {
       "label": "FDA-AI-enabled medical devices",
@@ -148,7 +152,8 @@
         "software",
         "machine learning"
       ],
-      "max_items": 6
+      "max_items": 6,
+      "pipeline": "medical"
     },
     {
       "label": "FDA-Press Announcements",
@@ -162,7 +167,8 @@
         "authorization",
         "drug"
       ],
-      "max_items": 4
+      "max_items": 4,
+      "pipeline": "general"
     }
   ]
 }
