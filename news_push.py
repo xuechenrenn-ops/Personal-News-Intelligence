@@ -491,60 +491,118 @@ def render(title, items, medical=False):
         lines.append(f"- **原文：** {src['url']}")
     return "\n".join(lines)
 
-def main():
-    required = ["PUSHPLUS_TOKEN", "BAICHUAN_API_KEY", "DEEPSEEK_API_KEY"]
-    missing = [k for k in required if not os.environ.get(k)]
-    if missing:
-        print("缺少必要环境变量：" + ", ".join(missing), flush=True)
-        return 1
-    print("开始采集新闻……", flush=True)
-    medical = fetch_candidates(MEDICAL_FEEDS, "M", 24 * 90)
-    general = fetch_candidates(GENERAL_FEEDS, "G", 48)
-    print(f"候选数量：医学{len(medical)}条，综合{len(general)}条", flush=True)
+def load_seen_urls():
     try:
-        screened_med_items = call_model(BAICHUAN_URL, os.environ["BAICHUAN_API_KEY"],
-            "Baichuan-M3-Plus", MEDICAL_PROMPT, medical, 0.2)
-        print(f"百川初筛完成：{len(screened_med_items)}条", flush=True)
+        with open('.cache/news_state.json', 'r', encoding='utf-8') as handle:
+            return set(json.load(handle).get('seen_urls', []))
+    except FileNotFoundError:
+        return set()
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f'历史去重状态读取失败，将按新状态运行：{type(exc).__name__}', flush=True)
+        return set()
+
+def save_seen_urls(urls):
+    os.makedirs('.cache', exist_ok=True)
+    payload = {'updated_at': datetime.now(timezone.utc).isoformat(), 'seen_urls': sorted(set(urls))[-2000:]}
+    with open('.cache/news_state.json', 'w', encoding='utf-8') as handle:
+        json.dump(payload, handle, ensure_ascii=False, indent=2)
+
+def remove_previously_pushed(candidates, seen_urls):
+    result = [item for item in candidates if item.get('url') not in seen_urls]
+    removed = len(candidates) - len(result)
+    if removed:
+        print(f'跨日去重：过滤已推送候选{removed}条', flush=True)
+    return result
+
+def main():
+    push_enabled = os.environ.get('PUSH_ENABLED', 'false').lower() == 'true'
+    required = ['BAICHUAN_API_KEY', 'DEEPSEEK_API_KEY']
+    if push_enabled:
+        required.append('PUSHPLUS_TOKEN')
+    missing = [key for key in required if not os.environ.get(key)]
+    if missing:
+        print('缺少必要环境变量：' + ', '.join(missing), flush=True)
+        return 1
+
+    print('开始采集新闻……', flush=True)
+    seen_urls = load_seen_urls()
+    medical = fetch_candidates(MEDICAL_FEEDS, 'M', 24 * 90)
+    try:
+        medical.extend(fetch_pubmed_candidates())
+    except Exception as exc:
+        print(f'PubMed发现模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
+    medical = remove_previously_pushed(medical, seen_urls)
+
+    general = fetch_candidates(GENERAL_FEEDS, 'G', 48)
+    try:
+        general.extend(fetch_official_page_candidates(OFFICIAL_PAGE_SOURCES))
+    except Exception as exc:
+        print(f'国内官方来源模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
+    general = remove_previously_pushed(general, seen_urls)
+    print(f'候选数量：医学{len(medical)}条（含PubMed），综合及国内官方来源{len(general)}条', flush=True)
+
+    med_items = []
+    try:
+        screened_med_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
+            'Baichuan-M3-Plus', MEDICAL_PROMPT, medical, 0.2)
+        print(f'百川初筛完成：{len(screened_med_items)}条', flush=True)
         if screened_med_items:
             evidence_candidates = enrich_medical_items(screened_med_items)
-            med_items = call_model(BAICHUAN_URL, os.environ["BAICHUAN_API_KEY"],
-                "Baichuan-M3-Plus", MEDICAL_EVIDENCE_PROMPT, evidence_candidates, 0.1)
-            print(f"百川证据复核完成：{len(med_items)}条", flush=True)
-        else:
-            med_items = []
+            med_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
+                'Baichuan-M3-Plus', MEDICAL_EVIDENCE_PROMPT, evidence_candidates, 0.1)
+            print(f'百川证据复核完成：{len(med_items)}条', flush=True)
     except Exception as exc:
-        print(f"百川调用或解析失败：{type(exc).__name__}: {exc}", flush=True)
-        return 1
+        print(f'百川医学模块失败，保留其他栏目继续运行：{type(exc).__name__}: {exc}', flush=True)
+
+    news_items = []
     try:
-        news_items = call_model(DEEPSEEK_URL, os.environ["DEEPSEEK_API_KEY"],
-            "deepseek-flash", GENERAL_PROMPT, general, 0.4)
-        print(f"DeepSeek筛选完成：{len(news_items)}条", flush=True)
+        news_items = call_model(DEEPSEEK_URL, os.environ['DEEPSEEK_API_KEY'],
+            'deepseek-flash', GENERAL_PROMPT, general, 0.4)
+        print(f'DeepSeek筛选完成：{len(news_items)}条', flush=True)
     except Exception as exc:
-        print(f"DeepSeek调用或解析失败：{type(exc).__name__}: {exc}", flush=True)
+        print(f'DeepSeek综合新闻模块失败：{type(exc).__name__}: {exc}', flush=True)
+
+    if not med_items and not news_items:
+        print('两个新闻分析模块均未产生结果，停止生成/推送。', flush=True)
         return 1
+
     local_now = datetime.now(timezone(timedelta(hours=8)))
-    today = local_now.strftime("%Y-%m-%d")
+    today = local_now.strftime('%Y-%m-%d')
     morning = MORNING_LINES[local_now.date().toordinal() % len(MORNING_LINES)]
-    content = "\n\n".join([
-        f"# Personal News Intelligence\n**{today}｜每日专属资讯**",
-        render("🦴 骨关节外科、运动医学与医疗AI", med_items, True),
-        render("🌍 国内外重大事件、民生与科技经济", news_items),
-        "## 🌅 今日晨语\n" + morning,
-        "---\n*资讯由自动采集与AI辅助整理；请以原始来源为准。PubMed/NCBI 数据通过 NCBI E-utilities 检索；NCBI 不对本简报内容作背书。*"])
-    print("简报预览：\n" + content, flush=True)
-    if os.environ.get("PUSH_ENABLED", "false").lower() != "true":
-        print("安全模式：仅生成预览，不发送微信。", flush=True)
+    try:
+        from meeting_tracker import build_meeting_brief
+        meeting_section = build_meeting_brief(today=local_now.date())
+    except Exception as exc:
+        print(f'会议日历模块异常：{type(exc).__name__}: {exc}', flush=True)
+        meeting_section = '## 学术会议动态\n会议模块暂时不可用。'
+
+    content = '\n\n'.join([
+        f'# Personal News Intelligence\n**{today}｜每日专属资讯**',
+        render('🦴 骨关节外科、运动医学与医疗AI', med_items, True),
+        render('🇨🇳 国内医疗政策、国内外重大事件与科技经济', news_items),
+        meeting_section,
+        '## 🌅 今日晨语\n' + morning,
+        '---\n*资讯由自动采集与AI辅助整理；请以原始来源为准。医学研究信息优先核对PubMed/期刊原文；会议日期以组织方官网为准。*'
+    ])
+    print('简报预览：\n' + content, flush=True)
+
+    if not push_enabled:
+        print('安全模式：仅生成预览，不发送微信，也不更新已推送去重记录。', flush=True)
         return 0
-    print("正在发送PushPlus……", flush=True)
-    response = requests.post(PUSHPLUS_URL, json={"token": os.environ["PUSHPLUS_TOKEN"],
-        "title": f"📬 每日新闻情报 | {today}", "content": content,
-        "template": "markdown"}, timeout=30)
+
+    print('正在发送PushPlus……', flush=True)
+    response = requests.post(PUSHPLUS_URL, json={
+        'token': os.environ['PUSHPLUS_TOKEN'], 'title': f'📬 每日新闻情报 | {today}',
+        'content': content, 'template': 'markdown'
+    }, timeout=30)
     response.raise_for_status()
     result = response.json()
-    if str(result.get("code")) != "200":
-        raise RuntimeError("PushPlus返回非成功状态：" + json.dumps(result, ensure_ascii=False))
-    print("PushPlus已确认接受推送请求。", flush=True)
+    if str(result.get('code')) != '200':
+        raise RuntimeError('PushPlus返回非成功状态：' + json.dumps(result, ensure_ascii=False))
+    selected_urls = [item['_source']['url'] for item in med_items + news_items
+                     if item.get('_source', {}).get('url')]
+    save_seen_urls(seen_urls.union(selected_urls))
+    print('PushPlus已确认接受推送请求；已更新跨日去重状态。', flush=True)
     return 0
-
 if __name__ == "__main__":
     sys.exit(main())
