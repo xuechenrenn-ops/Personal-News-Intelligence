@@ -72,7 +72,13 @@ def fetch_candidates(feeds, prefix, age_hours):
             response.raise_for_status()
             feed = feedparser.parse(response.content)
         except Exception as exc:
-            print(f"警告：RSS读取失败：{feed_label}｜{type(exc).__name__}: {exc}", flush=True)
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            retry_after = getattr(getattr(exc, "response", None), "headers", {}).get("Retry-After")
+            print(
+                f"警告：RSS读取失败：{feed_label}｜HTTP={status or 'unknown'}｜"
+                f"Retry-After={retry_after or 'none'}｜{type(exc).__name__}: {exc}",
+                flush=True
+            )
             continue
         if feed.bozo:
             print(f"提示：RSS格式存在解析警告：{feed_label}", flush=True)
