@@ -6,6 +6,7 @@ from news_push import (
     balance_medical_candidates,
     filter_nsfc_candidates,
     filter_general_news_candidates,
+    filter_medical_evidence_candidates,
 )
 
 
@@ -49,6 +50,31 @@ class MedicalCandidateBalanceTests(unittest.TestCase):
             "骨科临床": 2, "骨科AI": 2, "其他医疗AI": 2, "其他医学研究": 2
         })
 
+
+
+
+class MedicalEvidenceGateTests(unittest.TestCase):
+    def test_excludes_candidates_without_source_text_or_pubmed(self):
+        candidates = [
+            {"id": "verified", "article_evidence": {
+                "verification_status": "pubmed_matched",
+                "pubmed_record": {"pmid": "123"},
+            }},
+            {"id": "article_only", "article_evidence": {
+                "verification_status": "article_only",
+                "article_excerpt": "Accessible publisher page text.",
+            }},
+            {"id": "unverified", "article_evidence": {
+                "verification_status": "no_source_text",
+                "article_excerpt": "",
+                "pubmed_record": None,
+            }},
+        ]
+        result = filter_medical_evidence_candidates(candidates)
+        self.assertEqual([item["id"] for item in result], ["verified", "article_only"])
+
+    def test_fails_closed_when_evidence_metadata_is_missing(self):
+        self.assertEqual(filter_medical_evidence_candidates([{"id": "missing"}]), [])
 
 
 class GeneralNewsQualityTests(unittest.TestCase):
