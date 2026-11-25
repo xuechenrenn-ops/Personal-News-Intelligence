@@ -62,6 +62,9 @@ def main():
 
     print("\n=== Academic meeting source connectivity ===")
     for source in meetings.get("watch_sources", []):
+        if source.get("enabled", True) is False:
+            print(f"SKIP | {source['name']} | {source.get('access_note', 'disabled')}")
+            continue
         total += 1
         try:
             response = requests.get(source["url"], headers=headers, timeout=20)
