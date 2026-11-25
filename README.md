@@ -30,9 +30,9 @@
 - Al Jazeera
 
 ### 国内官方公告列表页
-- 国家卫健委政策文件、新闻动态
-- 国家药监局医疗器械公告
-- 国家医保局政策法规
+- 国家医保局政策法规（当前可由云端稳定访问）
+- 国家卫健委政策文件、新闻动态及国家药监局医疗器械公告保留为权威参考入口；GitHub 云端返回 HTTP 412，暂不自动抓取。
+- 中国卫生政策研究 RSS 页面已发现，但其 RSS endpoint 的 TLS 证书验证失败，暂不接入自动采集。
 
 ### 原始医学证据与临床试验
 - PubMed / NCBI E-utilities：主动检索近30天骨科、运动医学和临床 AI 论文。
@@ -44,6 +44,7 @@
 ## 学术会议追踪
 
 会议日历目前只录入已由组织方官方页面确认的日期，包括：
+- 27th Annual AAOS/AOSSM/AANA Sports Medicine Course 2027
 - AAOS Annual Meeting 2027
 - AOSSM Annual Meeting 2027
 - ESSKA Congress 2028
