@@ -570,8 +570,10 @@ def main():
     today = local_now.strftime('%Y-%m-%d')
     morning = MORNING_LINES[local_now.date().toordinal() % len(MORNING_LINES)]
     try:
-        from meeting_tracker import build_meeting_brief
+        from meeting_tracker import build_meeting_brief, check_meeting_watch_sources
         meeting_section = build_meeting_brief(today=local_now.date())
+        watch_updates = check_meeting_watch_sources()
+        meeting_section += "\\n\\n### 官方会议来源监测\\n" + "\\n".join(watch_updates)
     except Exception as exc:
         print(f'会议日历模块异常：{type(exc).__name__}: {exc}', flush=True)
         meeting_section = '## 学术会议动态\n会议模块暂时不可用。'
