@@ -1,6 +1,15 @@
 name: Check News Sources
 
 on:
+  push:
+    branches:
+      - upgrade/news-pipeline-v1
+    paths:
+      - sources.json
+      - meeting_calendar.json
+      - source_check.py
+      - meeting_tracker.py
+      - .github/workflows/source-check.yml
   workflow_dispatch:
 
 permissions:
