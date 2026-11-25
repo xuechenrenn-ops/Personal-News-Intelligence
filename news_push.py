@@ -181,15 +181,14 @@ def fetch_official_page_candidates(sources):
                     {"article:published_time", "datepublished", "citation_publication_date"}
                 )
                 if published_meta:
-                    date_value = re.search(r"20\\d{2}[-/年.](\\d{1,2})[-/月.](\\d{1,2})", published_meta)
+                    date_value = re.search(r'(20\d{2})[-/年.](\d{1,2})[-/月.](\d{1,2})', published_meta)
                     if date_value:
                         try:
                             published = datetime(
-                                int(re.search(r"20\\d{2}", published_meta).group(0)),
-                                int(date_value.group(1)), int(date_value.group(2)),
+                                int(date_value.group(1)), int(date_value.group(2)), int(date_value.group(3)),
                                 tzinfo=timezone.utc
                             ).isoformat()
-                        except (ValueError, AttributeError):
+                        except ValueError:
                             pass
                 detail_status = "detail_fetched" if excerpt else "detail_no_text"
             except Exception as detail_exc:
