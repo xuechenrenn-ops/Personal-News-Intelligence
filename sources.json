@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "rss": {
     "medical": [
       {
@@ -24,14 +24,6 @@
       }
     ],
     "general": [
-      {
-        "label": "中国卫生政策研究-当期目录",
-        "url": "https://journal.healthpolicy.cn/download_upload_file.aspx?file_name=/rss/wszc/cn/current.xml"
-      },
-      {
-        "label": "中国卫生政策研究-最新录用",
-        "url": "https://journal.healthpolicy.cn/download_upload_file.aspx?file_name=/rss/wszc/cn/accepted.xml"
-      },
       {
         "label": "中国新闻网-即时",
         "url": "https://www.chinanews.com.cn/rss/scroll-news.xml"
@@ -188,6 +180,14 @@
       "pipeline": "general",
       "enabled": false,
       "access_note": "2026-11-25 GitHub Actions runner was redirected to FDA abuse-detection apology page; retained as official reference but disabled for automatic scraping."
+    }
+  ],
+  "reference_sources": [
+    {
+      "label": "中国卫生政策研究 RSS 页面",
+      "url": "https://journal.healthpolicy.cn/ch/reader/rss.aspx",
+      "status": "manual_reference_only",
+      "note": "期刊网站列有RSS订阅，但2026-11-25 GitHub Actions runner访问RSS endpoint时TLS证书验证失败，暂不接入自动采集。"
     }
   ]
 }
