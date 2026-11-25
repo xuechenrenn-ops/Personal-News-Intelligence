@@ -41,7 +41,9 @@
     {
       "name": "中华医学会骨科学分会 / COA",
       "scope": "国内骨科",
-      "url": "https://www.coachina.org/"
+      "url": "https://coa2026.sciconf.cn/",
+      "note": "官方2026年COA会议门户历史页；下一届新门户发布后需更新此地址。",
+      "enabled": true
     },
     {
       "name": "中华医学会运动医疗分会",
@@ -61,7 +63,9 @@
     {
       "name": "ESSKA Congress",
       "scope": "国际运动医学与关节镜",
-      "url": "https://www.esska.org/page/ESSKACongress"
+      "url": "https://www.esska.org/page/ESSKACongress",
+      "enabled": false,
+      "access_note": "2026-11-25 GitHub Actions runner returned HTTP 403; retained as official reference but not automatically fetched."
     }
   ],
   "note": "已公布的日期以组织方官网为准。国内下一届 COA 和运动医疗分会年会日期尚未录入；发现正式通知后再补充，避免推测日期。"
