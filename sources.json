@@ -85,7 +85,9 @@
         "医学技术"
       ],
       "max_items": 3,
-      "pipeline": "general"
+      "pipeline": "general",
+      "enabled": false,
+      "access_note": "2026-11-25 GitHub Actions runner direct access returned HTTP 412; retained as authoritative reference but disabled for automatic scraping until access is independently verified."
     },
     {
       "label": "国家卫健委-新闻动态",
@@ -103,7 +105,9 @@
         "医疗质量"
       ],
       "max_items": 3,
-      "pipeline": "general"
+      "pipeline": "general",
+      "enabled": false,
+      "access_note": "2026-11-25 GitHub Actions runner direct access returned HTTP 412; retained as authoritative reference but disabled for automatic scraping until access is independently verified."
     },
     {
       "label": "国家药监局-医疗器械公告",
@@ -122,7 +126,9 @@
         "超声"
       ],
       "max_items": 3,
-      "pipeline": "medical"
+      "pipeline": "medical",
+      "enabled": false,
+      "access_note": "2026-11-25 GitHub Actions runner direct access returned HTTP 412; retained as authoritative reference but disabled for automatic scraping until access is independently verified."
     },
     {
       "label": "国家医保局-政策法规",
@@ -139,7 +145,8 @@
         "新技术"
       ],
       "max_items": 3,
-      "pipeline": "general"
+      "pipeline": "general",
+      "enabled": true
     },
     {
       "label": "FDA-AI-enabled medical devices",
@@ -153,7 +160,9 @@
         "machine learning"
       ],
       "max_items": 3,
-      "pipeline": "medical"
+      "pipeline": "medical",
+      "enabled": false,
+      "access_note": "2026-11-25 GitHub Actions runner was redirected to FDA abuse-detection apology page; retained as official reference but disabled for automatic scraping."
     },
     {
       "label": "FDA-Press Announcements",
@@ -168,7 +177,9 @@
         "drug"
       ],
       "max_items": 3,
-      "pipeline": "general"
+      "pipeline": "general",
+      "enabled": false,
+      "access_note": "2026-11-25 GitHub Actions runner was redirected to FDA abuse-detection apology page; retained as official reference but disabled for automatic scraping."
     }
   ]
 }
