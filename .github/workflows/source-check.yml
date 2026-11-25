@@ -1,0 +1,27 @@
+name: Check News Sources
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Validate source configuration
+        run: |
+          python -m json.tool sources.json > /dev/null
+          python -m json.tool meeting_calendar.json > /dev/null
+      - name: Test RSS, official pages and meeting sources
+        run: python source_check.py
