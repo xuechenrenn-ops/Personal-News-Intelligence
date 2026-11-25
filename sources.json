@@ -1,0 +1,141 @@
+{
+  "version": "1.0",
+  "rss": {
+    "medical": [
+      {
+        "label": "MedicalXpress-骨科",
+        "url": "https://medicalxpress.com/rss-feed/orthopedics-news/"
+      },
+      {
+        "label": "MedicalXpress-运动医学",
+        "url": "https://medicalxpress.com/rss-feed/sports-medicine-news/"
+      },
+      {
+        "label": "MedicalXpress-综合医学（补充医疗AI线索）",
+        "url": "https://medicalxpress.com/rss-feed/"
+      },
+      {
+        "label": "npj Digital Medicine",
+        "url": "https://www.nature.com/npjdigitalmed.rss"
+      },
+      {
+        "label": "Nature Medicine",
+        "url": "https://www.nature.com/nm.rss"
+      }
+    ],
+    "general": [
+      {
+        "label": "中国新闻网-即时",
+        "url": "https://www.chinanews.com.cn/rss/scroll-news.xml"
+      },
+      {
+        "label": "中国新闻网-社会",
+        "url": "https://www.chinanews.com.cn/rss/society.xml"
+      },
+      {
+        "label": "中国新闻网-财经",
+        "url": "https://www.chinanews.com.cn/rss/finance.xml"
+      },
+      {
+        "label": "中国新闻网-生活",
+        "url": "https://www.chinanews.com.cn/rss/life.xml"
+      },
+      {
+        "label": "中国新闻网-国际",
+        "url": "https://www.chinanews.com.cn/rss/world.xml"
+      },
+      {
+        "label": "新华网-国际",
+        "url": "http://www.xinhuanet.com/world/news_world.xml"
+      },
+      {
+        "label": "新华网-财经",
+        "url": "http://www.xinhuanet.com/fortune/news_fortune.xml"
+      },
+      {
+        "label": "新华网-科技",
+        "url": "http://www.xinhuanet.com/tech/news_tech.xml"
+      },
+      {
+        "label": "BBC-World",
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml"
+      },
+      {
+        "label": "Al Jazeera",
+        "url": "https://www.aljazeera.com/xml/rss/all.xml"
+      }
+    ]
+  },
+  "official_pages": [
+    {
+      "label": "国家卫健委-政策文件",
+      "url": "https://www.nhc.gov.cn/qjjys/c100016/new_list.shtml",
+      "category": "中国国内",
+      "keywords": [
+        "政策",
+        "医疗",
+        "临床",
+        "医院",
+        "卫生",
+        "健康",
+        "医学",
+        "人工智能",
+        "医师",
+        "医疗质量",
+        "医学技术"
+      ],
+      "max_items": 5
+    },
+    {
+      "label": "国家卫健委-新闻动态",
+      "url": "https://www.nhc.gov.cn/wjw/xwdt/list_7.shtml",
+      "category": "中国国内",
+      "keywords": [
+        "医疗",
+        "临床",
+        "医院",
+        "卫生",
+        "健康",
+        "医学",
+        "人工智能",
+        "医师",
+        "医疗质量"
+      ],
+      "max_items": 5
+    },
+    {
+      "label": "国家药监局-医疗器械公告",
+      "url": "https://www.nmpa.gov.cn/ylqx/ylqxggtg/index.html",
+      "category": "中国国内",
+      "keywords": [
+        "医疗器械",
+        "人工智能",
+        "软件",
+        "影像",
+        "机器人",
+        "注册",
+        "批准",
+        "骨",
+        "植入",
+        "超声"
+      ],
+      "max_items": 6
+    },
+    {
+      "label": "国家医保局-政策法规",
+      "url": "https://www.nhsa.gov.cn/col/col104/index.html",
+      "category": "中国国内",
+      "keywords": [
+        "医保",
+        "医疗",
+        "医院",
+        "医疗服务",
+        "支付",
+        "价格",
+        "创新",
+        "新技术"
+      ],
+      "max_items": 5
+    }
+  ]
+}
