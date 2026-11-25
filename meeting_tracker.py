@@ -1,6 +1,95 @@
 import json
 from datetime import date, datetime
 from pathlib import Path
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlparse
+import os
+import requests
+
+class _MeetingLinkParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.links = []
+        self.href = None
+        self.parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "a":
+            self.href = dict(attrs).get("href", "")
+            self.parts = []
+
+    def handle_data(self, data):
+        if self.href is not None:
+            self.parts.append(data)
+
+    def handle_endtag(self, tag):
+        if tag.lower() == "a" and self.href is not None:
+            title = " ".join(" ".join(self.parts).split())
+            self.links.append((self.href, title))
+            self.href = None
+            self.parts = []
+
+
+def check_meeting_watch_sources(calendar_path="meeting_calendar.json",
+                                state_path=".cache/meeting_watch_state.json"):
+    """Monitor official meeting pages for newly linked meeting/abstract notices."""
+    try:
+        data = json.loads(Path(calendar_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ["会议来源监测：无法读取会议来源配置。"]
+
+    try:
+        previous = json.loads(Path(state_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        previous = {}
+
+    current = {}
+    updates = []
+    keywords = ("会议", "年会", "大会", "征文", "骨科学术", "运动医疗",
+                "conference", "annual meeting", "congress", "call for abstracts",
+                "scientific programme", "scientific program")
+    for source in data.get("watch_sources", []):
+        name, url = source.get("name", "会议来源"), source.get("url", "")
+        try:
+            response = requests.get(
+                url, headers={"User-Agent": "PersonalNewsIntelligence/1.0"},
+                timeout=12
+            )
+            response.raise_for_status()
+            parser = _MeetingLinkParser()
+            parser.feed(response.text)
+            host = urlparse(url).netloc
+            found = []
+            for href, title in parser.links:
+                if not title or not any(word.lower() in title.lower() for word in keywords):
+                    continue
+                full_url = urljoin(url, href)
+                parsed = urlparse(full_url)
+                if parsed.scheme not in ("http", "https") or not parsed.netloc:
+                    continue
+                if full_url not in found:
+                    found.append(full_url)
+                if len(found) >= 20:
+                    break
+            current[name] = found
+            old = set(previous.get(name, []))
+            new_links = [link for link in found if link not in old]
+            for link in new_links[:3]:
+                updates.append(f"- **新会议公告线索｜{name}：** {link}")
+            if not new_links:
+                updates.append(f"- {name}：页面可访问，未发现新的会议/征文链接（HTTP {response.status_code}）")
+        except Exception as exc:
+            current[name] = previous.get(name, [])
+            updates.append(f"- {name}：本次监测失败（{type(exc).__name__}），保留已有日历数据")
+
+    try:
+        Path(state_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(state_path).write_text(
+            json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+    except OSError as exc:
+        updates.append(f"- 会议来源监测状态未能保存：{type(exc).__name__}")
+    return updates
 
 
 def build_meeting_brief(calendar_path="meeting_calendar.json", today=None):
