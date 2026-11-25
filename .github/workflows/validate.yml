@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Validate Python syntax
-        run: python -m py_compile news_push.py meeting_tracker.py
+        run: python -m py_compile news_push.py meeting_tracker.py source_check.py
       - name: Validate JSON configuration
         run: |
           python -m json.tool sources.json > /dev/null
