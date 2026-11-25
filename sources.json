@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "rss": {
     "medical": [
       {
@@ -24,6 +24,14 @@
       }
     ],
     "general": [
+      {
+        "label": "中国卫生政策研究-当期目录",
+        "url": "https://journal.healthpolicy.cn/download_upload_file.aspx?file_name=/rss/wszc/cn/current.xml"
+      },
+      {
+        "label": "中国卫生政策研究-最新录用",
+        "url": "https://journal.healthpolicy.cn/download_upload_file.aspx?file_name=/rss/wszc/cn/accepted.xml"
+      },
       {
         "label": "中国新闻网-即时",
         "url": "https://www.chinanews.com.cn/rss/scroll-news.xml"
