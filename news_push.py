@@ -205,6 +205,46 @@ def _extract_article_excerpt(html):
     return excerpt[:6500]
 
 
+def fetch_pubmed_candidates():
+    queries = [
+        ('骨科与运动医学', '("Orthopedics"[MeSH Terms] OR "Sports Medicine"[MeSH Terms] OR arthroscopy[Title/Abstract] OR meniscus[Title/Abstract] OR ligament[Title/Abstract] OR "rotator cuff"[Title/Abstract] OR "anterior cruciate ligament"[Title/Abstract])'),
+        ('医疗AI', '("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR "clinical decision support"[Title/Abstract]) AND (clinical[Title/Abstract] OR medicine[Title/Abstract] OR healthcare[Title/Abstract])')
+    ]
+    candidates, seen = [], set()
+    headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
+    for label, query in queries:
+        try:
+            time.sleep(0.36)
+            response = requests.get(
+                'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi',
+                params={'db':'pubmed','term':query + ' AND ("last 30 days"[Date - Publication])',
+                        'retmode':'json','retmax':10,'sort':'date'},
+                headers=headers, timeout=20
+            )
+            response.raise_for_status()
+            ids = response.json().get('esearchresult', {}).get('idlist', [])
+            records = _pubmed_records(ids)
+        except Exception as exc:
+            print(f'PubMed发现检索失败：{label}｜{type(exc).__name__}: {exc}', flush=True)
+            continue
+        for record in records:
+            pmid = record.get('pmid')
+            if not pmid or pmid in seen:
+                continue
+            seen.add(pmid)
+            candidates.append({
+                'id': f'P{len(candidates)+1}',
+                'title': record.get('title') or 'PubMed未提供标题',
+                'source': 'PubMed / NCBI',
+                'published_at': record.get('publication_date') or 'PubMed未提供',
+                'url': f'https://pubmed.ncbi.nlm.nih.gov/{pmid}/',
+                'summary': record.get('abstract') or 'PubMed记录未提供摘要。',
+                'pubmed_record': record, 'source_category': label
+            })
+        print(f'PubMed发现：{label}｜返回记录{len(records)}条', flush=True)
+    return candidates
+
+
 def _pubmed_records(pmids):
     if not pmids:
         return []
