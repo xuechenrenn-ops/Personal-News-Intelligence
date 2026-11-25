@@ -91,6 +91,45 @@ def check_meeting_watch_sources(calendar_path="meeting_calendar.json",
         updates.append(f"- 会议来源监测状态未能保存：{type(exc).__name__}")
     return updates
 
+def get_due_meeting_reminders(calendar_path="meeting_calendar.json",
+                              state_path=".cache/meeting_reminders.json", today=None):
+    today = today or date.today()
+    try:
+        data = json.loads(Path(calendar_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    try:
+        state = json.loads(Path(state_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        state = {}
+    sent = set(state.get("sent_keys", []))
+    urgent_days = int(data.get("urgent_days", 7))
+    due = []
+    for event in data.get("events", []):
+        try:
+            start = date.fromisoformat(event["start_date"])
+            end = date.fromisoformat(event.get("end_date", event["start_date"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        days = (start - today).days
+        key = f"{event.get('id', event.get('name', 'meeting'))}|{start.isoformat()}"
+        if end >= today and days <= urgent_days and key not in sent:
+            due.append(dict(event, reminder_key=key, days_to_start=days))
+    return due
+
+
+def mark_meeting_reminders_sent(events, state_path=".cache/meeting_reminders.json"):
+    path = Path(state_path)
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        state = {}
+    keys = set(state.get("sent_keys", []))
+    keys.update(event["reminder_key"] for event in events if event.get("reminder_key"))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"sent_keys": sorted(keys)}, ensure_ascii=False, indent=2),
+                    encoding="utf-8")
+
 
 def build_meeting_brief(calendar_path="meeting_calendar.json", today=None):
     """Render verified upcoming meetings and reminders from the curated calendar."""
