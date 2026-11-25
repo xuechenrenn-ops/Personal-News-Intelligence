@@ -449,17 +449,33 @@ def _read_preview_news_state(now=None):
         except ValueError:
             continue
         if stamp >= cutoff:
-            kept.append({"url": str(record["url"]), "last_previewed_at": stamp.astimezone(timezone.utc).isoformat()})
+            kept.append({
+                "url": str(record["url"]),
+                "title_key": str(record.get("title_key") or _normalized_title(record.get("title") or "")),
+                "last_previewed_at": stamp.astimezone(timezone.utc).isoformat()
+            })
     return kept
 
 
 def remove_recently_previewed_news(candidates, now=None):
     records = _read_preview_news_state(now=now)
-    seen = {record["url"] for record in records}
-    result = [item for item in candidates if str(item.get("url") or "") not in seen]
+    seen_urls = {record["url"] for record in records}
+    seen_titles = [record.get("title_key", "") for record in records if record.get("title_key")]
+    result = []
+    for item in candidates:
+        url = str(item.get("url") or "").strip()
+        title_key = _normalized_title(item.get("title") or "")
+        if url and url in seen_urls:
+            continue
+        if len(title_key) >= 12 and any(
+            difflib.SequenceMatcher(None, title_key, old).ratio() >= 0.90
+            for old in seen_titles
+        ):
+            continue
+        result.append(item)
     removed = len(candidates) - len(result)
     if removed:
-        print(f"预览跨日去重：过滤最近7天已预览新闻{removed}条", flush=True)
+        print(f"预览跨日去重：过滤最近7天已预览新闻{removed}条（URL/相似标题）", flush=True)
     return result
 
 
@@ -472,7 +488,12 @@ def save_previewed_news(items, now=None):
         source = item.get("_source", {}) if isinstance(item, dict) else {}
         url = str(source.get("url") or "").strip()
         if url:
-            by_url[url] = {"url": url, "last_previewed_at": stamp}
+            title = str(source.get("title") or item.get("headline") or "").strip()
+            by_url[url] = {
+                "url": url,
+                "title_key": _normalized_title(title),
+                "last_previewed_at": stamp
+            }
     os.makedirs(".cache", exist_ok=True)
     with open(".cache/preview_news_state.json", "w", encoding="utf-8") as handle:
         json.dump({"records": list(by_url.values())}, handle, ensure_ascii=False, indent=2)
@@ -683,6 +704,31 @@ def fetch_medical_evidence(candidate):
     return result
 
 
+def filter_medical_evidence_candidates(candidates):
+    """Fail closed when neither PubMed metadata nor usable source-page text is available."""
+    kept = []
+    rejected = 0
+    for candidate in candidates:
+        evidence = candidate.get("article_evidence") or {}
+        status = evidence.get("verification_status")
+        pubmed_record = evidence.get("pubmed_record")
+        excerpt = str(evidence.get("article_excerpt") or "").strip()
+        if status == "pubmed_matched" and pubmed_record:
+            kept.append(candidate)
+        elif status == "article_only" and excerpt:
+            # Keep accessible source pages, but retain the explicit PubMed caveat.
+            kept.append(candidate)
+        else:
+            rejected += 1
+    if rejected:
+        print(
+            f"医学证据门槛：输入{len(candidates)}条｜保留{len(kept)}条｜"
+            f"排除{rejected}条（无可用原文/PubMed证据）",
+            flush=True
+        )
+    return kept
+
+
 def enrich_medical_items(screened_items):
     enriched_candidates = []
     for item in screened_items:
@@ -769,7 +815,7 @@ def render(title, items, medical=False):
                     f"{pubmed.get('publication_date') or '发表日期未提供'}"
                 )
             elif evidence_check.get("verification_status") == "article_only":
-                lines.append("- **论文核查：** 已获取新闻原文页面，但未匹配到 PubMed 记录；不代表论文不存在")
+                lines.append("- **论文核查：** 已获取来源网页，但未匹配到 PubMed；研究类型及原始论文记录仍需进一步确认")
             elif evidence_check:
                 lines.append("- **论文核查：** 未能获取可用原文或 PubMed 摘要，研究细节无法独立核实")
             lines += [f"- **证据信息：** {val(item, 'evidence')}",
@@ -974,6 +1020,7 @@ def _run_pipeline():
         print(f'DeepSeek医学初筛完成：{len(screened_med_items)}条', flush=True)
         if screened_med_items:
             evidence_candidates = enrich_medical_items(screened_med_items)
+            evidence_candidates = filter_medical_evidence_candidates(evidence_candidates)
             med_items = call_model(DEEPSEEK_URL, os.environ['DEEPSEEK_API_KEY'],
                 'deepseek-flash', MEDICAL_EVIDENCE_PROMPT, evidence_candidates, 0.1)
             print(f'DeepSeek医学证据复核完成：{len(med_items)}条', flush=True)
