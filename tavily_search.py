@@ -9,6 +9,7 @@ SEARCHES=[
 {"key":"ortho_ai","group":"medical","prefix":"TA","query":"artificial intelligence in orthopedics sports medicine musculoskeletal medicine clinical decision support prediction surgical robotics navigation rehabilitation gait wearable large language models multimodal federated learning","topic":"general","time_range":"month","source_category":"骨科AI研究"},
 {"key":"medical_ai","group":"medical","prefix":"TI","query":"recent clinical artificial intelligence research healthcare large language models agents RAG multimodal causal inference clinical decision support medical robotics wearable digital twin real world data","topic":"general","time_range":"month","source_category":"医疗AI交叉研究"},
 {"key":"china_health_policy","group":"general","prefix":"TN","query":"中国 医疗卫生 医保 医院改革 药品医疗器械监管 公共卫生 医疗服务 最新政策 公告","topic":"news","time_range":"day","source_category":"中国医疗政策与民生"},
+{"key":"china_health_policy_official","group":"general","prefix":"TO","query":"国家卫生健康委 国家医疗保障局 国家药品监督管理局 最新政策通知 医保支付 医疗服务 医疗器械监管","topic":"news","time_range":"month","include_domains":["nhc.gov.cn","nhsa.gov.cn","nmpa.gov.cn","gov.cn"],"source_category":"中国官方医疗政策"},
 {"key":"china_world_news","group":"general","prefix":"TW","query":"中国国内及国际 重大科技 社会 经济 公共卫生 新闻 最新进展","topic":"news","time_range":"day","source_category":"国内外重要动态"},
 {"key":"nsfc_official","group":"nsfc","prefix":"NF","query":"国家自然科学基金委 医学科学部 H06 运动系统 骨科 运动医学 人工智能 交叉科学部 项目指南 资助通知","topic":"general","time_range":"month","include_domains":["nsfc.gov.cn"],"source_category":"NSFC官方指南与项目动态"}]
 
