@@ -50,6 +50,9 @@ def check_meeting_watch_sources(calendar_path="meeting_calendar.json",
                 "scientific programme", "scientific program")
     for source in data.get("watch_sources", []):
         name, url = source.get("name", "会议来源"), source.get("url", "")
+        if source.get("enabled", True) is False:
+            updates.append(f"- {name}：暂不自动抓取（{source.get('access_note', '来源不可访问')}）")
+            continue
         try:
             response = requests.get(
                 url, headers={"User-Agent": "PersonalNewsIntelligence/1.0"},
