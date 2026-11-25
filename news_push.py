@@ -10,30 +10,23 @@ from datetime import datetime, timedelta, timezone
 import feedparser
 import requests
 from html import unescape
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlparse
 
 BAICHUAN_URL = "https://api.baichuan-ai.com/v1/chat/completions"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 PUSHPLUS_URL = "https://www.pushplus.plus/send"
-MEDICAL_FEEDS = [
-    ("MedicalXpress-骨科", "https://medicalxpress.com/rss-feed/orthopedics-news/"),
-    ("MedicalXpress-运动医学", "https://medicalxpress.com/rss-feed/sports-medicine-news/"),
-    ("MedicalXpress-综合医学（用于补充医疗AI线索）", "https://medicalxpress.com/rss-feed/"),
-]
-GENERAL_FEEDS = [
-    # 中国国内：优先覆盖即时、社会民生、财经和生活资讯
-    ("中国新闻网-即时", "https://www.chinanews.com.cn/rss/scroll-news.xml"),
-    ("中国新闻网-社会", "https://www.chinanews.com.cn/rss/society.xml"),
-    ("中国新闻网-财经", "https://www.chinanews.com.cn/rss/finance.xml"),
-    ("中国新闻网-生活", "https://www.chinanews.com.cn/rss/life.xml"),
-    # 中国视角的国际与产业补充
-    ("中国新闻网-国际", "https://www.chinanews.com.cn/rss/world.xml"),
-    ("新华网-国际", "http://www.xinhuanet.com/world/news_world.xml"),
-    ("新华网-财经", "http://www.xinhuanet.com/fortune/news_fortune.xml"),
-    ("新华网-科技", "http://www.xinhuanet.com/tech/news_tech.xml"),
-    # 国际媒体：避免只依赖单一国家或单一媒体
-    ("BBC-World", "https://feeds.bbci.co.uk/news/world/rss.xml"),
-    ("Al Jazeera", "https://www.aljazeera.com/xml/rss/all.xml"),
-]
+def load_source_registry():
+    try:
+        with open('sources.json', 'r', encoding='utf-8') as handle:
+            return json.load(handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError('来源配置读取失败：' + type(exc).__name__) from exc
+
+SOURCE_REGISTRY = load_source_registry()
+MEDICAL_FEEDS = [(x['label'], x['url']) for x in SOURCE_REGISTRY['rss']['medical']]
+GENERAL_FEEDS = [(x['label'], x['url']) for x in SOURCE_REGISTRY['rss']['general']]
+OFFICIAL_PAGE_SOURCES = SOURCE_REGISTRY.get('official_pages', [])
 TIMEOUT = 90
 
 MEDICAL_PROMPT = """你是严谨的医学资讯编辑。从候选新闻中筛选最多3条高价值内容，主题必须直接属于骨关节外科、运动医学或医疗AI。骨科与运动医学优先，医疗AI其次。严格排除风湿免疫、皮肤科、肿瘤、普通内科等与上述主题无直接关系的新闻；不得为了凑数选择其他医学领域内容，符合条件的不足3条就少选。优先原始研究、正式指南、专业学会和权威期刊；排除营销、重复转载和无可靠依据的内容。研究类尽可能说明研究设计、样本量、对象、主要结局、关键结果、临床意义和局限。材料未提供就写“原文未提供”，绝不猜测。区分相关与因果、统计学与临床意义；不得把单项研究说成指南。AI新闻说明真实临床验证状态及应用限制。只能选择输入中存在的候选项，逐条返回原始id；不得创造来源、日期、链接、DOI、PMID或研究数据。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"骨关节外科与运动医学或医疗AI","headline":"中文标题","summary":"准确概述","evidence":"证据详情","clinical_significance":"临床意义","limitations":"局限"}]}"""
