@@ -10,7 +10,7 @@ BAICHUAN_URL = "https://api.baichuan-ai.com/v1/chat/completions"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 PUSHPLUS_URL = "https://www.pushplus.plus/send"
 MEDICAL_FEEDS = ["https://medicalxpress.com/rss-feed/"]
-GENERAL_FEEDS = ["https://www.zaobao.com.sg/rss/realtime/world"]
+GENERAL_FEEDS = ["https://rsshub.app/zaobao/realtime/world"]
 TIMEOUT = 90
 
 MEDICAL_PROMPT = """你是严谨的医学资讯编辑。从候选新闻中筛选2-3条高价值内容，重点关注骨关节外科、运动医学及医疗AI。优先原始研究、正式指南、专业学会和权威期刊；排除营销、重复转载和无可靠依据的内容。研究类尽可能说明研究设计、样本量、对象、主要结局、关键结果、临床意义和局限。材料未提供就写“原文未提供”，绝不猜测。区分相关与因果、统计学与临床意义；不得把单项研究说成指南。AI新闻说明真实临床验证状态及应用限制。只能选择输入中存在的候选项，逐条返回原始id；不得创造来源、日期、链接、DOI、PMID或研究数据。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"骨关节外科与运动医学或医疗AI","headline":"中文标题","summary":"准确概述","evidence":"证据详情","clinical_significance":"临床意义","limitations":"局限"}]}"""
@@ -77,7 +77,12 @@ def call_model(url, key, model, prompt, candidates, temperature):
     ], "temperature": temperature}
     response = requests.post(url, headers={"Authorization": "Bearer " + key,
         "Content-Type": "application/json"}, json=payload, timeout=TIMEOUT)
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        # Print a short provider error message for diagnosis; never print request headers or API keys.
+        detail = " ".join(response.text.split())[:600]
+        raise RuntimeError(f"{model} API HTTP {response.status_code}: {detail}") from None
     raw = response.json()["choices"][0]["message"]["content"].strip()
     if raw.startswith(chr(96) * 3):
         raw = raw.split("\n", 1)[-1]
