@@ -6,9 +6,7 @@ on:
       - upgrade/news-pipeline-v1
     paths:
       - sources.json
-      - meeting_calendar.json
       - source_check.py
-      - meeting_tracker.py
       - .github/workflows/source-check.yml
   workflow_dispatch:
 
@@ -31,6 +29,5 @@ jobs:
       - name: Validate source configuration
         run: |
           python -m json.tool sources.json > /dev/null
-          python -m json.tool meeting_calendar.json > /dev/null
-      - name: Test RSS, official pages and meeting sources
+      - name: Test RSS, PubMed and official pages
         run: python source_check.py

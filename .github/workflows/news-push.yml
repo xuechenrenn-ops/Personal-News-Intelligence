@@ -35,13 +35,13 @@ jobs:
         run: pip install -r requirements.txt
       - name: Validate code and configuration
         run: |
-          python -m py_compile news_push.py meeting_tracker.py
+          python -m py_compile news_push.py cache_manager.py tavily_search.py source_check.py
           python -m json.tool sources.json > /dev/null
-          python -m json.tool meeting_calendar.json > /dev/null
       - name: Run news pipeline
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           BAICHUAN_API_KEY: ${{ secrets.BAICHUAN_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          TAVILY_KEY: ${{ secrets.TAVILY_KEY }}
           PUSH_ENABLED: ${{ inputs.push_enabled }}
         run: python news_push.py

@@ -13,6 +13,9 @@ from html import unescape
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
+from cache_manager import cleanup_daily_transients, run_weekly_cache_cleanup
+from tavily_search import fetch_tavily_candidates
+
 BAICHUAN_URL = "https://api.baichuan-ai.com/v1/chat/completions"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 PUSHPLUS_URL = "https://www.pushplus.plus/send"
@@ -29,12 +32,14 @@ GENERAL_FEEDS = [(x['label'], x['url']) for x in SOURCE_REGISTRY['rss']['general
 OFFICIAL_PAGE_SOURCES = SOURCE_REGISTRY.get('official_pages', [])
 TIMEOUT = 90
 
-MEDICAL_PROMPT = """你是严谨的医学资讯编辑。从候选新闻中筛选最多3条高价值内容，主题必须直接属于骨关节外科、运动医学或医疗AI。骨科与运动医学优先，医疗AI其次。严格排除风湿免疫、皮肤科、肿瘤、普通内科等与上述主题无直接关系的新闻；不得为了凑数选择其他医学领域内容，符合条件的不足3条就少选。优先原始研究、正式指南、专业学会和权威期刊；排除营销、重复转载和无可靠依据的内容。研究类尽可能说明研究设计、样本量、对象、主要结局、关键结果、临床意义和局限。材料未提供就写“原文未提供”，绝不猜测。区分相关与因果、统计学与临床意义；不得把单项研究说成指南。AI新闻说明真实临床验证状态及应用限制。只能选择输入中存在的候选项，逐条返回原始id；不得创造来源、日期、链接、DOI、PMID或研究数据。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"骨关节外科与运动医学或医疗AI","headline":"中文标题","summary":"准确概述","evidence":"证据详情","clinical_significance":"临床意义","limitations":"局限"}]}"""
+MEDICAL_PROMPT = """你是严谨的医学研究编辑。最多筛选3篇最值得关注的研究，骨科临床研究与骨科全领域AI研究相结合，不足时宁缺毋滥。临床范围覆盖运动医学、关节镜、韧带、半月板、肩肘、足踝、创伤骨科、骨折、脊柱、关节置换、骨肿瘤、骨质疏松、康复和围手术期管理，不得只关注运动医学。骨科AI不限于医学影像，覆盖临床诊断与决策支持、风险/预后预测、精准医疗、手术机器人/导航、康复、步态/可穿戴设备、临床大模型/Agent/RAG、多模态、因果推断、联邦学习、小样本、可解释AI、数字孪生和真实世界数据。最近7天优先、30天补充，重大突破可放宽至90天，明确区分首次在线、正式出版和数据库收录日期。综合临床问题、研究设计、样本量、方法学、外部/前瞻验证、临床转化、新颖性和局限；区分人体/动物/体外、回顾性/前瞻性、预印本/会议摘要/同行评议论文。排除营销、重复转载及与骨科/临床AI无直接关联的研究。只能选择输入候选，不得创造来源、日期、链接、DOI、PMID或数据。只输出合法JSON：{"items":[{"id":"原始id","category":"骨科临床研究或骨科AI研究或其他医疗AI研究","headline":"中文标题","summary":"准确概述","evidence":"研究设计、对象、样本量和结果；未提供则说明","clinical_significance":"临床意义","limitations":"局限与证据边界","sports_medicine_insight":"对运动医学的潜在启发，未验证的思路迁移须明确标注"}]}"""
 
 MEDICAL_EVIDENCE_PROMPT = MEDICAL_PROMPT + """
 
 第二阶段：证据复核。候选项包含 article_evidence，其中 article_excerpt 来自新闻原文页面，pubmed_record（若存在）来自 PubMed。initial_draft 只是未核实的初筛草稿，不能作为证据。请优先依据 PubMed 原始摘要和原文页面核实研究信息。必须区分随机对照试验、队列/病例对照/横断面研究、病例系列、动物/体外实验、综述或新闻报道。只有来源明确提供时才能报告样本量、干预组、对照组、结局、效应量、置信区间和P值。不要根据“大型试验”等新闻措辞推断样本量或证据等级。若没有匹配到 PubMed 记录，不得声称已核实论文；若只能访问新闻摘要，明确写“仅依据新闻原文，未取得论文摘要/全文”。动物实验不得推导为已证实的人体治疗效果。临床意义必须与研究设计和结果相称。可以修正初筛草稿中的错误；无法核实的信息写“原文未提供”或“无法核实”。保持原始 id，不得创造 PMID、DOI、链接或数据。
 """
+
+NSFC_PROMPT = """你是严谨的国家自然科学基金科研信息编辑。只筛选国家自然科学基金委及其医学科学部、交叉科学部等官方来源发布的指南、项目通知、资助政策或可核实项目动态，优先关注医学科学部H06运动系统、骨科、运动医学、医学AI与交叉研究。严格区分官方指南政策、已获资助项目和归纳趋势判断；不能把推测写成官方导向，也不能把资助导向等同学术前沿或获批概率。不得推断未公布的申报条件、金额、截止日期或评审倾向。只选输入候选，最多2条，无可靠动态返回空数组。只输出合法JSON：{"items":[{"id":"原始id","category":"官方指南政策或已资助项目或趋势观察","headline":"中文标题","summary":"准确概述","background":"发布机构、适用范围与背景","public_impact":"对骨科/运动医学AI研究布局的影响","funding_implication":"未来运动医学AI选题启发，区分事实与推测","verification_note":"官方来源、日期及待核实事项"}]}"""
 
 GENERAL_PROMPT = """你是客观、严谨的中文新闻编辑。从候选新闻中筛选最多3条重要内容，兼顾中国国内与国际视角，不足3条时允许少选。中国国内新闻是重要组成部分，优先关注国家卫健委、国家药监局、国家医保局等官方政策与公告，并覆盖政策实际影响、社会民生、经济、科技和医疗健康；涉及FDA与NMPA时，明确区分各自监管状态，不得把FDA授权写成中国获批；不必大量选择纯会议、领导活动或礼仪性报道，除非具有明确重大政策或现实影响。国际新闻关注重大事件、地缘政治、全球经济、科技与公共卫生。尽量兼顾不同媒体和来源，不因媒体立场预设结论。优先过去24小时新闻，重大事件最多放宽至48小时；去重、排除营销和未经核实传闻，宁缺毋滥。目标上适当兼顾国内与国际，不设僵硬配额，不为满足比例而凑数。每条说明发生了什么、必要背景、对普通人或社会的实际影响。明确区分已确认事实、媒体分析和预测，不夸大影响；材料不足时说明无法确认。只能选择输入中存在的候选项，逐条返回原始id；不得创造标题、来源、日期或链接。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"中国国内或国际或科技经济或民生健康","headline":"中文标题","summary":"准确简述","background":"必要背景","public_impact":"现实影响","verification_note":"事实边界"}]}"""
 
@@ -87,7 +92,7 @@ def fetch_candidates(feeds, prefix, age_hours):
             continue
         source_fallback = str(feed.feed.get("title") or feed_label).strip()
         accepted = 0
-        for entry in feed.entries[:6]:
+        for entry in feed.entries[:8]:
             title = (entry.get("title") or "").strip()
             link = (entry.get("link") or "").strip()
             if not title or not link or link in seen:
@@ -241,8 +246,9 @@ def _extract_article_excerpt(html):
 
 def fetch_pubmed_candidates():
     queries = [
-        ('骨科与运动医学', '("Orthopedics"[MeSH Terms] OR "Sports Medicine"[MeSH Terms] OR arthroscopy[Title/Abstract] OR meniscus[Title/Abstract] OR ligament[Title/Abstract] OR "rotator cuff"[Title/Abstract] OR "anterior cruciate ligament"[Title/Abstract])'),
-        ('医疗AI', '("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR "clinical decision support"[Title/Abstract]) AND (clinical[Title/Abstract] OR medicine[Title/Abstract] OR healthcare[Title/Abstract])')
+        ('骨科临床研究全领域', '("Orthopedics"[MeSH Terms] OR "Sports Medicine"[MeSH Terms] OR arthroscopy[Title/Abstract] OR meniscus[Title/Abstract] OR ligament[Title/Abstract] OR "rotator cuff"[Title/Abstract] OR "anterior cruciate ligament"[Title/Abstract] OR fracture[Title/Abstract] OR spine[Title/Abstract] OR arthroplasty[Title/Abstract] OR osteoporosis[Title/Abstract] OR rehabilitation[Title/Abstract] OR "bone tumor"[Title/Abstract])'),
+        ('骨科AI研究', '(("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "deep learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR robotics[Title/Abstract] OR wearable[Title/Abstract]) AND (orthopedic[Title/Abstract] OR orthopaedic[Title/Abstract] OR musculoskeletal[Title/Abstract] OR "sports medicine"[Title/Abstract] OR rehabilitation[Title/Abstract]))'),
+        ('医疗AI交叉研究', '("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR "clinical decision support"[Title/Abstract] OR multimodal[Title/Abstract] OR agent[Title/Abstract]) AND (clinical[Title/Abstract] OR medicine[Title/Abstract] OR healthcare[Title/Abstract])')
     ]
     candidates, seen = [], set()
     headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
@@ -252,7 +258,7 @@ def fetch_pubmed_candidates():
             response = requests.get(
                 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi',
                 params={'db':'pubmed','term':query + ' AND ("last 30 days"[Date - Publication])',
-                        'retmode':'json','retmax':10,'sort':'date'},
+                        'retmode':'json','retmax':20,'sort':'date'},
                 headers=headers, timeout=20
             )
             response.raise_for_status()
@@ -283,7 +289,7 @@ def _pubmed_records(pmids):
     if not pmids:
         return []
     time.sleep(0.36)
-    params = {"db": "pubmed", "id": ",".join(pmids[:3]), "retmode": "xml"}
+    params = {"db": "pubmed", "id": ",".join(pmids[:50]), "retmode": "xml"}
     response = requests.get(
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
         params=params, headers={"User-Agent": "PersonalNewsIntelligence/1.0"},
@@ -499,6 +505,7 @@ def render(title, items, medical=False):
     for i, item in enumerate(items, 1):
         src = item["_source"]
         lines += [f"### {i}. {val(item, 'headline', src['title'])}",
+            f"- **类别：** {val(item, 'category', src.get('source_category', '未分类'))}",
             f"- **来源与时间：** {val(src, 'source', 'RSS来源未注明')}｜{src['published_at']}",
             f"- **内容：** {val(item, 'summary')}"]
         if medical:
@@ -516,30 +523,88 @@ def render(title, items, medical=False):
                 lines.append("- **论文核查：** 未能获取可用原文或 PubMed 摘要，研究细节无法独立核实")
             lines += [f"- **证据信息：** {val(item, 'evidence')}",
                 f"- **临床意义：** {val(item, 'clinical_significance')}",
-                f"- **局限性：** {val(item, 'limitations')}"]
+                f"- **局限性：** {val(item, 'limitations')}",
+                f"- **对运动医学的潜在启发：** {val(item, 'sports_medicine_insight')}"]
         else:
             lines += [f"- **背景：** {val(item, 'background')}",
                 f"- **现实影响：** {val(item, 'public_impact')}"]
+            if item.get("funding_implication"):
+                lines.append(f"- **科研选题启发：** {val(item, 'funding_implication')}")
             if item.get("verification_note"):
                 lines.append(f"- **核实说明：** {val(item, 'verification_note')}")
         lines.append(f"- **原文：** {src['url']}")
     return "\n".join(lines)
 
-def load_seen_urls():
+def _read_seen_state():
     try:
         with open('.cache/news_state.json', 'r', encoding='utf-8') as handle:
-            return set(json.load(handle).get('seen_urls', []))
+            data = json.load(handle)
+        return data if isinstance(data, dict) else {}
     except FileNotFoundError:
-        return set()
+        return {}
     except (OSError, json.JSONDecodeError) as exc:
         print(f'历史去重状态读取失败，将按新状态运行：{type(exc).__name__}', flush=True)
-        return set()
+        return {}
+
+
+def _normalize_seen_records(data, now=None):
+    now = now or datetime.now(timezone.utc)
+    records = data.get('records')
+    if not isinstance(records, list):
+        try:
+            legacy_time = datetime.fromisoformat(str(data.get('updated_at')).replace('Z', '+00:00'))
+            if legacy_time.tzinfo is None:
+                legacy_time = legacy_time.replace(tzinfo=timezone.utc)
+        except (TypeError, ValueError):
+            legacy_time = now
+        records = [{'url': url, 'last_seen_at': legacy_time.isoformat()}
+                   for url in data.get('seen_urls', [])
+                   if isinstance(url, str) and url.startswith(('http://', 'https://'))]
+    cutoff = now - timedelta(days=30)
+    kept, seen = [], set()
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        url = record.get('url')
+        if not isinstance(url, str) or not url.startswith(('http://', 'https://')) or url in seen:
+            continue
+        try:
+            stamp = datetime.fromisoformat(str(record.get('last_seen_at', '')).replace('Z', '+00:00'))
+            if stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=timezone.utc)
+        except (TypeError, ValueError):
+            continue
+        if stamp >= cutoff:
+            kept.append({'url': url, 'last_seen_at': stamp.astimezone(timezone.utc).isoformat()})
+            seen.add(url)
+    return kept
+
+
+def _write_seen_records(records):
+    os.makedirs('.cache', exist_ok=True)
+    with open('.cache/news_state.json', 'w', encoding='utf-8') as handle:
+        json.dump({'updated_at': datetime.now(timezone.utc).isoformat(), 'records': records},
+                  handle, ensure_ascii=False, indent=2)
+
+
+def load_seen_urls():
+    data = _read_seen_state()
+    records = _normalize_seen_records(data)
+    if 'records' not in data or len(records) != len(data.get('records', [])):
+        _write_seen_records(records)
+    return {record['url'] for record in records}
+
 
 def save_seen_urls(urls):
-    os.makedirs('.cache', exist_ok=True)
-    payload = {'updated_at': datetime.now(timezone.utc).isoformat(), 'seen_urls': sorted(set(urls))[-2000:]}
-    with open('.cache/news_state.json', 'w', encoding='utf-8') as handle:
-        json.dump(payload, handle, ensure_ascii=False, indent=2)
+    records = _normalize_seen_records(_read_seen_state())
+    known = {record['url'] for record in records}
+    now = datetime.now(timezone.utc).isoformat()
+    for url in sorted(set(urls)):
+        if isinstance(url, str) and url.startswith(('http://', 'https://')) and url not in known:
+            records.append({'url': url, 'last_seen_at': now})
+            known.add(url)
+    _write_seen_records(_normalize_seen_records({'records': records}))
+
 
 def remove_previously_pushed(candidates, seen_urls):
     result = [item for item in candidates if item.get('url') not in seen_urls]
@@ -548,7 +613,9 @@ def remove_previously_pushed(candidates, seen_urls):
         print(f'跨日去重：过滤已推送候选{removed}条', flush=True)
     return result
 
-def main():
+def _run_pipeline():
+    weekly_cleanup = run_weekly_cache_cleanup()
+    print(f"每周缓存清理：{weekly_cleanup}", flush=True)
     push_enabled = os.environ.get('PUSH_ENABLED', 'false').lower() == 'true'
     required = ['BAICHUAN_API_KEY', 'DEEPSEEK_API_KEY']
     if push_enabled:
@@ -560,7 +627,18 @@ def main():
 
     print('开始采集新闻……', flush=True)
     seen_urls = load_seen_urls()
+    tavily_data = {"medical": [], "general": [], "nsfc": []}
+    tavily_key = os.environ.get("TAVILY_KEY", "").strip()
+    if tavily_key:
+        try:
+            tavily_data = fetch_tavily_candidates(tavily_key)
+            print(f"Tavily主动搜索：学术={len(tavily_data['medical'])}条｜新闻={len(tavily_data['general'])}条｜NSFC={len(tavily_data['nsfc'])}条", flush=True)
+        except Exception as exc:
+            print(f"Tavily搜索失败，继续使用RSS/PubMed：{type(exc).__name__}", flush=True)
+    else:
+        print("未配置TAVILY_KEY，跳过主动搜索；RSS/PubMed继续运行。", flush=True)
     medical = fetch_candidates(MEDICAL_FEEDS, 'M', 24 * 90)
+    medical.extend(tavily_data["medical"])
     try:
         medical.extend(fetch_pubmed_candidates())
     except Exception as exc:
@@ -574,6 +652,7 @@ def main():
     medical = remove_previously_pushed(medical, seen_urls)
 
     general = fetch_candidates(GENERAL_FEEDS, 'G', 48)
+    general.extend(tavily_data["general"])
     try:
         general.extend(fetch_official_page_candidates(general_official))
     except Exception as exc:
@@ -602,36 +681,37 @@ def main():
     except Exception as exc:
         print(f'DeepSeek综合新闻模块失败：{type(exc).__name__}: {exc}', flush=True)
 
-    if not med_items and not news_items:
-        print('两个新闻分析模块均未产生结果，停止生成/推送。', flush=True)
+    nsfc_items = []
+    if tavily_data["nsfc"]:
+        try:
+            nsfc_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
+                'Baichuan-M3-Plus', NSFC_PROMPT, tavily_data["nsfc"], 0.1)
+            print(f"百川NSFC筛选完成：{len(nsfc_items)}条", flush=True)
+        except Exception as exc:
+            print(f"NSFC分析失败，不影响新闻主流程：{type(exc).__name__}", flush=True)
+
+    if not med_items and not news_items and not nsfc_items:
+        print('学术、NSFC与新闻模块均未产生结果，停止生成/推送。', flush=True)
         return 1
 
     local_now = datetime.now(timezone(timedelta(hours=8)))
     today = local_now.strftime('%Y-%m-%d')
     morning = MORNING_LINES[local_now.date().toordinal() % len(MORNING_LINES)]
-    try:
-        from meeting_tracker import (
-            build_meeting_brief, check_meeting_watch_sources,
-            get_due_meeting_reminders, mark_meeting_reminders_sent
-        )
-        meeting_section = build_meeting_brief(today=local_now.date())
-        watch_updates = check_meeting_watch_sources()
-        meeting_section += "\n\n### 官方会议来源监测\n" + "\n".join(watch_updates)
-        due_meetings = get_due_meeting_reminders(today=local_now.date())
-    except Exception as exc:
-        print(f'会议日历模块异常：{type(exc).__name__}: {exc}', flush=True)
-        meeting_section = '## 学术会议动态\n会议模块暂时不可用。'
-        due_meetings = []
 
     content = '\n\n'.join([
         f'# Personal News Intelligence\n**{today}｜每日专属资讯**',
-        render('🦴 骨关节外科、运动医学与医疗AI', med_items, True),
+        render('🦴 骨科临床研究与全领域医疗AI', med_items, True),
+        render('🏛️ 国家自然科学基金科研动态', nsfc_items),
         render('🇨🇳 国内医疗政策、国内外重大事件与科技经济', news_items),
-        meeting_section,
         '## 🌅 今日晨语\n' + morning,
-        '---\n*资讯由自动采集与AI辅助整理；请以原始来源为准。医学研究信息优先核对PubMed/期刊原文；会议日期以组织方官网为准。*'
+        '---\n*资讯由自动采集与AI辅助整理；请以原始来源为准。研究细节以PubMed/期刊原文核验，政策以官方原文为准。*'
     ])
-    print('简报预览：\n' + content, flush=True)
+    # 不将完整简报写入Actions日志，避免长期保留正文。
+    print(f"简报生成完成：骨科/医疗AI={len(med_items)}条｜NSFC={len(nsfc_items)}条｜综合新闻={len(news_items)}条｜正文字符数={len(content)}", flush=True)
+    for group in (med_items, nsfc_items, news_items):
+        for item in group:
+            src = item.get('_source', {})
+            print(f"入选标题：{item.get('headline', src.get('title', '未命名'))[:120]}｜{src.get('url', '')}", flush=True)
 
     if not push_enabled:
         if due_meetings:
@@ -655,33 +735,14 @@ def main():
     save_seen_urls(seen_urls.union(selected_urls))
     print('PushPlus已确认接受每日简报；已更新跨日去重状态。', flush=True)
 
-    if due_meetings:
-        alert_lines = ["# 学术会议重要提醒", f"**{today}｜以下会议即将开始或正在举行**"]
-        for event in due_meetings:
-            days = event.get('days_to_start', 0)
-            status = "会议进行中" if days < 0 else f"距开幕{days}天"
-            alert_lines.append(
-                f"- **{event.get('name')}**（{event.get('scope', '学术会议')}）\n"
-                f"  - 时间：{event.get('start_date')} 至 {event.get('end_date', event.get('start_date'))}\n"
-                f"  - 地点：{event.get('location', '官网未提供')}\n"
-                f"  - 状态：{status}\n"
-                f"  - 官方信息：{event.get('url')}"
-            )
-        try:
-            alert_response = requests.post(PUSHPLUS_URL, json={
-                'token': os.environ['PUSHPLUS_TOKEN'],
-                'title': f'📅 学术会议重要提醒 | {today}',
-                'content': "\n\n".join(alert_lines),
-                'template': 'markdown'
-            }, timeout=30)
-            alert_response.raise_for_status()
-            alert_result = alert_response.json()
-            if str(alert_result.get('code')) != '200':
-                raise RuntimeError('PushPlus会议提醒返回非成功状态')
-            mark_meeting_reminders_sent(due_meetings)
-            print(f'已单独发送重要会议提醒：{len(due_meetings)}项。', flush=True)
-        except Exception as exc:
-            print(f'单独会议提醒发送失败，未标记已提醒，后续运行可重试：{type(exc).__name__}: {exc}', flush=True)
     return 0
+def main():
+    try:
+        return _run_pipeline()
+    finally:
+        cleaned = cleanup_daily_transients()
+        print(f"当日临时数据清理：{cleaned}", flush=True)
+
+
 if __name__ == "__main__":
     sys.exit(main())

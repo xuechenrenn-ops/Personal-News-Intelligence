@@ -19,7 +19,6 @@ class LinkCounter(HTMLParser):
 
 def main():
     sources = json.loads(Path("sources.json").read_text(encoding="utf-8"))
-    meetings = json.loads(Path("meeting_calendar.json").read_text(encoding="utf-8"))
     headers = {"User-Agent": "PersonalNewsIntelligence/1.0"}
     total, ok, failed = 0, 0, 0
 
@@ -77,22 +76,6 @@ def main():
             failed += 1
             status = getattr(getattr(exc, "response", None), "status_code", None)
             print(f"FAIL | {source['label']} | HTTP={status or 'unknown'} | {type(exc).__name__}: {exc}")
-
-    print("\n=== Academic meeting source connectivity ===")
-    for source in meetings.get("watch_sources", []):
-        if source.get("enabled", True) is False:
-            print(f"SKIP | {source['name']} | {source.get('access_note', 'disabled')}")
-            continue
-        total += 1
-        try:
-            response = requests.get(source["url"], headers=headers, timeout=20)
-            response.raise_for_status()
-            print(f"OK | {source['name']} | HTTP {response.status_code} | final_url={response.url}")
-            ok += 1
-        except Exception as exc:
-            failed += 1
-            status = getattr(getattr(exc, "response", None), "status_code", None)
-            print(f"FAIL | {source['name']} | HTTP={status or 'unknown'} | {type(exc).__name__}: {exc}")
 
     print(f"\nSUMMARY | total={total} | ok={ok} | failed={failed}")
     if failed:
