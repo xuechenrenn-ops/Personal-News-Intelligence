@@ -273,6 +273,30 @@ def _medical_candidate_lane(item):
     return "其他医学研究"
 
 
+def _candidate_date_rank(item):
+    raw = str(item.get("published_at") or "").strip()
+    if not raw or raw in ("原始RSS未提供", "PubMed未提供", "网页未提供", "搜索结果未提供"):
+        return datetime.min.replace(tzinfo=timezone.utc)
+    try:
+        value = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+    except ValueError:
+        for fmt in ("%Y %b %d", "%Y %B %d", "%Y %b", "%Y"):
+            try:
+                return datetime.strptime(raw, fmt).replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+    match = re.search(r"(20\d{2})[年/.-](\d{1,2})(?:[月/.-](\d{1,2}))?", raw)
+    if match:
+        try:
+            return datetime(int(match.group(1)), int(match.group(2)), int(match.group(3) or 1), tzinfo=timezone.utc)
+        except ValueError:
+            pass
+    return datetime.min.replace(tzinfo=timezone.utc)
+
+
 def balance_medical_candidates(candidates, max_per_lane=24, max_total=88):
     """Stable round-robin sampling prevents one source/query lane dominating the model prompt."""
     lanes = {"骨科临床": [], "骨科AI": [], "其他医疗AI": [], "其他医学研究": []}
@@ -290,6 +314,8 @@ def balance_medical_candidates(candidates, max_per_lane=24, max_total=88):
             continue
         seen_keys.update(keys)
         lanes[_medical_candidate_lane(item)].append(item)
+    for bucket in lanes.values():
+        bucket.sort(key=_candidate_date_rank, reverse=True)
     selected = []
     counts = {key: 0 for key in lanes}
     while len(selected) < max_total and any(lanes.values()):
@@ -338,6 +364,118 @@ def filter_nsfc_candidates(candidates):
     if removed:
         print(f"NSFC程序级过滤：排除{removed}条非官方域名、招聘或非资助类信息", flush=True)
     return accepted
+
+
+GENERAL_RELEVANCE_TERMS = (
+    "医疗", "卫生", "医保", "医院", "药品", "药监", "公共卫生", "疾病", "健康",
+    "人工智能", "科技", "芯片", "半导体", "机器人", "航天", "科研", "创新",
+    "经济", "金融", "市场", "贸易", "关税", "出口", "供应链", "能源", "就业",
+    "中美", "国际", "外交", "战争", "冲突", "制裁", "选举", "法院", "诉讼",
+    "华为", "商业秘密", "重大事故", "灾害", "地震", "洪水", "疫情", "疫苗",
+    "教育改革", "养老", "住房", "食品安全", "环境", "气候", "交通事故"
+)
+GENERAL_LOW_VALUE_TERMS = (
+    "校服订购", "教辅材料", "校园餐", "学校食堂", "校园活动", "文艺汇演",
+    "基层单位例会", "内部培训", "普通招聘", "招聘启事", "领导调研",
+)
+GENERAL_HIGH_IMPACT_TERMS = (
+    "全国", "国务院", "国家", "重大", "全球", "突发", "紧急", "政策",
+    "新规", "法规", "大范围", "系统性",
+)
+
+
+def _normalized_title(title):
+    return re.sub(r"[\W_]+", "", str(title or "").lower())
+
+
+def filter_general_news_candidates(candidates, max_candidates=50):
+    """Filter low-relevance local notices and collapse near-duplicate headlines."""
+    ranked = []
+    for item in candidates:
+        title = str(item.get("title") or "").strip()
+        summary = str(item.get("summary") or "").strip()
+        text = title + " " + summary
+        if not title:
+            continue
+        low_value = any(term in text for term in GENERAL_LOW_VALUE_TERMS)
+        high_impact = any(term in text for term in GENERAL_HIGH_IMPACT_TERMS)
+        if low_value and not high_impact:
+            continue
+        score = sum(1 for term in GENERAL_RELEVANCE_TERMS if term in text)
+        if score == 0 and not high_impact:
+            continue
+        ranked.append((score + (2 if high_impact else 0), _candidate_date_rank(item), item))
+    ranked.sort(key=lambda row: (row[0], row[1]), reverse=True)
+    selected, seen_urls, seen_titles = [], set(), []
+    for _, _, item in ranked:
+        url = str(item.get("url") or "").strip().rstrip("/")
+        title_key = _normalized_title(item.get("title"))
+        if url and url in seen_urls:
+            continue
+        if title_key and any(
+            difflib.SequenceMatcher(None, title_key, old).ratio() >= 0.90
+            for old in seen_titles
+        ):
+            continue
+        selected.append(item)
+        if url:
+            seen_urls.add(url)
+        if title_key:
+            seen_titles.append(title_key)
+        if len(selected) >= max_candidates:
+            break
+    print(f"综合新闻相关性过滤：输入{len(candidates)}条｜保留{len(selected)}条｜过滤/合并{len(candidates)-len(selected)}条", flush=True)
+    return selected
+
+
+def _read_preview_news_state(now=None):
+    path = ".cache/preview_news_state.json"
+    current = now or datetime.now(timezone.utc)
+    cutoff = current - timedelta(days=7)
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        records = data.get("records", []) if isinstance(data, dict) else []
+    except (OSError, json.JSONDecodeError):
+        records = []
+    kept = []
+    for record in records:
+        if not isinstance(record, dict) or not record.get("url"):
+            continue
+        try:
+            stamp = datetime.fromisoformat(str(record.get("last_previewed_at", "")).replace("Z", "+00:00"))
+            if stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+        if stamp >= cutoff:
+            kept.append({"url": str(record["url"]), "last_previewed_at": stamp.astimezone(timezone.utc).isoformat()})
+    return kept
+
+
+def remove_recently_previewed_news(candidates, now=None):
+    records = _read_preview_news_state(now=now)
+    seen = {record["url"] for record in records}
+    result = [item for item in candidates if str(item.get("url") or "") not in seen]
+    removed = len(candidates) - len(result)
+    if removed:
+        print(f"预览跨日去重：过滤最近7天已预览新闻{removed}条", flush=True)
+    return result
+
+
+def save_previewed_news(items, now=None):
+    current = now or datetime.now(timezone.utc)
+    records = _read_preview_news_state(now=current)
+    by_url = {record["url"]: record for record in records}
+    stamp = current.astimezone(timezone.utc).isoformat()
+    for item in items:
+        source = item.get("_source", {}) if isinstance(item, dict) else {}
+        url = str(source.get("url") or "").strip()
+        if url:
+            by_url[url] = {"url": url, "last_previewed_at": stamp}
+    os.makedirs(".cache", exist_ok=True)
+    with open(".cache/preview_news_state.json", "w", encoding="utf-8") as handle:
+        json.dump({"records": list(by_url.values())}, handle, ensure_ascii=False, indent=2)
 
 
 def annotate_policy_source(items):
@@ -823,6 +961,10 @@ def _run_pipeline():
     except Exception as exc:
         print(f'国内官方来源模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
     general = remove_previously_pushed(general, seen_urls)
+    push_enabled = os.environ.get('PUSH_ENABLED', 'false').lower() == 'true'
+    if not push_enabled:
+        general = remove_recently_previewed_news(general)
+    general = filter_general_news_candidates(general)
     print(f'候选数量：医学{len(medical)}条（含PubMed），综合及国内官方来源{len(general)}条', flush=True)
 
     med_items = []
@@ -855,7 +997,7 @@ def _run_pipeline():
                 'deepseek-flash', NSFC_PROMPT, nsfc_candidates, 0.1)
             for selected in nsfc_items:
                 selected["category"] = selected["_source"].get("nsfc_type", selected.get("category", "未分类"))
-            print(f"百川NSFC筛选完成：{len(nsfc_items)}条", flush=True)
+            print(f"DeepSeek NSFC筛选完成：{len(nsfc_items)}条", flush=True)
         except Exception as exc:
             print(f"NSFC分析失败，不影响新闻主流程：{type(exc).__name__}", flush=True)
 
@@ -883,7 +1025,8 @@ def _run_pipeline():
             print(f"入选标题：{item.get('headline', src.get('title', '未命名'))[:120]}｜{src.get('url', '')}", flush=True)
 
     if not push_enabled:
-        print('安全模式：仅生成预览，不发送微信，也不更新已推送去重记录。', flush=True)
+        save_previewed_news(news_items)
+        print('安全模式：仅生成预览，不发送微信，也不更新已推送去重记录；已记录本次预览新闻供7天内去重。', flush=True)
         return 0
 
     print('正在发送PushPlus……', flush=True)
