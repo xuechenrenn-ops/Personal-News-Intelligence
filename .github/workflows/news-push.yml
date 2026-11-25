@@ -27,7 +27,7 @@ jobs:
       - name: Restore cross-run news state
         uses: actions/cache@v4
         with:
-          path: .cache/news_state.json
+          path: .cache
           key: news-state-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             news-state-${{ github.ref_name }}-
