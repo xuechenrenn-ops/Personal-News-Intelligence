@@ -9,13 +9,31 @@ import requests
 BAICHUAN_URL = "https://api.baichuan-ai.com/v1/chat/completions"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 PUSHPLUS_URL = "https://www.pushplus.plus/send"
-MEDICAL_FEEDS = ["https://medicalxpress.com/rss-feed/"]
-GENERAL_FEEDS = ["https://rsshub.app/zaobao/realtime/world"]
+MEDICAL_FEEDS = [
+    ("MedicalXpress-骨科", "https://medicalxpress.com/rss-feed/orthopedics-news/"),
+    ("MedicalXpress-运动医学", "https://medicalxpress.com/rss-feed/sports-medicine-news/"),
+    ("MedicalXpress-综合医学（用于补充医疗AI线索）", "https://medicalxpress.com/rss-feed/"),
+]
+GENERAL_FEEDS = [
+    # 中国国内：优先覆盖即时、社会民生、财经和生活资讯
+    ("中国新闻网-即时", "https://www.chinanews.com.cn/rss/scroll-news.xml"),
+    ("中国新闻网-社会", "https://www.chinanews.com.cn/rss/society.xml"),
+    ("中国新闻网-财经", "https://www.chinanews.com.cn/rss/finance.xml"),
+    ("中国新闻网-生活", "https://www.chinanews.com.cn/rss/life.xml"),
+    # 中国视角的国际与产业补充
+    ("中国新闻网-国际", "https://www.chinanews.com.cn/rss/world.xml"),
+    ("新华网-国际", "http://www.xinhuanet.com/world/news_world.xml"),
+    ("新华网-财经", "http://www.xinhuanet.com/fortune/news_fortune.xml"),
+    ("新华网-科技", "http://www.xinhuanet.com/tech/news_tech.xml"),
+    # 国际媒体：避免只依赖单一国家或单一媒体
+    ("BBC-World", "https://feeds.bbci.co.uk/news/world/rss.xml"),
+    ("Al Jazeera", "https://www.aljazeera.com/xml/rss/all.xml"),
+]
 TIMEOUT = 90
 
-MEDICAL_PROMPT = """你是严谨的医学资讯编辑。从候选新闻中筛选2-3条高价值内容，重点关注骨关节外科、运动医学及医疗AI。优先原始研究、正式指南、专业学会和权威期刊；排除营销、重复转载和无可靠依据的内容。研究类尽可能说明研究设计、样本量、对象、主要结局、关键结果、临床意义和局限。材料未提供就写“原文未提供”，绝不猜测。区分相关与因果、统计学与临床意义；不得把单项研究说成指南。AI新闻说明真实临床验证状态及应用限制。只能选择输入中存在的候选项，逐条返回原始id；不得创造来源、日期、链接、DOI、PMID或研究数据。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"骨关节外科与运动医学或医疗AI","headline":"中文标题","summary":"准确概述","evidence":"证据详情","clinical_significance":"临床意义","limitations":"局限"}]}"""
+MEDICAL_PROMPT = """你是严谨的医学资讯编辑。从候选新闻中筛选最多3条高价值内容，主题必须直接属于骨关节外科、运动医学或医疗AI。骨科与运动医学优先，医疗AI其次。严格排除风湿免疫、皮肤科、肿瘤、普通内科等与上述主题无直接关系的新闻；不得为了凑数选择其他医学领域内容，符合条件的不足3条就少选。优先原始研究、正式指南、专业学会和权威期刊；排除营销、重复转载和无可靠依据的内容。研究类尽可能说明研究设计、样本量、对象、主要结局、关键结果、临床意义和局限。材料未提供就写“原文未提供”，绝不猜测。区分相关与因果、统计学与临床意义；不得把单项研究说成指南。AI新闻说明真实临床验证状态及应用限制。只能选择输入中存在的候选项，逐条返回原始id；不得创造来源、日期、链接、DOI、PMID或研究数据。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"骨关节外科与运动医学或医疗AI","headline":"中文标题","summary":"准确概述","evidence":"证据详情","clinical_significance":"临床意义","limitations":"局限"}]}"""
 
-GENERAL_PROMPT = """你是客观、严谨的中文新闻编辑。从候选新闻中筛选3-4条重要内容，覆盖国内外重大事件、民生与医疗健康、重要科技与经济资讯。优先过去24小时新闻，重大事件最多放宽至48小时；去重、排除营销和未经核实传闻，宁缺毋滥。每条说明发生了什么、必要背景、对普通人或社会的实际影响。明确区分已确认事实、媒体分析和预测，不夸大影响；材料不足时说明无法确认。只能选择输入中存在的候选项，逐条返回原始id；不得创造标题、来源、日期或链接。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"国内外重大事件或民生与医疗健康或科技与经济","headline":"中文标题","summary":"准确简述","background":"必要背景","public_impact":"现实影响","verification_note":"事实边界"}]}"""
+GENERAL_PROMPT = """你是客观、严谨的中文新闻编辑。从候选新闻中筛选3-4条重要内容，兼顾中国国内与国际视角。中国国内新闻是重要组成部分，覆盖政策及其实际影响、社会民生、经济、科技和医疗健康；不必大量选择纯会议、领导活动或礼仪性报道，除非具有明确重大政策或现实影响。国际新闻关注重大事件、地缘政治、全球经济、科技与公共卫生。尽量兼顾不同媒体和来源，不因媒体立场预设结论。优先过去24小时新闻，重大事件最多放宽至48小时；去重、排除营销和未经核实传闻，宁缺毋滥。目标上适当兼顾国内与国际，不设僵硬配额，不为满足比例而凑数。每条说明发生了什么、必要背景、对普通人或社会的实际影响。明确区分已确认事实、媒体分析和预测，不夸大影响；材料不足时说明无法确认。只能选择输入中存在的候选项，逐条返回原始id；不得创造标题、来源、日期或链接。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"中国国内或国际或科技经济或民生健康","headline":"中文标题","summary":"准确简述","background":"必要背景","public_impact":"现实影响","verification_note":"事实边界"}]}"""
 
 MORNING_LINES = [
 "把今天走稳，明天自然会有新的方向。","不必急着抵达，持续向前本身就有意义。",
@@ -40,16 +58,27 @@ MORNING_LINES = [
 "不因一时的停顿，就低估长期坚持的价值。","愿每一份认真都有回响，每一步前行都有意义。"
 ]
 
-def fetch_candidates(urls, prefix, age_hours):
+def fetch_candidates(feeds, prefix, age_hours):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=age_hours)
     items, seen = [], set()
-    for url in urls:
-        print("读取RSS：" + url, flush=True)
-        feed = feedparser.parse(url)
-        if feed.bozo and not feed.entries:
-            print("警告：RSS读取失败：" + url, flush=True)
+    headers = {"User-Agent": "PersonalNewsIntelligence/1.0"}
+    for feed_label, url in feeds:
+        print("读取RSS：" + feed_label + "｜" + url, flush=True)
+        try:
+            response = requests.get(url, headers=headers, timeout=20)
+            response.raise_for_status()
+            feed = feedparser.parse(response.content)
+        except Exception as exc:
+            print(f"警告：RSS读取失败：{feed_label}｜{type(exc).__name__}: {exc}", flush=True)
             continue
-        for entry in feed.entries[:12]:
+        if feed.bozo:
+            print(f"提示：RSS格式存在解析警告：{feed_label}", flush=True)
+        if not feed.entries:
+            print(f"提示：RSS没有返回新闻条目：{feed_label}｜HTTP {response.status_code}", flush=True)
+            continue
+        source_fallback = str(feed.feed.get("title") or feed_label).strip()
+        accepted = 0
+        for entry in feed.entries[:6]:
             title = (entry.get("title") or "").strip()
             link = (entry.get("link") or "").strip()
             if not title or not link or link in seen:
@@ -60,11 +89,14 @@ def fetch_candidates(urls, prefix, age_hours):
             if published and published < cutoff:
                 continue
             src = entry.get("source") or {}
-            summary = " ".join(str(entry.get("summary") or entry.get("description") or "").split())[:2500]
+            source_name = src.get("title", "") if isinstance(src, dict) else ""
+            summary = " ".join(str(entry.get("summary") or entry.get("description") or "").split())[:900]
             items.append({"id": f"{prefix}{len(items)+1}", "title": title[:400],
-                "source": src.get("title", "") if isinstance(src, dict) else "",
+                "source": source_name or source_fallback,
                 "published_at": published.isoformat() if published else "原始RSS未提供",
                 "url": link, "summary": summary})
+            accepted += 1
+        print(f"RSS采集结果：{feed_label}｜有效候选{accepted}条", flush=True)
     return items
 
 def call_model(url, key, model, prompt, candidates, temperature):
