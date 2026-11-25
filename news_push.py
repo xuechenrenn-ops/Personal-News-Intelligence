@@ -334,9 +334,15 @@ def fetch_medical_evidence(candidate):
         "article_page_status": "not_fetched",
         "article_excerpt": "",
         "doi": "",
-        "pubmed_record": None,
+        "pubmed_record": candidate.get("pubmed_record"),
         "verification_status": "not_verified"
     }
+    if result["pubmed_record"]:
+        result["article_page_status"] = "pubmed_record"
+        result["article_excerpt"] = result["pubmed_record"].get("abstract", "")
+        result["doi"] = result["pubmed_record"].get("doi", "")
+        result["verification_status"] = "pubmed_matched"
+        return result
     html = ""
     try:
         response = requests.get(
@@ -354,8 +360,14 @@ def fetch_medical_evidence(candidate):
             if doi_match:
                 result["doi"] = doi_match.group(1).rstrip(".,;)")
     except Exception as exc:
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        retry_after = getattr(getattr(exc, "response", None), "headers", {}).get("Retry-After")
         result["article_page_status"] = "fetch_failed:" + type(exc).__name__
-        print(f"医学原文抓取失败：{candidate.get('title', '')[:90]}｜{type(exc).__name__}", flush=True)
+        print(
+            f"医学原文抓取失败：{candidate.get('title', '')[:90]}｜"
+            f"HTTP={status or 'unknown'}｜Retry-After={retry_after or 'none'}｜{type(exc).__name__}",
+            flush=True
+        )
 
     pmid_match = re.search(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d+)", html, re.I)
     pmid = pmid_match.group(1) if pmid_match else ""
@@ -422,11 +434,15 @@ def call_model(url, key, model, prompt, candidates, temperature):
         detail = " ".join(response.text.split())[:600]
         raise RuntimeError(f"{model} API HTTP {response.status_code}: {detail}") from None
     raw = response.json()["choices"][0]["message"]["content"].strip()
-    if raw.startswith(chr(96) * 3):
-        raw = raw.split("\n", 1)[-1]
-        if raw.endswith(chr(96) * 3):
-            raw = raw[:-3]
-    data = json.loads(raw)
+    # Decode the first complete JSON object; ignore trailing prose from the model.
+    cleaned = raw.strip()
+    if cleaned.startswith(chr(96) * 3):
+        cleaned = cleaned.split("\n", 1)[-1]
+    decoder = json.JSONDecoder()
+    start = cleaned.find("{")
+    if start < 0:
+        raise ValueError(model + "未返回JSON对象")
+    data, _ = decoder.raw_decode(cleaned[start:])
     if not isinstance(data, dict) or not isinstance(data.get("items"), list):
         raise ValueError(model + "返回结构不符合约定")
     source_by_id = {x["id"]: x for x in candidates}
