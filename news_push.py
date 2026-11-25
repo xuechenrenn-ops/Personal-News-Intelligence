@@ -262,7 +262,7 @@ ORTHOPEDIC_TERMS = (
 def _medical_candidate_lane(item):
     source_category = str(item.get("source_category") or "")
     text = " ".join(str(item.get(key) or "") for key in ("title", "summary", "source_category")).lower()
-    is_ai = any(term in text for term in AI_RESEARCH_TERMS)
+    is_ai = any(term in text for term in AI_RESEARCH_TERMS) or "ai" in source_category.lower()
     is_ortho = any(term in text for term in ORTHOPEDIC_TERMS) or "骨科" in source_category or "运动医学" in source_category
     if is_ortho and is_ai:
         return "骨科AI"
@@ -276,17 +276,19 @@ def _medical_candidate_lane(item):
 def balance_medical_candidates(candidates, max_per_lane=24, max_total=88):
     """Stable round-robin sampling prevents one source/query lane dominating the model prompt."""
     lanes = {"骨科临床": [], "骨科AI": [], "其他医疗AI": [], "其他医学研究": []}
-    seen = set()
+    seen_keys = set()
     for item in candidates:
         if not isinstance(item, dict):
             continue
-        url = str(item.get("url") or "").strip()
         pubmed = item.get("pubmed_record") or {}
-        identity = url or str(pubmed.get("pmid") or pubmed.get("doi") or item.get("id") or "")
-        if identity and identity in seen:
+        keys = {
+            str(item.get("url") or "").strip().lower(),
+            str(pubmed.get("pmid") or "").strip(),
+            str(pubmed.get("doi") or item.get("doi") or "").strip().lower()
+        } - {""}
+        if keys and keys.intersection(seen_keys):
             continue
-        if identity:
-            seen.add(identity)
+        seen_keys.update(keys)
         lanes[_medical_candidate_lane(item)].append(item)
     selected = []
     counts = {key: 0 for key in lanes}
@@ -301,7 +303,6 @@ def balance_medical_candidates(candidates, max_per_lane=24, max_total=88):
             break
     print("医学候选平衡采样：" + "｜".join(f"{key}={value}" for key, value in counts.items()), flush=True)
     return selected
-
 
 NSFC_EXCLUDED_TITLE_TERMS = (
     "招聘", "岗位", "流动项目主任", "人员选聘", "公开选聘", "诚聘", "工作人员",
