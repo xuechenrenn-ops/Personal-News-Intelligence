@@ -24,8 +24,20 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+      - name: Restore cross-run news state
+        uses: actions/cache@v4
+        with:
+          path: .cache/news_state.json
+          key: news-state-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            news-state-${{ github.ref_name }}-
       - name: Install dependencies
         run: pip install -r requirements.txt
+      - name: Validate code and configuration
+        run: |
+          python -m py_compile news_push.py meeting_tracker.py
+          python -m json.tool sources.json > /dev/null
+          python -m json.tool meeting_calendar.json > /dev/null
       - name: Run news pipeline
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
