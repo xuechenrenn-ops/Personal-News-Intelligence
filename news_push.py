@@ -71,10 +71,16 @@ def call_model(url, key, model, prompt, candidates, temperature):
     if not candidates:
         print(model + "：无候选新闻，跳过调用。", flush=True)
         return []
-    payload = {"model": model, "messages": [
-        {"role": "system", "content": "严格遵守指令，只输出合法JSON。"},
-        {"role": "user", "content": prompt + "\n候选新闻JSON：\n" + json.dumps(candidates, ensure_ascii=False)}
-    ], "temperature": temperature}
+    user_content = "严格遵守指令，只输出合法JSON。\n" + prompt + "\n候选新闻JSON：\n" + json.dumps(candidates, ensure_ascii=False)
+    if url == BAICHUAN_URL:
+        # Baichuan Chat Completions accepts only user/assistant roles; no system role.
+        messages = [{"role": "user", "content": user_content}]
+    else:
+        messages = [
+            {"role": "system", "content": "严格遵守指令，只输出合法JSON。"},
+            {"role": "user", "content": user_content}
+        ]
+    payload = {"model": model, "messages": messages, "temperature": temperature}
     response = requests.post(url, headers={"Authorization": "Bearer " + key,
         "Content-Type": "application/json"}, json=payload, timeout=TIMEOUT)
     try:
