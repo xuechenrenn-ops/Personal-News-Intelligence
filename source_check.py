@@ -44,6 +44,9 @@ def main():
 
     print("\n=== Official page connectivity ===")
     for source in sources.get("official_pages", []):
+        if source.get("enabled", True) is False:
+            print(f"SKIP | {source['label']} | {source.get('access_note', 'disabled')}")
+            continue
         total += 1
         try:
             response = requests.get(source["url"], headers=headers, timeout=20)
