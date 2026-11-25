@@ -1,12 +1,12 @@
 # Personal News Intelligence
 
-中文新闻与医学研究情报系统：主动搜索、RSS、PubMed和官方来源共同发现信息，经百川与DeepSeek分工筛选后生成每日简报。默认安全预览，不自动推送。
+中文新闻与医学研究情报系统：主动搜索、RSS、PubMed和官方来源共同发现信息，经DeepSeek统一分析后生成每日简报。默认安全预览，不自动推送。
 
 ## 架构
 - Tavily Basic Search：主动发现骨科临床研究、骨科全领域AI、医疗AI交叉研究、国内医疗政策、国内外动态及NSFC官方信息；新增仅限卫健委、医保局、药监局和政府门户域名的官方医疗政策检索。
 - PubMed/NCBI：主动检索近30天论文并核验摘要、PMID、DOI；搜索摘要仅作发现线索。
-- Baichuan-M3-Plus：骨科临床研究、骨科全领域AI研究筛选与证据复核；单独筛选NSFC官方动态。
-- DeepSeek-Flash：国内医疗政策、民生及国内外重大动态。
+- DeepSeek-Flash：统一承担骨科临床研究、骨科AI、其他医疗AI、论文证据复核、NSFC官方动态、医疗政策及国内外新闻筛选。
+- Baichuan-M3-Plus：不参与日常流程；历史适配代码可保留，但无需配置或调用其API Key。
 - Python：采集编排、去重、日期/链接校验、缓存生命周期、搜索预算审计和推送安全控制。
 - PushPlus：默认 `push_enabled=false`，不发送真实消息。
 
@@ -35,12 +35,12 @@ RSS包括MedicalXpress骨科/运动医学/综合医学、npj Digital Medicine、
 每日主流程已移除会议追踪和独立提醒。旧的 `meeting_tracker.py`、`meeting_calendar.json` 暂时保留为归档文件，不再由主流程或来源检查调用。
 
 ## GitHub Secrets
-`BAICHUAN_API_KEY`、`DEEPSEEK_API_KEY`、`TAVILY_KEY`；`PUSHPLUS_TOKEN`仅真实推送时需要。工作流权限保持 `contents: read`，不自动向仓库提交状态文件。
+`DEEPSEEK_API_KEY`、`TAVILY_KEY`；`PUSHPLUS_TOKEN`仅真实推送时需要。工作流权限保持 `contents: read`，不自动向仓库提交状态文件。
 
 ## 手动测试
 1. 运行 **Check News Sources** 检查RSS、PubMed和官方网页。
 2. 运行 **Daily News Push**，保持 `push_enabled=false`。
-3. 检查Tavily候选及credits、PubMed记录、百川筛选/证据复核、NSFC动态和DeepSeek新闻筛选。
+3. 检查Tavily候选及credits、PubMed记录、DeepSeek学术筛选/证据复核、NSFC动态和综合新闻筛选。
 4. 检查学术范围、研究类型、发表时间、证据边界及运动医学启发。
 5. 检查日志不含完整简报正文或密钥，并检查当天、每周、30天三档清理。
 6. 内容稳定后再单独讨论真实推送和定时运行。
