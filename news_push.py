@@ -607,13 +607,18 @@ def main():
     today = local_now.strftime('%Y-%m-%d')
     morning = MORNING_LINES[local_now.date().toordinal() % len(MORNING_LINES)]
     try:
-        from meeting_tracker import build_meeting_brief, check_meeting_watch_sources
+        from meeting_tracker import (
+            build_meeting_brief, check_meeting_watch_sources,
+            get_due_meeting_reminders, mark_meeting_reminders_sent
+        )
         meeting_section = build_meeting_brief(today=local_now.date())
         watch_updates = check_meeting_watch_sources()
         meeting_section += "\\n\\n### 官方会议来源监测\\n" + "\\n".join(watch_updates)
+        due_meetings = get_due_meeting_reminders(today=local_now.date())
     except Exception as exc:
         print(f'会议日历模块异常：{type(exc).__name__}: {exc}', flush=True)
         meeting_section = '## 学术会议动态\n会议模块暂时不可用。'
+        due_meetings = []
 
     content = '\n\n'.join([
         f'# Personal News Intelligence\n**{today}｜每日专属资讯**',
@@ -626,6 +631,10 @@ def main():
     print('简报预览：\n' + content, flush=True)
 
     if not push_enabled:
+        if due_meetings:
+            print("单独会议提醒预览：", flush=True)
+            for event in due_meetings:
+                print(f"- {event.get('name')}｜{event.get('start_date')}｜{event.get('url')}", flush=True)
         print('安全模式：仅生成预览，不发送微信，也不更新已推送去重记录。', flush=True)
         return 0
 
@@ -641,7 +650,35 @@ def main():
     selected_urls = [item['_source']['url'] for item in med_items + news_items
                      if item.get('_source', {}).get('url')]
     save_seen_urls(seen_urls.union(selected_urls))
-    print('PushPlus已确认接受推送请求；已更新跨日去重状态。', flush=True)
+    print('PushPlus已确认接受每日简报；已更新跨日去重状态。', flush=True)
+
+    if due_meetings:
+        alert_lines = ["# 学术会议重要提醒", f"**{today}｜以下会议即将开始或正在举行**"]
+        for event in due_meetings:
+            days = event.get('days_to_start', 0)
+            status = "会议进行中" if days < 0 else f"距开幕{days}天"
+            alert_lines.append(
+                f"- **{event.get('name')}**（{event.get('scope', '学术会议')}）\\n"
+                f"  - 时间：{event.get('start_date')} 至 {event.get('end_date', event.get('start_date'))}\\n"
+                f"  - 地点：{event.get('location', '官网未提供')}\\n"
+                f"  - 状态：{status}\\n"
+                f"  - 官方信息：{event.get('url')}"
+            )
+        try:
+            alert_response = requests.post(PUSHPLUS_URL, json={
+                'token': os.environ['PUSHPLUS_TOKEN'],
+                'title': f'📅 学术会议重要提醒 | {today}',
+                'content': "\\n\\n".join(alert_lines),
+                'template': 'markdown'
+            }, timeout=30)
+            alert_response.raise_for_status()
+            alert_result = alert_response.json()
+            if str(alert_result.get('code')) != '200':
+                raise RuntimeError('PushPlus会议提醒返回非成功状态')
+            mark_meeting_reminders_sent(due_meetings)
+            print(f'已单独发送重要会议提醒：{len(due_meetings)}项。', flush=True)
+        except Exception as exc:
+            print(f'单独会议提醒发送失败，未标记已提醒，后续运行可重试：{type(exc).__name__}: {exc}', flush=True)
     return 0
 if __name__ == "__main__":
     sys.exit(main())
