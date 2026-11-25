@@ -613,7 +613,7 @@ def main():
         )
         meeting_section = build_meeting_brief(today=local_now.date())
         watch_updates = check_meeting_watch_sources()
-        meeting_section += "\\n\\n### 官方会议来源监测\\n" + "\\n".join(watch_updates)
+        meeting_section += "\n\n### 官方会议来源监测\n" + "\n".join(watch_updates)
         due_meetings = get_due_meeting_reminders(today=local_now.date())
     except Exception as exc:
         print(f'会议日历模块异常：{type(exc).__name__}: {exc}', flush=True)
@@ -658,17 +658,17 @@ def main():
             days = event.get('days_to_start', 0)
             status = "会议进行中" if days < 0 else f"距开幕{days}天"
             alert_lines.append(
-                f"- **{event.get('name')}**（{event.get('scope', '学术会议')}）\\n"
-                f"  - 时间：{event.get('start_date')} 至 {event.get('end_date', event.get('start_date'))}\\n"
-                f"  - 地点：{event.get('location', '官网未提供')}\\n"
-                f"  - 状态：{status}\\n"
+                f"- **{event.get('name')}**（{event.get('scope', '学术会议')}）\n"
+                f"  - 时间：{event.get('start_date')} 至 {event.get('end_date', event.get('start_date'))}\n"
+                f"  - 地点：{event.get('location', '官网未提供')}\n"
+                f"  - 状态：{status}\n"
                 f"  - 官方信息：{event.get('url')}"
             )
         try:
             alert_response = requests.post(PUSHPLUS_URL, json={
                 'token': os.environ['PUSHPLUS_TOKEN'],
                 'title': f'📅 学术会议重要提醒 | {today}',
-                'content': "\\n\\n".join(alert_lines),
+                'content': "\n\n".join(alert_lines),
                 'template': 'markdown'
             }, timeout=30)
             alert_response.raise_for_status()
