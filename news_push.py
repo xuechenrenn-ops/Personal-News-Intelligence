@@ -103,6 +103,79 @@ def fetch_candidates(feeds, prefix, age_hours):
     return items
 
 
+class _AnchorCollector(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.links = []
+        self.href = None
+        self.text = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == 'a':
+            self.href = dict(attrs).get('href', '')
+            self.text = []
+
+    def handle_data(self, data):
+        if self.href is not None:
+            self.text.append(data)
+
+    def handle_endtag(self, tag):
+        if tag.lower() == 'a' and self.href is not None:
+            label = ' '.join(' '.join(self.text).split())
+            self.links.append((self.href, label))
+            self.href = None
+            self.text = []
+
+
+def fetch_official_page_candidates(sources):
+    candidates = []
+    headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
+    for source in sources:
+        label, url = source.get('label', '官方来源'), source['url']
+        try:
+            response = requests.get(url, headers=headers, timeout=20)
+            response.raise_for_status()
+            parser = _AnchorCollector()
+            parser.feed(response.text)
+        except Exception as exc:
+            status = getattr(getattr(exc, 'response', None), 'status_code', None)
+            print(f'官方页面读取失败：{label}｜HTTP={status or "unknown"}｜{type(exc).__name__}', flush=True)
+            continue
+        accepted, seen = 0, set()
+        host = urlparse(url).netloc
+        keywords = source.get('keywords', [])
+        for href, title in parser.links:
+            if not title or len(title) < 8:
+                continue
+            full_url = urljoin(url, href)
+            parsed = urlparse(full_url)
+            if parsed.scheme not in ('http', 'https') or parsed.netloc != host or full_url in seen:
+                continue
+            if keywords and not any(word.lower() in title.lower() for word in keywords):
+                continue
+            if any(word in title for word in ('首页', '下一页', '上一页', '更多', '网站地图', '联系我们')):
+                continue
+            seen.add(full_url)
+            date_match = re.search(r'(20\\d{2})[-年/.](\\d{1,2})[-月/.](\\d{1,2})日?', title)
+            published = '网页未提供'
+            if date_match:
+                try:
+                    published = datetime(int(date_match.group(1)), int(date_match.group(2)), int(date_match.group(3)), tzinfo=timezone.utc).isoformat()
+                except ValueError:
+                    pass
+            candidates.append({
+                'id': f'O{len(candidates)+1}', 'title': title[:400],
+                'source': label, 'published_at': published, 'url': full_url,
+                'summary': '来自官方机构公告/政策列表页的标题索引；需打开原文核实发布日期、正文及适用范围。',
+                'category': source.get('category', '中国国内')
+            })
+            accepted += 1
+            if accepted >= int(source.get('max_items', 5)):
+                break
+        print(f'官方页面采集：{label}｜候选{accepted}条｜HTTP {response.status_code}', flush=True)
+    return candidates
+
+
 def _strip_html(fragment):
     fragment = re.sub(r"(?is)<(script|style).*?>.*?</\1>", " ", fragment)
     fragment = re.sub(r"(?s)<[^>]+>", " ", fragment)
