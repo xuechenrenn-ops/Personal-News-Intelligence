@@ -41,7 +41,7 @@ MEDICAL_PROMPT = """你是严谨的医学资讯编辑。从候选新闻中筛选
 MEDICAL_EVIDENCE_PROMPT = MEDICAL_PROMPT + """
 
 第二阶段：证据复核。候选项包含 article_evidence，其中 article_excerpt 来自新闻原文页面，pubmed_record（若存在）来自 PubMed。请优先依据 PubMed 原始摘要和原文页面核实研究信息。必须区分随机对照试验、队列/病例对照/横断面研究、病例系列、动物/体外实验、综述或新闻报道。只有来源明确提供时才能报告样本量、干预组、对照组、结局、效应量、置信区间和P值。不要根据“大型试验”等新闻措辞推断样本量或证据等级。若没有匹配到 PubMed 记录，不得声称已核实论文；若只能访问新闻摘要，明确写“仅依据新闻原文，未取得论文摘要/全文”。动物实验不得推导为已证实的人体治疗效果。临床意义必须与研究设计和结果相称。可以修正初筛草稿中的错误；无法核实的信息写“原文未提供”或“无法核实”。保持原始 id，不得创造 PMID、DOI、链接或数据。
-""""""
+"""
 
 GENERAL_PROMPT = """你是客观、严谨的中文新闻编辑。从候选新闻中筛选3-4条重要内容，兼顾中国国内与国际视角。中国国内新闻是重要组成部分，覆盖政策及其实际影响、社会民生、经济、科技和医疗健康；不必大量选择纯会议、领导活动或礼仪性报道，除非具有明确重大政策或现实影响。国际新闻关注重大事件、地缘政治、全球经济、科技与公共卫生。尽量兼顾不同媒体和来源，不因媒体立场预设结论。优先过去24小时新闻，重大事件最多放宽至48小时；去重、排除营销和未经核实传闻，宁缺毋滥。目标上适当兼顾国内与国际，不设僵硬配额，不为满足比例而凑数。每条说明发生了什么、必要背景、对普通人或社会的实际影响。明确区分已确认事实、媒体分析和预测，不夸大影响；材料不足时说明无法确认。只能选择输入中存在的候选项，逐条返回原始id；不得创造标题、来源、日期或链接。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"中国国内或国际或科技经济或民生健康","headline":"中文标题","summary":"准确简述","background":"必要背景","public_impact":"现实影响","verification_note":"事实边界"}]}"""
 
@@ -142,6 +142,7 @@ def _extract_article_excerpt(html):
 def _pubmed_records(pmids):
     if not pmids:
         return []
+    time.sleep(0.36)
     params = {"db": "pubmed", "id": ",".join(pmids[:3]), "retmode": "xml"}
     response = requests.get(
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
@@ -185,6 +186,7 @@ def _find_pubmed_record(title, doi, pmid):
         term = '"' + title.replace('"', "") + '"[Title]'
     if not term:
         return None
+    time.sleep(0.36)
     response = requests.get(
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
         params={"db": "pubmed", "term": term, "retmode": "json", "retmax": 3},
@@ -194,7 +196,6 @@ def _find_pubmed_record(title, doi, pmid):
     ids = response.json().get("esearchresult", {}).get("idlist", [])
     if not ids:
         return None
-    time.sleep(0.36)
     records = _pubmed_records(ids)
     if doi:
         doi_norm = doi.lower().replace("https://doi.org/", "").replace("http://doi.org/", "")
