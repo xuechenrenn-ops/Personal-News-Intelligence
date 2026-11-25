@@ -35,6 +35,17 @@
       "url": "https://www.esska.org/page/ESSKACongress",
       "source": "ESSKA 官方大会页面",
       "verified_on": "2026-11-25"
+    },
+    {
+      "id": "AAOS-AOSSM-AANA-2027",
+      "name": "27th Annual AAOS/AOSSM/AANA Sports Medicine Course 2027",
+      "scope": "国际骨科与运动医学",
+      "start_date": "2027-01-24",
+      "end_date": "2027-01-27",
+      "location": "Park City, Utah, USA",
+      "url": "https://www.sportsmed.org/education/programs",
+      "source": "AOSSM 官方 Featured Programs & Events",
+      "verified_on": "2026-11-25"
     }
   ],
   "watch_sources": [
