@@ -1,9 +1,10 @@
 import json
 import unittest
+import tempfile
 from datetime import date
 from pathlib import Path
 
-from meeting_tracker import build_meeting_brief
+from meeting_tracker import (build_meeting_brief, get_due_meeting_reminders, mark_meeting_reminders_sent)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +35,31 @@ class PipelineConfigTests(unittest.TestCase):
         self.assertIn("AAOS Annual Meeting 2027", output)
         self.assertIn("重要提醒", output)
         self.assertNotIn("AOSSM Annual Meeting 2027", output)
+
+    def test_separate_meeting_alert_is_sent_once(self):
+        calendar = {
+            "urgent_days": 7,
+            "events": [{
+                "id": "TEST-MEETING", "name": "Test meeting",
+                "start_date": "2027-03-03", "end_date": "2027-03-04",
+                "url": "https://example.org/meeting"
+            }]
+        }
+        with tempfile.TemporaryDirectory() as folder:
+            calendar_path = Path(folder) / "calendar.json"
+            state_path = Path(folder) / "state.json"
+            calendar_path.write_text(json.dumps(calendar), encoding="utf-8")
+            due = get_due_meeting_reminders(
+                calendar_path=str(calendar_path), state_path=str(state_path),
+                today=date(2027, 2, 28)
+            )
+            self.assertEqual(len(due), 1)
+            mark_meeting_reminders_sent(due, state_path=str(state_path))
+            due_again = get_due_meeting_reminders(
+                calendar_path=str(calendar_path), state_path=str(state_path),
+                today=date(2027, 2, 28)
+            )
+            self.assertEqual(due_again, [])
 
 
 if __name__ == "__main__":
