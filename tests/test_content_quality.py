@@ -4,7 +4,8 @@ from news_push import (
     _medical_candidate_lane,
     annotate_policy_source,
     balance_medical_candidates,
-    filter_nsfc_candidates,\n    filter_general_news_candidates,
+    filter_nsfc_candidates,
+    filter_general_news_candidates,
 )
 
 
