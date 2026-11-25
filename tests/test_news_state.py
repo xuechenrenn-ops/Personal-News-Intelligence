@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 
 import news_push
@@ -23,6 +24,20 @@ class NewsDeduplicationTests(unittest.TestCase):
             now=now,
         )
         self.assertEqual(kept, [])
+
+
+    def test_preview_dedup_uses_similar_titles_across_different_urls(self):
+        records = [{
+            "url": "https://example.org/old",
+            "title_key": news_push._normalized_title("美国公布全球贸易伙伴新关税计划"),
+        }]
+        candidates = [
+            {"url": "https://other.org/new", "title": "美国公布全球贸易伙伴新关税计划"},
+            {"url": "https://example.org/fresh", "title": "国家医保局发布基层医疗政策"},
+        ]
+        with patch("news_push._read_preview_news_state", return_value=records):
+            result = news_push.remove_recently_previewed_news(candidates)
+        self.assertEqual([item["url"] for item in result], ["https://example.org/fresh"])
 
     def test_url_pmid_and_doi_all_prevent_repeat_selection(self):
         candidates = [
