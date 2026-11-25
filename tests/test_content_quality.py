@@ -4,7 +4,7 @@ from news_push import (
     _medical_candidate_lane,
     annotate_policy_source,
     balance_medical_candidates,
-    filter_nsfc_candidates,
+    filter_nsfc_candidates,\n    filter_general_news_candidates,
 )
 
 
@@ -47,6 +47,31 @@ class MedicalCandidateBalanceTests(unittest.TestCase):
         self.assertEqual({lane: lanes.count(lane) for lane in set(lanes)}, {
             "骨科临床": 2, "骨科AI": 2, "其他医疗AI": 2, "其他医学研究": 2
         })
+
+
+
+class GeneralNewsQualityTests(unittest.TestCase):
+    def test_filters_low_relevance_school_procurement_and_keeps_relevant_news(self):
+        candidates = [
+            {"id": "school", "title": "江西集中整治教辅材料、校服订购和校园餐问题",
+             "url": "https://example.org/school", "summary": "地方专项整治工作"},
+            {"id": "trade", "title": "美国公布对全球贸易伙伴的新关税计划",
+             "url": "https://example.org/trade", "summary": "可能影响国际贸易和供应链"},
+            {"id": "health", "title": "国家医保局发布基层医疗卫生服务政策",
+             "url": "https://example.org/health", "summary": "涉及医保支付与医疗服务"},
+        ]
+        result = filter_general_news_candidates(candidates)
+        self.assertEqual({item["id"] for item in result}, {"trade", "health"})
+
+    def test_collapses_duplicate_headlines_across_sources(self):
+        candidates = [
+            {"id": "a", "title": "美国公布全球贸易伙伴新关税计划",
+             "url": "https://example.org/a", "summary": "美国贸易政策"},
+            {"id": "b", "title": "美国公布全球贸易伙伴新关税计划",
+             "url": "https://other.org/b", "summary": "同一事件不同来源"},
+        ]
+        result = filter_general_news_candidates(candidates)
+        self.assertEqual(len(result), 1)
 
 
 class NSFCQualityGateTests(unittest.TestCase):
