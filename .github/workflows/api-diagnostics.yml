@@ -1,0 +1,133 @@
+name: API Credential Diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Safely test API credentials
+        env:
+          BAICHUAN_API_KEY: ${{ secrets.BAICHUAN_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+
+          def safe_text(value, secrets):
+              text = str(value or "")
+              for secret in secrets:
+                  if secret:
+                      text = text.replace(secret, "[REDACTED]")
+              return " ".join(text.split())[:300]
+
+          credentials = {
+              "BAICHUAN_API_KEY": os.environ.get("BAICHUAN_API_KEY", ""),
+              "DEEPSEEK_API_KEY": os.environ.get("DEEPSEEK_API_KEY", ""),
+              "ZHIPU_API_KEY": os.environ.get("ZHIPU_API_KEY", ""),
+              "PUSHPLUS_TOKEN": os.environ.get("PUSHPLUS_TOKEN", ""),
+          }
+          secret_values = list(credentials.values())
+
+          print("=== Secret injection check (values are never displayed) ===")
+          for name, value in credentials.items():
+              state = "present" if value else "MISSING_OR_EMPTY"
+              whitespace = "yes" if value and value != value.strip() else "no"
+              print(f"{name}: {state}; leading_or_trailing_whitespace={whitespace}")
+
+          tests = [
+              {
+                  "name": "Baichuan",
+                  "env": "BAICHUAN_API_KEY",
+                  "url": "https://api.baichuan-ai.com/v1/chat/completions",
+                  "model": "Baichuan-M3-Plus",
+              },
+              {
+                  "name": "DeepSeek",
+                  "env": "DEEPSEEK_API_KEY",
+                  "url": "https://api.deepseek.com/chat/completions",
+                  "model": "deepseek-flash",
+              },
+          ]
+
+          print("\n=== Independent minimal chat API tests ===")
+          for test in tests:
+              key = credentials[test["env"]]
+              if not key:
+                  print(f'{test["name"]}: SKIPPED (credential missing or empty)')
+                  continue
+
+              payload = {
+                  "model": test["model"],
+                  "messages": [{"role": "user", "content": "Reply with exactly: API_TEST_OK"}],
+                  "temperature": 0,
+                  "max_tokens": 20,
+              }
+              request = urllib.request.Request(
+                  test["url"],
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers={
+                      "Authorization": "Bearer " + key,
+                      "Content-Type": "application/json",
+                  },
+                  method="POST",
+              )
+
+              started = time.monotonic()
+              try:
+                  with urllib.request.urlopen(request, timeout=45) as response:
+                      status = response.status
+                      body = response.read().decode("utf-8", errors="replace")
+              except urllib.error.HTTPError as error:
+                  status = error.code
+                  body = error.read().decode("utf-8", errors="replace")
+              except Exception as error:
+                  elapsed = time.monotonic() - started
+                  print(f'{test["name"]}: REQUEST_ERROR; type={type(error).__name__}; elapsed={elapsed:.2f}s')
+                  continue
+
+              elapsed = time.monotonic() - started
+              try:
+                  parsed = json.loads(body)
+              except Exception:
+                  parsed = {}
+
+              if 200 <= status < 300:
+                  choices = parsed.get("choices") or []
+                  has_reply = bool(
+                      choices
+                      and isinstance(choices[0], dict)
+                      and isinstance(choices[0].get("message"), dict)
+                      and choices[0]["message"].get("content") is not None
+                  )
+                  print(
+                      f'{test["name"]}: HTTP {status}; '
+                      f'model={test["model"]}; reply_received={has_reply}; elapsed={elapsed:.2f}s'
+                  )
+              else:
+                  error_obj = parsed.get("error", parsed)
+                  if not isinstance(error_obj, dict):
+                      error_obj = {"message": str(error_obj)}
+                  code = safe_text(error_obj.get("code", "not_provided"), secret_values)
+                  message = safe_text(error_obj.get("message", body or "No response body"), secret_values)
+                  print(
+                      f'{test["name"]}: HTTP {status}; '
+                      f'error_code={code}; message={message}; elapsed={elapsed:.2f}s'
+                  )
+
+          print("\n=== Non-invasive status ===")
+          print("PushPlus: credential presence checked only; no message was sent.")
+          print("Zhipu: credential presence checked only; no model was called.")
+          print("No repository files were changed by this diagnostic run.")
+          PY
