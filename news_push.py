@@ -1,10 +1,15 @@
 import json
 import os
+import re
 import sys
+import time
+import difflib
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
 import feedparser
 import requests
+from html import unescape
 
 BAICHUAN_URL = "https://api.baichuan-ai.com/v1/chat/completions"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
@@ -32,6 +37,11 @@ GENERAL_FEEDS = [
 TIMEOUT = 90
 
 MEDICAL_PROMPT = """你是严谨的医学资讯编辑。从候选新闻中筛选最多3条高价值内容，主题必须直接属于骨关节外科、运动医学或医疗AI。骨科与运动医学优先，医疗AI其次。严格排除风湿免疫、皮肤科、肿瘤、普通内科等与上述主题无直接关系的新闻；不得为了凑数选择其他医学领域内容，符合条件的不足3条就少选。优先原始研究、正式指南、专业学会和权威期刊；排除营销、重复转载和无可靠依据的内容。研究类尽可能说明研究设计、样本量、对象、主要结局、关键结果、临床意义和局限。材料未提供就写“原文未提供”，绝不猜测。区分相关与因果、统计学与临床意义；不得把单项研究说成指南。AI新闻说明真实临床验证状态及应用限制。只能选择输入中存在的候选项，逐条返回原始id；不得创造来源、日期、链接、DOI、PMID或研究数据。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"骨关节外科与运动医学或医疗AI","headline":"中文标题","summary":"准确概述","evidence":"证据详情","clinical_significance":"临床意义","limitations":"局限"}]}"""
+
+MEDICAL_EVIDENCE_PROMPT = MEDICAL_PROMPT + """
+
+第二阶段：证据复核。候选项包含 article_evidence，其中 article_excerpt 来自新闻原文页面，pubmed_record（若存在）来自 PubMed。请优先依据 PubMed 原始摘要和原文页面核实研究信息。必须区分随机对照试验、队列/病例对照/横断面研究、病例系列、动物/体外实验、综述或新闻报道。只有来源明确提供时才能报告样本量、干预组、对照组、结局、效应量、置信区间和P值。不要根据“大型试验”等新闻措辞推断样本量或证据等级。若没有匹配到 PubMed 记录，不得声称已核实论文；若只能访问新闻摘要，明确写“仅依据新闻原文，未取得论文摘要/全文”。动物实验不得推导为已证实的人体治疗效果。临床意义必须与研究设计和结果相称。可以修正初筛草稿中的错误；无法核实的信息写“原文未提供”或“无法核实”。保持原始 id，不得创造 PMID、DOI、链接或数据。
+""""""
 
 GENERAL_PROMPT = """你是客观、严谨的中文新闻编辑。从候选新闻中筛选3-4条重要内容，兼顾中国国内与国际视角。中国国内新闻是重要组成部分，覆盖政策及其实际影响、社会民生、经济、科技和医疗健康；不必大量选择纯会议、领导活动或礼仪性报道，除非具有明确重大政策或现实影响。国际新闻关注重大事件、地缘政治、全球经济、科技与公共卫生。尽量兼顾不同媒体和来源，不因媒体立场预设结论。优先过去24小时新闻，重大事件最多放宽至48小时；去重、排除营销和未经核实传闻，宁缺毋滥。目标上适当兼顾国内与国际，不设僵硬配额，不为满足比例而凑数。每条说明发生了什么、必要背景、对普通人或社会的实际影响。明确区分已确认事实、媒体分析和预测，不夸大影响；材料不足时说明无法确认。只能选择输入中存在的候选项，逐条返回原始id；不得创造标题、来源、日期或链接。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"中国国内或国际或科技经济或民生健康","headline":"中文标题","summary":"准确简述","background":"必要背景","public_impact":"现实影响","verification_note":"事实边界"}]}"""
 
@@ -98,6 +108,189 @@ def fetch_candidates(feeds, prefix, age_hours):
             accepted += 1
         print(f"RSS采集结果：{feed_label}｜有效候选{accepted}条", flush=True)
     return items
+
+
+def _strip_html(fragment):
+    fragment = re.sub(r"(?is)<(script|style).*?>.*?</\1>", " ", fragment)
+    fragment = re.sub(r"(?s)<[^>]+>", " ", fragment)
+    return " ".join(unescape(fragment).split())
+
+
+def _meta_value(html, wanted_names):
+    for tag in re.findall(r"(?is)<meta\b[^>]*>", html):
+        attrs = {}
+        for match in re.finditer(r"""([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))""", tag):
+            attrs[match.group(1).lower()] = next((x for x in match.groups()[1:] if x is not None), "")
+        key = (attrs.get("name") or attrs.get("property") or attrs.get("itemprop") or "").lower()
+        if key in wanted_names and attrs.get("content"):
+            return unescape(attrs["content"]).strip()
+    return ""
+
+
+def _extract_article_excerpt(html):
+    html = re.sub(r"(?is)<(script|style|nav|footer|header|aside).*?>.*?</\1>", " ", html)
+    paragraphs = re.findall(r"(?is)<p\b[^>]*>(.*?)</p>", html)
+    cleaned = [_strip_html(p) for p in paragraphs]
+    cleaned = [p for p in cleaned if len(p) >= 60]
+    excerpt = "\n".join(cleaned[:18])
+    if len(excerpt) < 300:
+        description = _meta_value(html, {"description", "og:description", "twitter:description"})
+        excerpt = (description + "\n" + excerpt).strip()
+    return excerpt[:6500]
+
+
+def _pubmed_records(pmids):
+    if not pmids:
+        return []
+    params = {"db": "pubmed", "id": ",".join(pmids[:3]), "retmode": "xml"}
+    response = requests.get(
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+        params=params, headers={"User-Agent": "PersonalNewsIntelligence/1.0"},
+        timeout=20
+    )
+    response.raise_for_status()
+    root = ET.fromstring(response.content)
+    records = []
+    for node in root.findall(".//PubmedArticle"):
+        pmid = (node.findtext(".//PMID") or "").strip()
+        title_node = node.find(".//ArticleTitle")
+        title = "".join(title_node.itertext()).strip() if title_node is not None else ""
+        abstract_parts = []
+        for part in node.findall(".//Abstract/AbstractText"):
+            label = part.attrib.get("Label", "")
+            value = "".join(part.itertext()).strip()
+            if value:
+                abstract_parts.append((label + ": " if label else "") + value)
+        doi = ""
+        for article_id in node.findall(".//PubmedData/ArticleIdList/ArticleId"):
+            if article_id.attrib.get("IdType") == "doi":
+                doi = (article_id.text or "").strip()
+                break
+        journal = (node.findtext(".//Journal/Title") or "").strip()
+        pubdate = " ".join((x.text or "").strip() for x in node.findall(".//JournalIssue/PubDate/*") if x.text)
+        records.append({
+            "pmid": pmid, "title": title, "abstract": "\n".join(abstract_parts)[:6500],
+            "doi": doi, "journal": journal, "publication_date": pubdate
+        })
+    return records
+
+
+def _find_pubmed_record(title, doi, pmid):
+    if pmid:
+        return (_pubmed_records([pmid]) or [None])[0]
+    term = ""
+    if doi:
+        term = '"' + doi + '"[AID]'
+    elif title:
+        term = '"' + title.replace('"', "") + '"[Title]'
+    if not term:
+        return None
+    response = requests.get(
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+        params={"db": "pubmed", "term": term, "retmode": "json", "retmax": 3},
+        headers={"User-Agent": "PersonalNewsIntelligence/1.0"}, timeout=20
+    )
+    response.raise_for_status()
+    ids = response.json().get("esearchresult", {}).get("idlist", [])
+    if not ids:
+        return None
+    time.sleep(0.36)
+    records = _pubmed_records(ids)
+    if doi:
+        doi_norm = doi.lower().replace("https://doi.org/", "").replace("http://doi.org/", "")
+        for record in records:
+            if record.get("doi", "").lower() == doi_norm:
+                return record
+        return None
+    target = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
+    ranked = sorted(
+        records,
+        key=lambda record: difflib.SequenceMatcher(
+            None, target,
+            re.sub(r"[^a-z0-9]+", " ", record.get("title", "").lower()).strip()
+        ).ratio(),
+        reverse=True
+    )
+    if ranked:
+        best = ranked[0]
+        score = difflib.SequenceMatcher(
+            None, target,
+            re.sub(r"[^a-z0-9]+", " ", best.get("title", "").lower()).strip()
+        ).ratio()
+        if score >= 0.82:
+            return best
+    return None
+
+
+def fetch_medical_evidence(candidate):
+    result = {
+        "article_page_status": "not_fetched",
+        "article_excerpt": "",
+        "doi": "",
+        "pubmed_record": None,
+        "verification_status": "not_verified"
+    }
+    html = ""
+    try:
+        response = requests.get(
+            candidate["url"],
+            headers={"User-Agent": "Mozilla/5.0 (compatible; PersonalNewsIntelligence/1.0)"},
+            timeout=20
+        )
+        response.raise_for_status()
+        html = response.text
+        result["article_page_status"] = "fetched"
+        result["article_excerpt"] = _extract_article_excerpt(html)
+        result["doi"] = _meta_value(html, {"citation_doi", "dc.identifier"})
+        if not result["doi"]:
+            doi_match = re.search(r"https?://doi\.org/(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", html, re.I)
+            if doi_match:
+                result["doi"] = doi_match.group(1).rstrip(".,;)")
+    except Exception as exc:
+        result["article_page_status"] = "fetch_failed:" + type(exc).__name__
+        print(f"医学原文抓取失败：{candidate.get('title', '')[:90]}｜{type(exc).__name__}", flush=True)
+
+    pmid_match = re.search(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d+)", html, re.I)
+    pmid = pmid_match.group(1) if pmid_match else ""
+    if result["doi"] or pmid:
+        try:
+            result["pubmed_record"] = _find_pubmed_record(candidate.get("title", ""), result["doi"], pmid)
+        except Exception as exc:
+            print(f"PubMed查询失败：{candidate.get('title', '')[:90]}｜{type(exc).__name__}", flush=True)
+    else:
+        try:
+            time.sleep(0.36)
+            result["pubmed_record"] = _find_pubmed_record(candidate.get("title", ""), "", "")
+        except Exception as exc:
+            print(f"PubMed标题匹配失败：{candidate.get('title', '')[:90]}｜{type(exc).__name__}", flush=True)
+
+    if result["pubmed_record"]:
+        result["verification_status"] = "pubmed_matched"
+    elif result["article_excerpt"]:
+        result["verification_status"] = "article_only"
+    else:
+        result["verification_status"] = "no_source_text"
+    return result
+
+
+def enrich_medical_items(screened_items):
+    enriched_candidates = []
+    for item in screened_items:
+        source = dict(item["_source"])
+        source["initial_draft"] = {
+            key: value for key, value in item.items() if key != "_source"
+        }
+        source["article_evidence"] = fetch_medical_evidence(source)
+        evidence = source["article_evidence"]
+        pubmed_state = "PubMed已匹配" if evidence["pubmed_record"] else "未匹配PubMed"
+        print(
+            f"医学证据补充：{source.get('title', '')[:90]}｜"
+            f"原文={evidence['article_page_status']}｜{pubmed_state}｜"
+            f"状态={evidence['verification_status']}", flush=True
+        )
+        enriched_candidates.append(source)
+    return enriched_candidates
+
 
 def call_model(url, key, model, prompt, candidates, temperature):
     if not candidates:
@@ -174,9 +367,16 @@ def main():
     general = fetch_candidates(GENERAL_FEEDS, "G", 48)
     print(f"候选数量：医学{len(medical)}条，综合{len(general)}条", flush=True)
     try:
-        med_items = call_model(BAICHUAN_URL, os.environ["BAICHUAN_API_KEY"],
+        screened_med_items = call_model(BAICHUAN_URL, os.environ["BAICHUAN_API_KEY"],
             "Baichuan-M3-Plus", MEDICAL_PROMPT, medical, 0.2)
-        print(f"百川筛选完成：{len(med_items)}条", flush=True)
+        print(f"百川初筛完成：{len(screened_med_items)}条", flush=True)
+        if screened_med_items:
+            evidence_candidates = enrich_medical_items(screened_med_items)
+            med_items = call_model(BAICHUAN_URL, os.environ["BAICHUAN_API_KEY"],
+                "Baichuan-M3-Plus", MEDICAL_EVIDENCE_PROMPT, evidence_candidates, 0.1)
+            print(f"百川证据复核完成：{len(med_items)}条", flush=True)
+        else:
+            med_items = []
     except Exception as exc:
         print(f"百川调用或解析失败：{type(exc).__name__}: {exc}", flush=True)
         return 1
