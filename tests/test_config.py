@@ -33,7 +33,7 @@ class PipelineConfigTests(unittest.TestCase):
         output = build_meeting_brief(today=date(2027, 2, 25))
         self.assertIn("AAOS Annual Meeting 2027", output)
         self.assertIn("重要提醒", output)
-        self.assertIn("AOSSM Annual Meeting 2027", output) is False
+        self.assertNotIn("AOSSM Annual Meeting 2027", output)
 
 
 if __name__ == "__main__":
