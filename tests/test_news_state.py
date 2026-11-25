@@ -42,3 +42,5 @@ class NewsDeduplicationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+# Executed by the branch validation workflow.
