@@ -138,6 +138,9 @@ def fetch_official_page_candidates(sources):
     headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
     for source in sources:
         label, url = source.get('label', '官方来源'), source['url']
+        if source.get('enabled', True) is False:
+            print(f"跳过不可自动访问的官方来源：{label}｜{source.get('access_note', 'disabled')}", flush=True)
+            continue
         try:
             response = requests.get(url, headers=headers, timeout=20)
             response.raise_for_status()
