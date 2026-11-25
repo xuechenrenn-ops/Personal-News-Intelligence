@@ -32,16 +32,16 @@ GENERAL_FEEDS = [(x['label'], x['url']) for x in SOURCE_REGISTRY['rss']['general
 OFFICIAL_PAGE_SOURCES = SOURCE_REGISTRY.get('official_pages', [])
 TIMEOUT = 90
 
-MEDICAL_PROMPT = """你是严谨的医学研究编辑。最多筛选3篇最值得关注的研究，骨科临床研究与骨科全领域AI研究相结合，不足时宁缺毋滥。临床范围覆盖运动医学、关节镜、韧带、半月板、肩肘、足踝、创伤骨科、骨折、脊柱、关节置换、骨肿瘤、骨质疏松、康复和围手术期管理，不得只关注运动医学。骨科AI不限于医学影像，覆盖临床诊断与决策支持、风险/预后预测、精准医疗、手术机器人/导航、康复、步态/可穿戴设备、临床大模型/Agent/RAG、多模态、因果推断、联邦学习、小样本、可解释AI、数字孪生和真实世界数据。最近7天优先、30天补充，重大突破可放宽至90天，明确区分首次在线、正式出版和数据库收录日期。综合临床问题、研究设计、样本量、方法学、外部/前瞻验证、临床转化、新颖性和局限；区分人体/动物/体外、回顾性/前瞻性、预印本/会议摘要/同行评议论文。排除营销、重复转载及与骨科/临床AI无直接关联的研究。只能选择输入候选，不得创造来源、日期、链接、DOI、PMID或数据。只输出合法JSON：{"items":[{"id":"原始id","category":"骨科临床研究或骨科AI研究或其他医疗AI研究","headline":"中文标题","summary":"准确概述","evidence":"研究设计、对象、样本量和结果；未提供则说明","clinical_significance":"临床意义","limitations":"局限与证据边界","sports_medicine_insight":"对运动医学的潜在启发，未验证的思路迁移须明确标注"}]}"""
+MEDICAL_PROMPT = """你是严谨的医学研究编辑。最多筛选3篇最值得关注的研究，骨科临床研究与骨科全领域AI研究相结合，不足时宁缺毋滥。候选池可能存在方向分布不均，必须先识别每篇研究所属临床亚专科与AI技术方向；当存在多个质量相近且主题不同的高质量候选时，尽量避免3篇集中于同一亚专科，并优先体现骨科临床、骨科AI及其他医疗AI的代表性。若存在方法学可靠、临床问题明确的非影像AI研究，应与影像AI同等参与竞争；不得为了凑齐AI类别而降低质量，也不得机械规定每天必须有某一专科。临床范围覆盖运动医学、关节镜、韧带、半月板、肩肘、足踝、创伤骨科、骨折、脊柱、关节置换、骨肿瘤、骨质疏松、康复和围手术期管理，不得只关注运动医学。骨科AI不限于医学影像，覆盖临床诊断与决策支持、风险/预后预测、精准医疗、手术机器人/导航、康复、步态/可穿戴设备、临床大模型/Agent/RAG、多模态、因果推断、联邦学习、小样本、可解释AI、数字孪生和真实世界数据。最近7天优先、30天补充，重大突破可放宽至90天，明确区分首次在线、正式出版和数据库收录日期。综合临床问题、研究设计、样本量、方法学、外部/前瞻验证、临床转化、新颖性和局限；区分人体/动物/体外、回顾性/前瞻性、预印本/会议摘要/同行评议论文。排除营销、重复转载及与骨科/临床AI无直接关联的研究。只能选择输入候选，不得创造来源、日期、链接、DOI、PMID或数据。只输出合法JSON：{"items":[{"id":"原始id","category":"骨科临床研究或骨科AI研究或其他医疗AI研究","headline":"中文标题","summary":"准确概述","evidence":"研究设计、对象、样本量和结果；未提供则说明","clinical_significance":"临床意义","limitations":"局限与证据边界","sports_medicine_insight":"对运动医学的潜在启发，未验证的思路迁移须明确标注"}]}"""
 
 MEDICAL_EVIDENCE_PROMPT = MEDICAL_PROMPT + """
 
 第二阶段：证据复核。候选项包含 article_evidence，其中 article_excerpt 来自新闻原文页面，pubmed_record（若存在）来自 PubMed。initial_draft 只是未核实的初筛草稿，不能作为证据。请优先依据 PubMed 原始摘要和原文页面核实研究信息。必须区分随机对照试验、队列/病例对照/横断面研究、病例系列、动物/体外实验、综述或新闻报道。只有来源明确提供时才能报告样本量、干预组、对照组、结局、效应量、置信区间和P值。不要根据“大型试验”等新闻措辞推断样本量或证据等级。若没有匹配到 PubMed 记录，不得声称已核实论文；若只能访问新闻摘要，明确写“仅依据新闻原文，未取得论文摘要/全文”。动物实验不得推导为已证实的人体治疗效果。临床意义必须与研究设计和结果相称。可以修正初筛草稿中的错误；无法核实的信息写“原文未提供”或“无法核实”。保持原始 id，不得创造 PMID、DOI、链接或数据。
 """
 
-NSFC_PROMPT = """你是严谨的国家自然科学基金科研信息编辑。只筛选国家自然科学基金委及其医学科学部、交叉科学部等官方来源发布的指南、项目通知、资助政策或可核实项目动态，优先关注医学科学部H06运动系统、骨科、运动医学、医学AI与交叉研究。严格区分官方指南政策、已获资助项目和归纳趋势判断；不能把推测写成官方导向，也不能把资助导向等同学术前沿或获批概率。不得推断未公布的申报条件、金额、截止日期或评审倾向。只选输入候选，最多2条，无可靠动态返回空数组。只输出合法JSON：{"items":[{"id":"原始id","category":"官方指南政策或已资助项目或趋势观察","headline":"中文标题","summary":"准确概述","background":"发布机构、适用范围与背景","public_impact":"对骨科/运动医学AI研究布局的影响","funding_implication":"未来运动医学AI选题启发，区分事实与推测","verification_note":"官方来源、日期及待核实事项"}]}"""
+NSFC_PROMPT = """你是严谨的国家自然科学基金科研信息编辑。只筛选国家自然科学基金委官方域名下与基金指南、项目申请、指南建议征集、正式资助项目直接相关的信息，优先关注医学科学部H06运动系统、骨科、运动医学、医学AI与交叉研究。候选项已由程序标注nsfc_type，只能按该类型准确归类：正式指南/项目通知、指南建议征集、已资助项目。严格排除人员招聘、岗位选聘、流动项目主任招聘、会议活动及普通机构新闻。指南建议征集不得描述为正式申报指南；项目指南不得描述为已经获批；单条通知不得外推为资助趋势。严格区分官方事实与选题启发，不得推断未公布的申报条件、金额、截止日期或评审倾向。只选输入候选，最多2条，无可靠动态返回空数组。只输出合法JSON：{"items":[{"id":"原始id","category":"正式指南/项目通知或指南建议征集或已资助项目","headline":"中文标题","summary":"准确概述","background":"发布机构、适用范围与背景","public_impact":"对骨科/运动医学AI研究布局的影响","funding_implication":"未来运动医学AI选题启发，区分事实与推测","verification_note":"官方来源、日期及待核实事项"}]}"""
 
-GENERAL_PROMPT = """你是客观、严谨的中文新闻编辑。从候选新闻中筛选最多3条重要内容，兼顾中国国内与国际视角，不足3条时允许少选。中国国内新闻是重要组成部分，优先关注国家卫健委、国家药监局、国家医保局等官方政策与公告，并覆盖政策实际影响、社会民生、经济、科技和医疗健康；涉及FDA与NMPA时，明确区分各自监管状态，不得把FDA授权写成中国获批；不必大量选择纯会议、领导活动或礼仪性报道，除非具有明确重大政策或现实影响。国际新闻关注重大事件、地缘政治、全球经济、科技与公共卫生。尽量兼顾不同媒体和来源，不因媒体立场预设结论。优先过去24小时新闻，重大事件最多放宽至48小时；去重、排除营销和未经核实传闻，宁缺毋滥。目标上适当兼顾国内与国际，不设僵硬配额，不为满足比例而凑数。每条说明发生了什么、必要背景、对普通人或社会的实际影响。明确区分已确认事实、媒体分析和预测，不夸大影响；材料不足时说明无法确认。只能选择输入中存在的候选项，逐条返回原始id；不得创造标题、来源、日期或链接。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"中国国内或国际或科技经济或民生健康","headline":"中文标题","summary":"准确简述","background":"必要背景","public_impact":"现实影响","verification_note":"事实边界"}]}"""
+GENERAL_PROMPT = """你是客观、严谨的中文新闻编辑。从候选新闻中筛选最多3条重要内容，兼顾中国国内与国际视角，不足3条时允许少选。中国国内新闻是重要组成部分，优先关注国家卫健委、国家药监局、国家医保局等官方政策与公告，并覆盖政策实际影响、社会民生、经济、科技和医疗健康；涉及FDA与NMPA时，明确区分各自监管状态，不得把FDA授权写成中国获批；不必大量选择纯会议、领导活动或礼仪性报道，除非具有明确重大政策或现实影响。国际新闻关注重大事件、地缘政治、全球经济、科技与公共卫生。尽量兼顾不同媒体和来源，不因媒体立场预设结论。优先过去24小时新闻，重大事件最多放宽至48小时；去重、排除营销和未经核实传闻，宁缺毋滥。涉及医保、卫健、药监政策或药械审批时，优先选择官方来源；若候选仅为第三方媒体解读，不得将其表述为已核实的最新官方政策，必须明确标注“第三方报道，尚未核验官方原文”。目标上适当兼顾国内与国际，不设僵硬配额，不为满足比例而凑数。每条说明发生了什么、必要背景、对普通人或社会的实际影响。明确区分已确认事实、媒体分析和预测，不夸大影响；材料不足时说明无法确认。只能选择输入中存在的候选项，逐条返回原始id；不得创造标题、来源、日期或链接。只输出合法JSON，格式：{"items":[{"id":"原始id","category":"中国国内或国际或科技经济或民生健康","headline":"中文标题","summary":"准确简述","background":"必要背景","public_impact":"现实影响","verification_note":"事实边界"}]}"""
 
 MORNING_LINES = [
 "把今天走稳，明天自然会有新的方向。","不必急着抵达，持续向前本身就有意义。",
@@ -108,7 +108,7 @@ def fetch_candidates(feeds, prefix, age_hours):
             items.append({"id": f"{prefix}{len(items)+1}", "title": title[:400],
                 "source": source_name or source_fallback,
                 "published_at": published.isoformat() if published else "原始RSS未提供",
-                "url": link, "summary": summary})
+                "url": link, "summary": summary, "source_category": feed_label})
             accepted += 1
         print(f"RSS采集结果：{feed_label}｜有效候选{accepted}条", flush=True)
     return items
@@ -242,6 +242,118 @@ def _extract_article_excerpt(html):
         description = _meta_value(html, {"description", "og:description", "twitter:description"})
         excerpt = (description + "\n" + excerpt).strip()
     return excerpt[:6500]
+
+
+AI_RESEARCH_TERMS = (
+    "artificial intelligence", "machine learning", "deep learning", "large language model",
+    "large language models", "llm", "robotics", "wearable", "algorithm", "multimodal",
+    "clinical decision support", "人工智能", "机器学习", "深度学习", "大模型", "机器人",
+    "可穿戴", "算法", "智能体", "多模态", "预测模型"
+)
+ORTHOPEDIC_TERMS = (
+    "orthopedic", "orthopaedic", "musculoskeletal", "sports medicine", "arthroscopy",
+    "meniscus", "ligament", "rotator cuff", "anterior cruciate", "spine", "fracture",
+    "arthroplasty", "osteoporosis", "bone tumor", "骨科", "运动医学", "关节镜",
+    "半月板", "韧带", "肩袖", "脊柱", "骨折", "关节置换", "骨质疏松", "肌肉骨骼",
+    "足踝", "运动损伤", "肌腱"
+)
+
+
+def _medical_candidate_lane(item):
+    source_category = str(item.get("source_category") or "")
+    text = " ".join(str(item.get(key) or "") for key in ("title", "summary", "source_category")).lower()
+    is_ai = any(term in text for term in AI_RESEARCH_TERMS)
+    is_ortho = any(term in text for term in ORTHOPEDIC_TERMS) or "骨科" in source_category or "运动医学" in source_category
+    if is_ortho and is_ai:
+        return "骨科AI"
+    if is_ortho:
+        return "骨科临床"
+    if is_ai:
+        return "其他医疗AI"
+    return "其他医学研究"
+
+
+def balance_medical_candidates(candidates, max_per_lane=24, max_total=88):
+    """Stable round-robin sampling prevents one source/query lane dominating the model prompt."""
+    lanes = {"骨科临床": [], "骨科AI": [], "其他医疗AI": [], "其他医学研究": []}
+    seen = set()
+    for item in candidates:
+        if not isinstance(item, dict):
+            continue
+        url = str(item.get("url") or "").strip()
+        pubmed = item.get("pubmed_record") or {}
+        identity = url or str(pubmed.get("pmid") or pubmed.get("doi") or item.get("id") or "")
+        if identity and identity in seen:
+            continue
+        if identity:
+            seen.add(identity)
+        lanes[_medical_candidate_lane(item)].append(item)
+    selected = []
+    counts = {key: 0 for key in lanes}
+    while len(selected) < max_total and any(lanes.values()):
+        progressed = False
+        for lane, bucket in lanes.items():
+            if bucket and counts[lane] < max_per_lane and len(selected) < max_total:
+                selected.append(bucket.pop(0))
+                counts[lane] += 1
+                progressed = True
+        if not progressed:
+            break
+    print("医学候选平衡采样：" + "｜".join(f"{key}={value}" for key, value in counts.items()), flush=True)
+    return selected
+
+
+NSFC_EXCLUDED_TITLE_TERMS = (
+    "招聘", "岗位", "流动项目主任", "人员选聘", "公开选聘", "诚聘", "工作人员",
+    "招聘公告", "人才招聘", "聘任"
+)
+NSFC_SUGGESTION_TERMS = ("指南建议征集", "征集指南建议", "指南建议")
+NSFC_FUNDED_TERMS = ("获批项目", "立项名单", "资助项目名单", "已资助项目", "批准资助")
+
+
+def filter_nsfc_candidates(candidates):
+    """Keep only relevant NSFC-domain funding notices; reject recruitment and unrelated pages."""
+    accepted = []
+    for item in candidates:
+        url = str(item.get("url") or "").strip()
+        host = urlparse(url).hostname or ""
+        if not (host == "nsfc.gov.cn" or host.endswith(".nsfc.gov.cn")):
+            continue
+        title = str(item.get("title") or "").strip()
+        if not title or any(term in title for term in NSFC_EXCLUDED_TITLE_TERMS):
+            continue
+        if any(term in title for term in NSFC_SUGGESTION_TERMS):
+            kind = "指南建议征集"
+        elif any(term in title for term in NSFC_FUNDED_TERMS):
+            kind = "已资助项目"
+        elif any(term in title for term in ("指南", "项目申请", "申报", "联合基金", "重点项目", "重大研究计划", "资助政策")):
+            kind = "正式指南/项目通知"
+        else:
+            continue
+        enriched = dict(item)
+        enriched["nsfc_type"] = kind
+        accepted.append(enriched)
+    removed = len(candidates) - len(accepted)
+    if removed:
+        print(f"NSFC程序级过滤：排除{removed}条非官方域名、招聘或非资助类信息", flush=True)
+    return accepted
+
+
+def annotate_policy_source(items):
+    official_domains = ("gov.cn", "nhc.gov.cn", "nhsa.gov.cn", "nmpa.gov.cn")
+    policy_terms = ("医保", "卫健", "药监", "医疗政策", "政策解读", "医疗器械", "药品审批", "医保支付")
+    for item in items:
+        source = item.get("_source", {})
+        title = str(item.get("headline") or source.get("title") or "")
+        category = str(item.get("category") or "")
+        host = (urlparse(str(source.get("url") or "")).hostname or "").lower()
+        is_policy = any(term in title + category for term in policy_terms)
+        is_official = any(host == domain or host.endswith("." + domain) for domain in official_domains)
+        if is_policy and not is_official:
+            note = "第三方报道/解读来源，尚未核验官方原文；不应视为最新官方政策公告。"
+            existing = str(item.get("verification_note") or "").strip()
+            item["verification_note"] = (existing + "；" if existing else "") + note
+    return items
 
 
 def fetch_pubmed_candidates():
@@ -701,6 +813,7 @@ def _run_pipeline():
     except Exception as exc:
         print(f'国内外医疗监管来源模块异常，继续使用其他来源：{type(exc).__name__}: {exc}', flush=True)
     medical = remove_previously_pushed(medical, seen_urls, seen_pmids, seen_dois)
+    medical = balance_medical_candidates(medical)
 
     general = fetch_candidates(GENERAL_FEEDS, 'G', 48)
     general.extend(tavily_data["general"])
@@ -728,16 +841,19 @@ def _run_pipeline():
     try:
         news_items = call_model(DEEPSEEK_URL, os.environ['DEEPSEEK_API_KEY'],
             'deepseek-flash', GENERAL_PROMPT, general, 0.4)
+        news_items = annotate_policy_source(news_items)
         print(f'DeepSeek筛选完成：{len(news_items)}条', flush=True)
     except Exception as exc:
         print(f'DeepSeek综合新闻模块失败：{type(exc).__name__}: {exc}', flush=True)
 
     nsfc_items = []
-    nsfc_candidates = remove_previously_pushed(tavily_data["nsfc"], seen_urls)
+    nsfc_candidates = filter_nsfc_candidates(remove_previously_pushed(tavily_data["nsfc"], seen_urls, seen_pmids, seen_dois))
     if nsfc_candidates:
         try:
             nsfc_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
                 'Baichuan-M3-Plus', NSFC_PROMPT, nsfc_candidates, 0.1)
+            for selected in nsfc_items:
+                selected["category"] = selected["_source"].get("nsfc_type", selected.get("category", "未分类"))
             print(f"百川NSFC筛选完成：{len(nsfc_items)}条", flush=True)
         except Exception as exc:
             print(f"NSFC分析失败，不影响新闻主流程：{type(exc).__name__}", flush=True)
