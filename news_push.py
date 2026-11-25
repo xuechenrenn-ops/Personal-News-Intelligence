@@ -169,10 +169,36 @@ def fetch_official_page_candidates(sources):
                     published = datetime(int(date_match.group(1)), int(date_match.group(2)), int(date_match.group(3)), tzinfo=timezone.utc).isoformat()
                 except ValueError:
                     pass
+            excerpt, detail_status = "", "listing_only"
+            try:
+                detail_response = requests.get(
+                    full_url, headers=headers, timeout=15
+                )
+                detail_response.raise_for_status()
+                excerpt = _extract_article_excerpt(detail_response.text)
+                published_meta = _meta_value(
+                    detail_response.text,
+                    {"article:published_time", "datepublished", "citation_publication_date"}
+                )
+                if published_meta:
+                    date_value = re.search(r"20\\d{2}[-/年.](\\d{1,2})[-/月.](\\d{1,2})", published_meta)
+                    if date_value:
+                        try:
+                            published = datetime(
+                                int(re.search(r"20\\d{2}", published_meta).group(0)),
+                                int(date_value.group(1)), int(date_value.group(2)),
+                                tzinfo=timezone.utc
+                            ).isoformat()
+                        except (ValueError, AttributeError):
+                            pass
+                detail_status = "detail_fetched" if excerpt else "detail_no_text"
+            except Exception as detail_exc:
+                print(f"官方详情页读取失败：{title[:70]}｜{type(detail_exc).__name__}", flush=True)
             candidates.append({
                 'id': f'O{len(candidates)+1}', 'title': title[:400],
                 'source': label, 'published_at': published, 'url': full_url,
-                'summary': '来自官方机构公告/政策列表页的标题索引；需打开原文核实发布日期、正文及适用范围。',
+                'summary': excerpt[:1800] if excerpt else '仅取得官方列表标题，未能提取详情正文；不得据此推断政策细节或产品获批范围。',
+                'evidence_status': detail_status,
                 'category': source.get('category', '中国国内')
             })
             accepted += 1
