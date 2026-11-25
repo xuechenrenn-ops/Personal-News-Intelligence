@@ -84,7 +84,7 @@
         "医疗质量",
         "医学技术"
       ],
-      "max_items": 5,
+      "max_items": 3,
       "pipeline": "general"
     },
     {
@@ -102,7 +102,7 @@
         "医师",
         "医疗质量"
       ],
-      "max_items": 5,
+      "max_items": 3,
       "pipeline": "general"
     },
     {
@@ -121,7 +121,7 @@
         "植入",
         "超声"
       ],
-      "max_items": 6,
+      "max_items": 3,
       "pipeline": "medical"
     },
     {
@@ -138,7 +138,7 @@
         "创新",
         "新技术"
       ],
-      "max_items": 5,
+      "max_items": 3,
       "pipeline": "general"
     },
     {
@@ -152,7 +152,7 @@
         "software",
         "machine learning"
       ],
-      "max_items": 6,
+      "max_items": 3,
       "pipeline": "medical"
     },
     {
@@ -167,7 +167,7 @@
         "authorization",
         "drug"
       ],
-      "max_items": 4,
+      "max_items": 3,
       "pipeline": "general"
     }
   ]
