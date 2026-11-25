@@ -780,7 +780,7 @@ def _run_pipeline():
     weekly_cleanup = run_weekly_cache_cleanup()
     print(f"每周缓存清理：{weekly_cleanup}", flush=True)
     push_enabled = os.environ.get('PUSH_ENABLED', 'false').lower() == 'true'
-    required = ['BAICHUAN_API_KEY', 'DEEPSEEK_API_KEY']
+    required = ['DEEPSEEK_API_KEY']
     if push_enabled:
         required.append('PUSHPLUS_TOKEN')
     missing = [key for key in required if not os.environ.get(key)]
@@ -827,16 +827,16 @@ def _run_pipeline():
 
     med_items = []
     try:
-        screened_med_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
-            'Baichuan-M3-Plus', MEDICAL_PROMPT, medical, 0.2)
-        print(f'百川初筛完成：{len(screened_med_items)}条', flush=True)
+        screened_med_items = call_model(DEEPSEEK_URL, os.environ['DEEPSEEK_API_KEY'],
+            'deepseek-flash', MEDICAL_PROMPT, medical, 0.2)
+        print(f'DeepSeek医学初筛完成：{len(screened_med_items)}条', flush=True)
         if screened_med_items:
             evidence_candidates = enrich_medical_items(screened_med_items)
-            med_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
-                'Baichuan-M3-Plus', MEDICAL_EVIDENCE_PROMPT, evidence_candidates, 0.1)
-            print(f'百川证据复核完成：{len(med_items)}条', flush=True)
+            med_items = call_model(DEEPSEEK_URL, os.environ['DEEPSEEK_API_KEY'],
+                'deepseek-flash', MEDICAL_EVIDENCE_PROMPT, evidence_candidates, 0.1)
+            print(f'DeepSeek医学证据复核完成：{len(med_items)}条', flush=True)
     except Exception as exc:
-        print(f'百川医学模块失败，保留其他栏目继续运行：{type(exc).__name__}: {exc}', flush=True)
+        print(f'DeepSeek医学模块失败，保留其他栏目继续运行：{type(exc).__name__}: {exc}', flush=True)
 
     news_items = []
     try:
@@ -851,8 +851,8 @@ def _run_pipeline():
     nsfc_candidates = filter_nsfc_candidates(remove_previously_pushed(tavily_data["nsfc"], seen_urls, seen_pmids, seen_dois))
     if nsfc_candidates:
         try:
-            nsfc_items = call_model(BAICHUAN_URL, os.environ['BAICHUAN_API_KEY'],
-                'Baichuan-M3-Plus', NSFC_PROMPT, nsfc_candidates, 0.1)
+            nsfc_items = call_model(DEEPSEEK_URL, os.environ['DEEPSEEK_API_KEY'],
+                'deepseek-flash', NSFC_PROMPT, nsfc_candidates, 0.1)
             for selected in nsfc_items:
                 selected["category"] = selected["_source"].get("nsfc_type", selected.get("category", "未分类"))
             print(f"百川NSFC筛选完成：{len(nsfc_items)}条", flush=True)
