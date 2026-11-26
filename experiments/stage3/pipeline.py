@@ -63,15 +63,17 @@ def public_digest(cards):
     return result
 
 
-def choose_with_model(provider, papers, available, as_of):
+def choose_with_model(provider, papers, available, as_of, *, thinking=False):
     valid = {x["id"] for x in available if x["status"] == "eligible"}
     ranked = sorted((p for p in papers if p["id"] in valid),
-                    key=lambda p: p["date"], reverse=True)[:14]
+                    key=lambda p: p["date"], reverse=True)[:10]
     packet = [{"id": p["id"], "date": p["date"], "title": p["title"], "region": p.get("region"),
                "evidence": p.get("evidence", "")[:700]} for p in ranked]
     if not packet:
         return []
-    doc = provider("s3-selector", CURATE, {"as_of": as_of, "cards": packet}, max_tokens=650)
+    doc = provider("s3-select-B" if thinking else "s3-select-A", CURATE,
+                   {"as_of": as_of, "cards": packet}, thinking=thinking,
+                   max_tokens=2400 if thinking else 650)
     return [row["id"] for row in doc if isinstance(row, dict) and isinstance(row.get("id"), str)
             and row["id"] in valid][:3]
 
@@ -102,7 +104,7 @@ def bench(splits, provider=None):
     return answer
 
 
-def live(output, provider=None):
+def live(output, provider=None, *, compare=False, credit_limit=0):
     state_path = Path(".cache/stage2-source-health.json")
     state = channels.SourceHealth(state_path, datetime.now(CST))
     skip = state.status("domestic-policy")
@@ -111,11 +113,23 @@ def live(output, provider=None):
         state.record("domestic-policy", any(r["lane"] == "policy" and not r.get("verification_note")
                                            for r in headlines))
         state.save()
-    papers, source_report = channels.collect([date.fromisoformat(as_of)], state=state_path)
+    papers, source_report = channels.collect(
+        [date.fromisoformat(as_of)], state=state_path,
+        key=os.environ.get("TAVILY_KEY"), credit_limit=credit_limit,
+    )
     academic = papers[as_of]
     selected, audit = medical_digest(academic, as_of)
     mode = "evidence-only"
-    if provider:
+    alternatives = {}
+    if compare:
+        for name, thinking in (("flash_A", False), ("flash_B", True)):
+            try:
+                priority = choose_with_model(provider, academic, audit, as_of, thinking=thinking)
+                ranked, _ = medical_digest(academic, as_of, priority)
+                alternatives[name] = {"model_order": priority, "selected": [row["id"] for row in ranked]}
+            except (RuntimeError, ValueError, KeyError) as exc:
+                alternatives[name] = {"error": type(exc).__name__ + ": " + str(exc)[:70]}
+    elif provider:
         try:
             priority = choose_with_model(provider, academic, audit, as_of)
             if priority:
@@ -130,18 +144,45 @@ def live(output, provider=None):
     folder.mkdir(parents=True, exist_ok=True)
     for name, article in zip(("professional-automatic.md", "extended-automatic.md"), digest):
         (folder / name).write_text(article, encoding="utf-8")
+    if compare:
+        for name, record in alternatives.items():
+            if "model_order" in record:
+                ranked, _ = medical_digest(academic, as_of, record["model_order"])
+                ids = set(record["selected"])
+                record["papers"] = [channels.metadata(row) for row in academic if row["id"] in ids]
+                (folder / f"professional-{name}.md").write_text(render(ranked, rows, as_of)[0], encoding="utf-8")
     ids = {r["id"] for r in selected + other}
     return {"as_of": as_of, "mode": mode,
             "selected": [channels.metadata(r) for r in rows if r["id"] in ids],
             "counts": dict(Counter(r["lane"] for r in selected + other)),
-            "audit": audit, "discovery": source_report}
+            "audit": audit, "discovery": source_report, "alternatives": alternatives}
+
+
+def coverage(splits):
+    """Find dated references with normal search, without passing their IDs to sources."""
+    days = [date.fromisoformat(day) for day in splits]
+    papers, source_report = channels.collect(days)
+    windows = {}
+    for day, spec in splits.items():
+        expected = set(spec["priority"])
+        identity = {p[key].casefold() for p in papers[day] for key in ("pmid", "doi") if p.get(key)}
+        windows[day] = {"reference": sorted(expected), "found": sorted(expected & identity),
+                        "counts": {name: {"returned": group["rows"], "verified": len(group["verified"]),
+                                          "target_hits": sorted(expected.intersection(group["verified"])),
+                                          "status": group.get("status", "ok")}
+                                   for name, group in source_report["per_window"][day].items()}}
+    return {"coverage": windows, "source_access": source_report["access_probes"]}
 
 
 def run_stage3(identifier, plan, output, *, claim=True):
     started = time.monotonic()
     phase = plan["phase"]
-    provider = (Flash(os.environ["DEEPSEEK_API_KEY"], plan["reserve_micro_cny"])
-                if phase in {"s3-model", "s3-model-benchmark"} else None)
+    credits = plan.get("tavily_credits", 0)
+    if type(credits) is not int or not 0 <= credits <= (4 if phase == "s3-compare" else 0):
+        raise RuntimeError("Invalid stage three search allotment")
+    model_reserve = plan["reserve_micro_cny"] - credits * channels.SEARCH_CREDIT_MICRO_CNY
+    provider = (Flash(os.environ["DEEPSEEK_API_KEY"], model_reserve)
+                if phase in {"s3-model", "s3-model-benchmark", "s3-compare"} else None)
     balance = provider.check_balance() if provider else None
     if claim:
         claim_dispatch(identifier, os.environ["GH_TOKEN"], os.environ["GITHUB_REPOSITORY"],
@@ -151,15 +192,17 @@ def run_stage3(identifier, plan, output, *, claim=True):
     if phase in {"s3-benchmark", "s3-model-benchmark"}:
         result = {"regression": bench(previous["confirmation"]),
                   "independent": bench(independent, provider)}
+    elif phase == "s3-coverage":
+        result = coverage(previous["development"] | previous["holdout"] | previous["confirmation"])
     else:
-        result = live(output, provider)
+        result = live(output, provider, compare=phase == "s3-compare", credit_limit=credits)
     if provider:
         try:
             result["account_balance_delta_micro_cny"] = balance - provider.balance_micro_cny()
         except (RuntimeError, ValueError, KeyError):
             result["account_balance_delta_micro_cny"] = None
     result.update({"phase": phase, "calls": provider.calls if provider else [],
-                   "wechat_requests": 0, "tavily_credits": 0,
+                   "wechat_requests": 0, "tavily_credits": result.get("discovery", {}).get("tavily", {}).get("credits", 0),
                    "elapsed_seconds": round(time.monotonic() - started, 3)})
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -167,7 +210,7 @@ def run_stage3(identifier, plan, output, *, claim=True):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("phase", choices=("s3-benchmark", "s3-preview"))
+    p.add_argument("phase", choices=("s3-benchmark", "s3-preview", "s3-coverage"))
     p.add_argument("output", type=Path)
     opts = p.parse_args()
     run_stage3("local-public", {"phase": opts.phase, "reserve_micro_cny": 0}, opts.output, claim=False)

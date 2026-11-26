@@ -3,14 +3,14 @@ import re
 
 ORTHOPAEDIC = re.compile(
     r"orthop[ae]edi|musculoskelet|arthroplast|arthroscop|fracture|menisc|ligament|"
-    r"osteotom|laminoplast|osteopor|lumbar|cervical|spine|gait|rotator cuff|"
+    r"osteotom|laminoplast|osteoarthrit|shoulder|rotator[- ]cuff|spinal|osteopor|lumbar|cervical|spine|gait|rotator cuff|"
     r"adhesive capsulitis|frozen shoulder|plantar fasciitis|anterior cruciate|"
     r"cartilage|knee|patellofemoral|\bACL(?:R)?\b|\bHTO\b|骨科|截骨|前交叉韧带|"
     r"半月板|肩袖|关节置换|步态|骨折|髌股",
     re.I,
 )
 CLINICAL_AI = re.compile(
-    r"artificial intelligence|machine learning|deep learning|large language model|"
+    r"artificial[-\s]intelligence|machine[-\s]learning|deep[-\s]learning|large[-\s]language[-\s]model|"
     r"neural network|clinical decision support|wearable|ehealth|digital health|"
     r"electronic health record|人工智能|机器学习|深度学习|大语言模型|数字康复",
     re.I,

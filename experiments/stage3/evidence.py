@@ -8,7 +8,7 @@ from research_scope import research_lane
 
 HEADING = re.compile(
     r"(?<!\w)(objective(?:s)?|purpose|aims?|background|methods?|materials and methods|"
-    r"study design|design|participants|results?|findings|limitations?|conclusions?|interpretation)\s*:\s*",
+    r"study design|design|participants|level of evidence|results?|findings|limitations?|conclusions?|interpretation)\s*:\s*",
     re.I,
 )
 SENTENCES = re.compile(r"(?<=[!?。])\s*|(?<!\bvs)(?<!\be\.g)(?<!\bi\.e)(?<=\.)\s+(?=[A-Z])")
@@ -38,7 +38,7 @@ OUTCOME = re.compile(
     r"improv|decreas|reduc|increas|differ|similar|associat|detect|discriminat|"
     r"fracture|retear|mortality|pain|injur|mobilit|function|accuracy|sensitivity|"
     r"\bKOOS\b|\bAUC\b|precision|performance|complication|failure|agreement|"
-    r"achiev|correlation|estimated|demonstrat|found|outperform",
+    r"achiev|correlation|estimated|demonstrat|found|outperform|risk of bias|outcome|calibration",
     re.I,
 )
 BAD_EXCERPT = re.compile(r"https?://|\[.*?\]\(|(?:ignore|disregard).{0,20}instructions|"
@@ -66,6 +66,11 @@ def fragments(text):
         if not sentence:
             continue
         yield sentence
+        # Clip a complete leading claim at a switch to a different outcome.
+        if "," in sentence and re.search(r", (?:interrater )?reliability (?:was|ranged) ", sentence, re.I):
+            lead = re.split(r", (?:interrater )?reliability (?:was|ranged) ", sentence, maxsplit=1, flags=re.I)[0]
+            if len(lead.split()) >= 7 and re.search(r"\b(?:was|ranged from)\b", lead, re.I):
+                yield lead
         # A semicolon separates clauses. Never cut at arbitrary character or word boundaries.
         if ";" in sentence:
             for clause in sentence.split(";"):
@@ -81,11 +86,18 @@ def choose_result(text):
         word_count = len(value.split())
         if not 5 <= word_count <= 23 or len(value) > 240 or BAD_EXCERPT.search(value):
             continue
-        if not OUTCOME.search(value) or value.count("(") != value.count(")"):
+        if (not OUTCOME.search(value) or value.count("(") != value.count(")")
+                or re.match(r"^(?:and\b|but\b|or\b|where\b|at a post.hoc)", value, re.I)):
             continue
         counts = number_set(value)
         score = (bool(METRIC.search(value)), bool(counts), not value.lower().startswith(("it ", "this ", "these ")))
         confirmed.append((score, value))
+    # These compact measurements carry their complete endpoint and validation context.
+    for match in re.finditer(
+        r"\bexternal (?:AUC(?:-ROC)?|AUROC)\s+0\.\d{2,4},?\s*95% CI\s+0\.\d{2,4}[-–]0\.\d{2,4}",
+        text, re.I,
+    ):
+        confirmed.append(((True, True, True), match[0]))
     return max(confirmed, key=lambda pair: pair[0])[1] if confirmed else ""
 
 
@@ -123,6 +135,11 @@ def paper_card(card):
         if unit.lower() in UNIT_LABEL and int(count.replace(",", "")) > 0:
             sample = (int(count.replace(",", "")), UNIT_LABEL[unit.lower()])
             break
+    objectives = parts.get("purpose") or parts.get("objective") or parts.get("objectives") or parts.get("aim")
+    question = next((value for value in reversed(list(fragments(objectives or "")))
+                     if 6 <= len(value.split()) <= 23 and not BAD_EXCERPT.search(value)
+                     and re.search(r"\b(?:aim|evaluat|assess|compar|investigat|validat|determin|examin|develop)", value, re.I)),
+                    "")
     provenance = "结果段原文短引" if result_text else "非结构化摘要原文短引"
     quality = {
         "id": identifier, "status": "eligible", "lane": lane, "sample_confirmed": bool(sample),
@@ -130,12 +147,18 @@ def paper_card(card):
     }
     limitation = "摘要未能核实具体局限。仍需结合全文的偏倚、适用人群和终点判读。"
     if "观察性" in design or "回顾性" in design or "横断面" in design:
-        limitation = "观察性证据，比较结果可能受残余混杂影响。"
+        limitation = ("回顾性模型验证，推广至其他医院前需额外验证。"
+                      if lane != "clinical" else "观察性证据，比较结果可能受残余混杂影响。")
     elif lane != "clinical" and re.search(r"exam|benchmark|validation|performance", title, re.I):
         limitation = "该研究评估模型或任务表现，临床获益仍需另行验证。"
+    explicit_limits = " ".join(parts.get(k, "") for k in ("limitations", "limitation"))
+    short_limit = next((value for value in fragments(explicit_limits)
+                        if 5 <= len(value.split()) <= 23 and not BAD_EXCERPT.search(value)), "")
+    if short_limit:
+        limitation = f"原文局限短引　“{short_limit}”"
     row = {
         "id": identifier, "lane": "medical",
-        "question": "研究对象和干预／模型见上方原始研究题名。",
+        "question": f"原文目的短引　“{question}”" if question else clean_text(title),
         "design": design + (f"；摘要明确报告 {sample[0]:,} {sample[1]}。" if sample else "；总样本量未从摘要明确提取。"),
         "result": f'{provenance}　“{outcome}”',
         "limits": limitation, "insight": INSIGHTS[lane],
