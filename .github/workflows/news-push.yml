@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths: ['.github/pni-acceptance.json']
   workflow_dispatch:
+  schedule:
+    - cron: '30 11 * * *'
 
 permissions:
   contents: write
@@ -36,6 +38,7 @@ jobs:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           PUSHPLUS_ACCESS_KEY: ${{ secrets.PUSHPLUS_ACCESS_KEY }}
           PUSHPLUS_SECRET_KEY: ${{ secrets.PUSHPLUS_SECRET_KEY }}
+          PNI_TRIAL_START: '2026-11-27'
           GH_TOKEN: ${{ github.token }}
         run: python -m pni.production
       - uses: actions/upload-artifact@v4

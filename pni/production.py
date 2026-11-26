@@ -245,6 +245,10 @@ def execute(mode, output):
         summary = {"mode": mode, "day": day, "counts": result["counts"],
                    "estimate_micro_cny": observed, "model_calls": len(provider.calls),
                    "web_calls": len(web.calls), "provider_errors": len(result["errors"])}
+        if mode == "daily":
+            age = trial_age(day, os.environ.get("PNI_TRIAL_START"))
+            if age is not None and 0 <= age < 7:
+                summary["trial_day"] = age + 1
         if state:
             state.data["source_health"] = json.loads(source_health.read_text(encoding="utf-8"))
             state.data["budgets"][day[:7]]["observed"] += observed
@@ -264,11 +268,16 @@ def execute(mode, output):
             raise RuntimeError("Review partial or unknown delivery before any manual retry")
 
 
-def in_trial_window(day, start):
+def trial_age(day, start):
     try:
-        return 0 <= (datetime.fromisoformat(day).date() - datetime.fromisoformat(start).date()).days < 7
+        return (datetime.fromisoformat(day).date() - datetime.fromisoformat(start).date()).days
     except (ValueError, TypeError):
-        return False
+        return None
+
+
+def daily_enabled(day, start):
+    age = trial_age(day, start)
+    return age is not None and age >= 0
 
 
 def archived_preview(output):
@@ -289,8 +298,8 @@ def main():
             raise RuntimeError("Unrecognized acceptance trigger")
         mode = "acceptance"
     elif event == "schedule":
-        if not in_trial_window(datetime.now(CST).date().isoformat(), os.environ.get("PNI_TRIAL_START")):
-            print("Outside the approved seven-day trial window.")
+        if not daily_enabled(datetime.now(CST).date().isoformat(), os.environ.get("PNI_TRIAL_START")):
+            print("The approved production start date has not been reached.")
             return
         mode = "daily"
     elif event == "workflow_dispatch":

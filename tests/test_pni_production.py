@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from pni.production import DAILY, MONTHLY, PushPlus, claim, deliver, in_trial_window
+from pni.production import DAILY, MONTHLY, PushPlus, claim, daily_enabled, deliver, trial_age
 
 
 class Ledger:
@@ -47,7 +47,13 @@ class ProductionTests(unittest.TestCase):
         http.get.return_value.json.return_value = {"code":200, "data":{"status":2}}
         self.assertEqual(api.lookup(short)["status"], "sent")
 
-    def test_no_trial_i_before_approval_and_window_ends(self):
-        self.assertFalse(in_trial_window("2026-11-27", None))
-        self.assertTrue(in_trial_window("2026-12-03", "2026-11-27"))
-        self.assertFalse(in_trial_window("2026-12-04", "2026-11-27"))
+    def test_daily_not_enabled_before_approved_start(self):
+        self.assertFalse(daily_enabled("2026-11-27", None))
+        self.assertFalse(daily_enabled("2026-11-27", "invalid"))
+        self.assertFalse(daily_enabled("2026-11-26", "2026-11-27"))
+        self.assertTrue(daily_enabled("2026-11-27", "2026-11-27"))
+
+    def test_trial_counts_seven_days_and_then_keeps_daily_running(self):
+        self.assertEqual(trial_age("2026-12-03", "2026-11-27"), 6)
+        self.assertEqual(trial_age("2026-12-04", "2026-11-27"), 7)
+        self.assertTrue(daily_enabled("2026-12-04", "2026-11-27"))
