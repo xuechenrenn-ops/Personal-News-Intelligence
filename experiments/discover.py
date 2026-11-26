@@ -114,16 +114,16 @@ def secondary_policy_cards(rows, now):
             yield card
 
 
-def collect_live_cards(skip_official=False):
+def collect_live_cards(skip_official=False, *, include_academic=True):
     now = datetime.now(CST)
     print(f"RUN_STARTED={now.isoformat()}", flush=True)
     feeds = [feed for feed in GENERAL_FEEDS if feed[0] in {"中国新闻网-即时", "BBC-World", "Al Jazeera"}]
     with ThreadPoolExecutor(max_workers=5) as pool:
-        academic = pool.submit(fetch_pubmed_candidates)
+        academic = pool.submit(fetch_pubmed_candidates) if include_academic else None
         policy = None if skip_official else pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])
         news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 48)
                 for idx, feed in enumerate(feeds)]
-    academic_raw = [item for item in academic.result() if medical_card(item)]
+    academic_raw = [item for item in academic.result() if medical_card(item)] if academic else []
     academic_ranked = balance_medical_candidates(academic_raw, max_per_lane=4, max_total=12)
     # Keep both clinical and AI lanes while using fresh publications first within each.
     shortlisted = []

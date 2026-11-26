@@ -9,7 +9,7 @@ import requests
 
 from experiments.discover import medical_card, region_for
 from experiments.run import api_json
-from news_push import _pubmed_records, _strip_html, fetch_pubmed_candidates
+from news_push import _pubmed_records, _strip_html, fetch_candidates, fetch_pubmed_candidates
 
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 TAVILY = "https://api.tavily.com"
@@ -37,12 +37,23 @@ ACCESS = {
     "cn-public-science": "https://www.ncsti.gov.cn/kjdt/kjrd/yyjk_kjrd/202611/t20261110_262378.html",
     "foreign-journal": "https://www.jmir.org/2026/1/e94936/",
 }
+ACADEMIC_FEEDS = {
+    "science-rss": ("科学网医药论文", "https://www.sciencenet.cn/xml/paper.aspx?di=1"),
+    "npj-rss": ("npj Digital Medicine", "https://www.nature.com/npjdigitalmed.rss"),
+}
+SELECTION_TERMS = re.compile(r"骨科|骨折|肩关节|半月板|关节置换|骨质疏松|骨关节|运动医学|"
+                             r"骨科康复|步态|artificial intelligence|external validation|"
+                             r"musculoskeletal|orthop[ae]edic|rehabilitation", re.I)
+LITERATURE_DOMAINS = {
+    "news.sciencenet.cn", "health.rednet.cn", "mp.weixin.qq.com",
+    "cn-healthcare.com", "www.puh3.net.cn", "news.pku.edu.cn", "www.xiangya.com.cn",
+}
 SEARCH_CREDIT_MICRO_CNY = 100_000  # USD 0.008/credit, rounded up with exchange headroom
 
 
 class SourceHealth:
     def __init__(self, path, now):
-        self.path, self.now = path, now
+        self.path, self.now = path, now.astimezone(timezone.utc)
         try:
             self.rows = json.loads(path.read_text()) if path else {}
         except (OSError, ValueError):
@@ -95,8 +106,8 @@ def europe(query, as_of, lookback=14):
     start = as_of - timedelta(days=lookback)
     response = requests.get(EPMC, params={"query":
         f"({query}) AND SRC:MED AND FIRST_PDATE:[{start} TO {as_of}]",
-        "pageSize": 32, "sort": "FIRST_PDATE desc", "format": "json", "resultType": "lite"},
-        timeout=12)
+        "pageSize": 36, "format": "json", "resultType": "lite"},
+        timeout=13)
     response.raise_for_status()
     return response.json()["resultList"]["result"]
 
@@ -177,15 +188,56 @@ def search_web(key, days, credit_limit, health, account):
 
 
 def hints(rows):
-    by_id = {}
+    by_id = set()
     dois = set()
     for row in rows:
         text = " ".join(str(row.get(k) or "") for k in ("url", "title", "content"))
         for pmid in PMID.findall(text):
-            by_id[pmid] = None
+            by_id.add(pmid)
         for doi in DOI.findall(text):
             dois.add(doi.rstrip(".,;").casefold())
-    return set(by_id), dois
+    return by_id, dois
+
+
+def scholarly_rss(health):
+    """RSS is a discovery source, and every hit still needs bibliographic validation."""
+    results = {}
+    for name, feed in ACADEMIC_FEEDS.items():
+        if health.status(name):
+            results[name] = []
+            continue
+        rows = fetch_candidates([feed], "scholar", 24 * 15)
+        health.record(name, bool(rows))
+        results[name] = [{"url": row["url"], "title": row["title"], "content": row["summary"],
+                          "published_date": row["published_at"]} for row in rows]
+    return results
+
+
+def linked_identifiers(rows, health, limit=2):
+    matched_pmids, matched_dois = hints(rows)
+    selected = 0
+    for row in rows:
+        url = row.get("url", "")
+        parsed = urlsplit(url)
+        hostname = parsed.hostname
+        if (selected >= limit or parsed.scheme != "https" or hostname not in LITERATURE_DOMAINS
+                or health.status(hostname) or not SELECTION_TERMS.search(row.get("title", ""))):
+            continue
+        selected += 1
+        try:
+            with requests.get(url, allow_redirects=False, stream=True, timeout=7) as response:
+                if response.status_code != 200:
+                    health.record(hostname, False, response.status_code in {401, 403, 429})
+                    continue
+                data = next(response.iter_content(131072), b"")
+        except requests.RequestException:
+            health.record(hostname, False)
+            continue
+        pmids, dois = hints([{"content": data.decode("utf-8", "ignore")}])
+        matched_pmids |= pmids
+        matched_dois |= dois
+        health.record(hostname, True)
+    return matched_pmids, matched_dois
 
 
 def ids_for_dois(dois, maximum=18):
@@ -236,11 +288,12 @@ def collect(days, *, key=None, credit_limit=0, state=None):
                    for row in groups.get("tavily-wechat", []) if row.get("url")), None)
     if wechat and urlsplit(wechat).scheme == "https":
         probes["public-wechat"] = probe("public-wechat", wechat, health)
+    rss = scholarly_rss(health)
     for as_of in days:
         with ThreadPoolExecutor(max_workers=5) as pool:
-            pubmed = pool.submit(fetch_pubmed_candidates, as_of, 14)
+            pubmed = pool.submit(fetch_pubmed_candidates, as_of, 21, True)
             eur = {name: pool.submit(europe, query, as_of) for name, query in EU_QUERIES.items()
-                   if not health.status("europe:" + name)}
+                   if not health.status("europe-v2:" + name)}
         pm_rows = pubmed.result()
         records = {row["pubmed_record"]["pmid"]: row["pubmed_record"] for row in pm_rows}
         groups = {"pubmed": {"rows": len(pm_rows), "ids": sorted(records)}}
@@ -250,13 +303,15 @@ def collect(days, *, key=None, credit_limit=0, state=None):
                 rows = future.result()
                 groups[channel] = {"rows": len(rows), "ids": sorted({
                     str(x["pmid"]) for x in rows if x.get("pmid")})}
-                health.record(channel, True)
+                health.record("europe-v2:" + name, True)
             except (requests.RequestException, KeyError, ValueError) as exc:
                 groups[channel] = {"rows": 0, "ids": [], "status": type(exc).__name__}
-                health.record(channel, False)
+                code = getattr(getattr(exc, "response", None), "status_code", None)
+                groups[channel]["http_status"] = code
+                health.record("europe-v2:" + name, False, code in {401, 403, 429})
         web_dois = {}
-        for name, rows in web.get(str(as_of), {}).items():
-            pmids, dois = hints(rows)
+        for name, rows in {**rss, **web.get(str(as_of), {})}.items():
+            pmids, dois = linked_identifiers(rows, health)
             web_dois[name] = dois
             pmids |= {pmid for pmid, record in records.items() if record.get("doi", "").casefold() in dois}
             try:

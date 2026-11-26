@@ -529,12 +529,18 @@ def annotate_policy_source(items):
     return items
 
 
-def fetch_pubmed_candidates(as_of=None, lookback=30):
+def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
     queries = [
         ('骨科临床研究全领域', '("Orthopedics"[MeSH Terms] OR "Sports Medicine"[MeSH Terms] OR arthroscopy[Title/Abstract] OR meniscus[Title/Abstract] OR ligament[Title/Abstract] OR "rotator cuff"[Title/Abstract] OR "anterior cruciate ligament"[Title/Abstract] OR fracture[Title/Abstract] OR spine[Title/Abstract] OR arthroplasty[Title/Abstract] OR osteoporosis[Title/Abstract] OR rehabilitation[Title/Abstract] OR "bone tumor"[Title/Abstract])'),
         ('骨科AI研究', '(("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "deep learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR robotics[Title/Abstract] OR wearable[Title/Abstract]) AND (orthopedic[Title/Abstract] OR orthopaedic[Title/Abstract] OR musculoskeletal[Title/Abstract] OR "sports medicine"[Title/Abstract] OR rehabilitation[Title/Abstract]))'),
         ('医疗AI交叉研究', '("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR "clinical decision support"[Title/Abstract] OR multimodal[Title/Abstract] OR agent[Title/Abstract]) AND (clinical[Title/Abstract] OR medicine[Title/Abstract] OR healthcare[Title/Abstract])')
     ]
+    if expanded:
+        queries.extend([
+            ("证据与运动肩膝", '(meniscus[Title] OR "anterior cruciate ligament"[Title] OR "rotator cuff"[Title] OR "adhesive capsulitis"[Title] OR "plantar fasciitis"[Title]) AND (randomized[Title/Abstract] OR trial[Title/Abstract] OR "systematic review"[Title/Abstract])'),
+            ("关节置换预测与随访", '(arthroplasty[Title] OR "fracture liaison"[Title] OR "lower extremity orthopaedic"[Title]) AND (predict*[Title/Abstract] OR ehealth[Title/Abstract] OR "digital health"[Title/Abstract] OR "randomized controlled trial"[Publication Type])'),
+            ("中国研究团队骨科", '(China[Affiliation] OR Beijing[Affiliation] OR Shanghai[Affiliation]) AND (orthopaedic[Title/Abstract] OR "adhesive capsulitis"[Title/Abstract] OR arthroplasty[Title/Abstract] OR rehabilitation[Title/Abstract]) AND (randomized[Title/Abstract] OR validation[Title/Abstract] OR "systematic review"[Title/Abstract])'),
+        ])
     candidates, seen = [], set()
     if as_of is None:
         date_query = f'("last {lookback} days"[Date - Publication])'
@@ -548,7 +554,7 @@ def fetch_pubmed_candidates(as_of=None, lookback=30):
             response = requests.get(
                 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi',
                 params={'db':'pubmed','term':query + ' AND ' + date_query,
-                        'retmode':'json','retmax':20,'sort':'date'},
+                        'retmode':'json','retmax':28 if expanded else 20,'sort':'relevance' if expanded else 'date'},
                 headers=headers, timeout=20
             )
             response.raise_for_status()

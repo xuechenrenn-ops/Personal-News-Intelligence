@@ -31,6 +31,11 @@ HR 写“危险比”，RR 写“相对风险”，不可互换。缺失字段�
 "question":"研究问题","design":"设计及样本","result":"主要结果","limits":"局限",
 "insight":"可验证的下一步","refs":{"question":[0],"design":[1],"result":[2],"limits":[3]}}]}。"""
 
+LIVE_EDITOR = """
+专业正文以一种最重要结局为主，主要结果通常不超过110个汉字。保留研究设计、纳入样本量和分组，
+即使结论没有疗效差异，也优先报告检验的结局和置信区间。科研启发须写具体人群和可测结局。
+普通新闻聚焦有公共影响的政策、经济、科技、公共卫生或显著社会事件。
+尽量采用最近7日的学术研究。近30日的条目应有明确的临床或方法价值。"""
 CRITIC = """你是独立事实核查编辑。检查 JSON 中的 proposed 字段及对应的 evidence 段落。
 只驳回存在实质问题的字段：因果外推、统计量或组别错误、样本范围错误、非证据支持、研究启发
 与原文主题无关、超出作者结论、普通新闻严重失实。相同信息不重复。不要重写，不改选择，不发明事实。
@@ -48,7 +53,7 @@ def critic_input(items, audited, rows):
     lookup = {r["id"]: r for r in rows}
     information = []
     for item in items:
-        if not isinstance(item, dict) or item.get("id") not in ids:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str) or item["id"] not in ids:
             continue
         card = lookup[item["id"]]
         refs = item.get("refs") if isinstance(item.get("refs"), dict) else {}
@@ -62,7 +67,8 @@ def critic_input(items, audited, rows):
 
 
 def run_editor(provider, mode, rows, *, review=False, tag="draft"):
-    draft = provider(tag + "-" + mode, DRAFT, compact(rows), thinking=mode == "B",
+    prompt = DRAFT + LIVE_EDITOR if review else DRAFT
+    draft = provider(tag + "-" + mode, prompt, compact(rows), thinking=mode == "B",
                      max_tokens=4800 if mode == "B" else 2600)
     checked, quality = audit_items(draft, rows)
     veto = []
@@ -208,9 +214,16 @@ def run_stage2(identifier, plan, output):
                     cases[mode] = {"error": type(exc).__name__, "message": str(exc)[:80]}
             result["evaluation"][day] = cases
     else:
-        live_cards, as_of = collect_live_cards()
+        state = Path(".cache/stage2-source-health.json")
+        health = channels.SourceHealth(state, datetime.now(CST))
+        paused = health.status("domestic-policy")
+        live_cards, as_of = collect_live_cards(skip_official=paused, include_academic=False)
+        if not paused:
+            health.record("domestic-policy", any(row["lane"] == "policy"
+                                               and not row.get("verification_note") for row in live_cards))
+            health.save()
         ranked, discovery = channels.collect([date.fromisoformat(as_of)], key=os.environ.get("TAVILY_KEY"),
-            credit_limit=credit_limit, state=Path(".cache/stage2-source-health.json"))
+            credit_limit=credit_limit, state=state)
         supplemental = ranked[as_of]
         # New sources enter under the same evidence rule and deduplication as the original lanes.
         rows = choose_pool(supplemental + live_cards, as_of, max_per=3, max_total=8)
