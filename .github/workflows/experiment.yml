@@ -26,9 +26,13 @@ jobs:
       - name: Restore source-health state
         uses: actions/cache@v4
         with:
-          path: .cache/stage2-source-health.json
-          key: stage2-source-health-${{ github.run_id }}
-          restore-keys: stage2-source-health-
+          path: |
+            .cache/stage2-source-health.json
+            .cache/v14-preview-index.json
+          key: guarded-news-state-${{ github.run_id }}
+          restore-keys: |
+            guarded-news-state-
+            stage2-source-health-
       - name: Run with a durable reservation
         env:
           GH_TOKEN: ${{ github.token }}
@@ -37,7 +41,7 @@ jobs:
         run: python -m experiments.run "$RUNNER_TEMP/experiment.json"
       - name: Render two preview messages
         run: |
-          if python -c 'import json, sys; sys.exit(json.load(open(sys.argv[1]))["phase"].startswith(("s2-", "s3-")))' "$RUNNER_TEMP/experiment.json"; then
+          if python -c 'import json, sys; sys.exit(json.load(open(sys.argv[1]))["phase"].startswith(("s2-", "s3-", "v14-")))' "$RUNNER_TEMP/experiment.json"; then
             python -m experiments.preview "$RUNNER_TEMP/experiment.json" experiments/fixtures/2026-11-26.json "$RUNNER_TEMP/news-preview"
           fi
       - uses: actions/upload-artifact@v4

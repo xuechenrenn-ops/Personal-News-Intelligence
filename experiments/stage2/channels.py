@@ -284,7 +284,7 @@ def metadata(rows):
     return {key: value for key, value in rows.items() if key not in {"evidence", "segments"}}
 
 
-def collect(days, *, key=None, credit_limit=0, state=None):
+def collect(days, *, key=None, credit_limit=0, state=None, allow_possible=False):
     health = SourceHealth(state, datetime.now(timezone.utc))
     account = {"attempted": 0, "credits": 0, "unverified": 0}
     web = search_web(key, days, credit_limit, health, account) if key and credit_limit else {}
@@ -336,7 +336,8 @@ def collect(days, *, key=None, credit_limit=0, state=None):
                 break
         cards = {}
         for pmid, row in records.items():
-            card = medical_card({"title": row["title"], "pubmed_record": row, "id": pmid})
+            card = medical_card({"title": row["title"], "pubmed_record": row, "id": pmid},
+                                allow_possible=allow_possible)
             if not card:
                 continue
             published = date.fromisoformat(card["date"])

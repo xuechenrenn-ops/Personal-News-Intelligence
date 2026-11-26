@@ -34,7 +34,7 @@ COUNTRIES = {"中国": r"\bChina\b", "日本": r"\bJapan\b", "韩国": r"\b(?:So
              "意大利": r"\bItaly\b", "瑞士": r"\bSwitzerland\b", "奥地利": r"\bAustria\b",
              "西班牙": r"\bSpain\b", "丹麦": r"\bDenmark\b", "瑞典": r"\bSweden\b",
              "挪威": r"\bNorway\b", "比利时": r"\bBelgium\b", "新加坡": r"\bSingapore\b",
-             "印度": r"\bIndia\b", "巴西": r"\bBrazil\b", "波兰": r"\bPoland\b",
+             "印度": r"\bIndia\b", "埃及": r"\bEgypt\b", "巴西": r"\bBrazil\b", "波兰": r"\bPoland\b",
              "土耳其": r"\b(?:Turkey|Türkiye)\b", "新西兰": r"\bNew Zealand\b"}
 
 
@@ -59,7 +59,7 @@ def region_for(affiliations):
     )
 
 
-def medical_card(item):
+def medical_card(item, *, allow_possible=False):
     title = _strip_html(item["title"])
     rec = item.get("pubmed_record") or {}
     abstract = _strip_html(rec.get("abstract", ""))
@@ -67,7 +67,7 @@ def medical_card(item):
     types = set(rec.get("publication_types", []))
     if (not pmid or not journal or not abstract or EXCLUDED.search(title)
             or types & NON_ORIGINAL
-            or not research_lane(title, rec.get("mesh", []))):
+            or (not allow_possible and not research_lane(title, rec.get("mesh", [])))):
         return None
     published = full_date(rec.get("online_date") or rec.get("publication_date") or "")
     if not published:

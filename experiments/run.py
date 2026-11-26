@@ -23,7 +23,8 @@ MAX_RUN_RESERVATION = 200_000
 LAYOUT = {"medical": 3, "policy": 1, "world": 2}
 STAGE3_PHASES = {"s3-benchmark", "s3-preview", "s3-model", "s3-model-benchmark", "s3-compare", "s3-coverage", "s3-localize"}
 STAGE3_FREE = {"s3-benchmark", "s3-preview", "s3-coverage"}
-PHASES = STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
+V14_PHASES = {"v14-live"}
+PHASES = V14_PHASES | STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
           "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm", "s2-archival"}
 CORE_PHASES = {"candidate", "grounded", "s2-compare", "s2-live", "s2-confirm"}
 
@@ -270,6 +271,9 @@ def workflow(output):
     ).splitlines()
     identifier, plan = read_dispatch(event, os.environ["GITHUB_REF"], os.environ["GITHUB_SHA"], added)
     phase = plan["phase"]
+    if phase in V14_PHASES:
+        from experiments.v14.pipeline import run
+        return run(identifier, plan, output)
     if phase in STAGE3_PHASES:
         from experiments.stage3.pipeline import run_stage3
         run_stage3(identifier, plan, output)

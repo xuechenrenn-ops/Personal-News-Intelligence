@@ -178,7 +178,11 @@ def render(selected, cards, as_of):
                 lines[-1] += " ｜ 近30天回顾"
             if item.get("localized_title"):
                 lines.append(f"原始题名　{original}")
+            if item.get("scope"):
+                lines.append(f"证据范围　{item['scope']}")
             for field, label in FIELD_LABELS.items():
+                if field == "insight" and item.get("clinical"):
+                    lines.append(f"**临床意义（分析）**　{item['clinical']}")
                 if field == "question" and item.get("question") == original:
                     continue
                 lines.append(f"**{label}**　{item.get(field, MISSING if field != 'insight' else '本条暂无通过校核的启发。')}")
