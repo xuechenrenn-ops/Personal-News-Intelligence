@@ -123,6 +123,23 @@ def choose_result(text, primary=None):
     return max(confirmed, key=lambda pair: pair[0])[1] if confirmed else ""
 
 
+def localized_excerpt(title, quote):
+    """Translate two recurring result forms using explicit values and preserved comparisons."""
+    if re.search(r"double.row versus single.row.*rotator cuff repair", title, re.I):
+        match = re.search(
+            r"DR repair reduced full-thickness retear \(([\d,]+) studies; RR,? (0\.\d+) "
+            r"\[95% CI,? (0\.\d+)[-–](0\.\d+)\]", quote, re.I,
+        )
+        if match:
+            studies, risk, lower, upper = match.groups()
+            return f"全层再撕裂的合并结果（{studies} 项研究）显示，双排修复比单排再撕裂风险低，RR {risk}（95% CI {lower}–{upper}）。"
+    if re.search(r"network meta.analysis", title, re.I) and re.search(
+            r"for pain, (?:RR and MAT|MAT and RR) had relatively high ranking probabilities, but "
+            r"the 95% CIs of most comparisons included 0", quote, re.I):
+        return "疼痛结局中，RR 和 MAT（原文干预缩写）排名概率较高，但多数比较的 95% 置信区间包含 0。"
+    return ""
+
+
 def paper_card(card):
     """Use outcomes from labeled Results with a narrow unstructured fallback."""
     identifier = card.get("id")
@@ -208,6 +225,7 @@ def paper_card(card):
         "design": design + (f"；摘要报告 {sample[0]:,} {sample[1]}。" if sample else "；总样本量未从摘要明确提取。"),
         "result": f'{provenance}　“{outcome}”',
         "limits": limitation, "insight": insight,
+        "localized_result": localized_excerpt(title, outcome),
     }
     return row, quality
 

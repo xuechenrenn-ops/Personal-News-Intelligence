@@ -7,6 +7,7 @@ from cache_manager import cleanup_daily_transients
 from experiments.delivery import Submission, deliver_once
 from experiments.v14.pipeline import prepare_preview, repair_results
 from experiments.run import Flash
+from experiments.stage3.evidence import localized_excerpt
 from test_stage3 import article
 
 from experiments.v15.sources import NEWS, SearchFetch, academic, aossm_calendar, excerpt, on_site
@@ -87,3 +88,12 @@ class V15Tests(unittest.TestCase):
         self.assertEqual(repair_results(provider, source, proposals, []), ["bad"])
         self.assertIn("0.80", proposals["good"]["result"])
         self.assertIn("0.70", proposals["bad"]["result"])
+
+
+    def test_literal_fallback_preserves_effect_measure_and_comparison(self):
+        title = "Double-Row Versus Single-Row Arthroscopic Rotator Cuff Repair"
+        source = "DR repair reduced full-thickness retear (40 studies; RR, 0.69 [95% CI, 0.55-0.86]; NNT, 21)"
+        rendered = localized_excerpt(title, source)
+        self.assertIn("双排修复比单排", rendered)
+        self.assertIn("RR 0.69（95% CI 0.55–0.86）", rendered)
+        self.assertEqual(localized_excerpt(title, source.replace("RR,", "HR,")), "")
