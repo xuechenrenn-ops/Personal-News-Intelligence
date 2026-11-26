@@ -95,15 +95,15 @@ def generate(output):
 
 def send(output, artifact, approval):
     audit = json.loads((artifact / "audit.json").read_text(encoding="utf-8"))
-    if audit["parts"] != approval["parts"]:
-        raise RuntimeError("The reviewed manifest differs from the artifact")
     from pni.presentation import Message
-    messages = []
-    for index, part in enumerate(approval["parts"], 1):
-        payload = (artifact / f"payload-{index}.txt").read_bytes()
-        if sha256(payload).hexdigest() != part["sha256"]:
-            raise RuntimeError("The reviewed HTML differs from the artifact")
-        messages.append(Message("【V1.7验收】" + part["title"], payload.decode("utf-8"), ()))
+    from pni.review_v17 import manifest, reviewed_messages
+
+    if audit["parts"] != approval["source_parts"]:
+        raise RuntimeError("The source manifest differs from the generated artifact")
+    reviewed = reviewed_messages(artifact, audit, approval["keep_pmids"])
+    if manifest(reviewed) != approval["parts"]:
+        raise RuntimeError("The reviewed HTML differs from the approved manifest")
+    messages = [Message("【V1.7验收】" + msg.title, msg.html, msg.articles) for msg in reviewed]
     sender = PushPlus(os.environ["PUSHPLUS_TOKEN"], os.environ.get("PUSHPLUS_ACCESS_KEY", ""),
                       os.environ.get("PUSHPLUS_SECRET_KEY", ""))
     if not messages or not sender.token:

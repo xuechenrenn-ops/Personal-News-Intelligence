@@ -36,8 +36,16 @@ def field(card):
     if (ortho or ORTHOPAEDIC.search(abstract)) and GUIDELINE.search(
             title + " " + " ".join(card.get("publication_types", []))):
         return "guideline"
-    if AI.search(title) or (AI.search(abstract) and re.search(
-            r"predict|validat|model|automat|classif|detect|模型|验证|预测|自动|分类", title, re.I)):
+    method = re.search(r"(?:materials and )?methods?:\s*(.+?)(?=\s+(?:results?|findings?):|$)",
+                       abstract, re.I | re.S)
+    # Navigation or robotics in the methods can be a routine surgical aid.
+    # Require it in the research title, or require a substantive AI model
+    # in the Methods together with a title focused on algorithm performance.
+    design = method[1] if method else abstract
+    model_method = AI.search(design)
+    if AI.search(title) or (
+            model_method and not re.search(r"navigation|导航|robot", model_method[0], re.I)
+            and re.search(r"predict|validat|automat|classif|模型|验证|预测|自动|分类", title, re.I)):
         if ortho or ORTHOPAEDIC.search(abstract):
             return "ortho-ai"
         if CLINICAL_CONTEXT.search(semantic):

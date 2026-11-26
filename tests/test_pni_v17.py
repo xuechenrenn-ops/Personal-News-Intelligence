@@ -56,11 +56,13 @@ class V17Tests(TestCase):
                   "guide": "Clinical practice guideline for hip fracture care",
                   "mobile": "Digital health after knee arthroplasty"}
         rows = {key: {"id": key, "title": title, "date": DAY.isoformat(),
-                      "evidence": "The hospital study used XGBoost." if key == "model" else ""}
+                      "evidence": "METHODS: The hospital study used XGBoost." if key == "model" else ""}
                 for key, title in titles.items()}
         self.assertEqual(curation.field(rows["guide"]), "guideline")
         self.assertEqual(curation.field(rows["mobile"]), "clinical")
         self.assertEqual(curation.field(rows["model"]), "ortho-ai")
+        self.assertEqual(curation.field({"title": "No Difference Detected Between Two Targeted Cut Angles in Knee Arthroplasty",
+                                         "evidence": "METHODS: measured resection with computer navigation."}), "clinical")
         ranked = curation.candidates(list(rows.values()), {}, DAY.isoformat(), limit=3, reserve=False)
         self.assertEqual([row["id"] for row in ranked], ["robot", "other", "model"])
 

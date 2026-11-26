@@ -1,0 +1,25 @@
+{
+  "run_id": 45843619819,
+  "source_parts": [
+    {
+      "sha256": "79303ba0d04fcc33cf97fc0196d5624ee5912f641e909dac1ff8c75e691bd008",
+      "title": "每日简报｜2026-11-26",
+      "characters": 6202,
+      "utf8_bytes": 9843,
+      "utf16_units": 6202
+    }
+  ],
+  "keep_pmids": [
+    "43058301",
+    "43092989"
+  ],
+  "parts": [
+    {
+      "sha256": "7ec3a7912548387942f336f23656e17d2abb4001e8749754907e7ab047f66152",
+      "title": "每日简报｜2026-11-26",
+      "characters": 5045,
+      "utf8_bytes": 8597,
+      "utf16_units": 5045
+    }
+  ]
+}
