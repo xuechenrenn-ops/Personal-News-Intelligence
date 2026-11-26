@@ -16,9 +16,9 @@ TAVILY = "https://api.tavily.com"
 DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Z0-9]+", re.I)
 PMID = re.compile(r"(?:pubmed\.ncbi\.nlm\.nih\.gov/|PMID[:\s]+)(\d{6,10})", re.I)
 EU_QUERIES = {
-    "ortho-clinical": '(TITLE_ABS:arthroplasty OR TITLE_ABS:fracture OR TITLE_ABS:"rotator cuff" OR TITLE_ABS:"frozen shoulder" OR TITLE_ABS:meniscus OR TITLE_ABS:"anterior cruciate ligament" OR TITLE_ABS:musculoskeletal) AND (TITLE_ABS:randomized OR TITLE_ABS:systematic OR TITLE_ABS:cohort)',
-    "ortho-ai": '(TITLE_ABS:orthopaedic OR TITLE_ABS:orthopedic OR TITLE_ABS:fracture OR TITLE_ABS:arthroplasty OR TITLE_ABS:gait OR TITLE_ABS:rehabilitation OR TITLE_ABS:musculoskeletal) AND (TITLE_ABS:"machine learning" OR TITLE_ABS:"artificial intelligence" OR TITLE_ABS:"deep learning" OR TITLE_ABS:"large language model" OR TITLE_ABS:"wearable sensor")',
-    "china-affiliation": '(AFF:China OR AFF:Chinese) AND (TITLE_ABS:arthroplasty OR TITLE_ABS:"adhesive capsulitis" OR TITLE_ABS:orthopaedic OR TITLE_ABS:fracture OR TITLE_ABS:musculoskeletal) AND (TITLE_ABS:randomized OR TITLE_ABS:systematic OR TITLE_ABS:"machine learning")',
+    "ortho-clinical": '(TITLE_ABS:arthroplasty OR TITLE_ABS:fracture OR TITLE_ABS:"rotator cuff" OR TITLE_ABS:"frozen shoulder" OR TITLE_ABS:meniscus OR TITLE_ABS:"anterior cruciate ligament" OR TITLE_ABS:musculoskeletal OR TITLE_ABS:osteotomy OR TITLE_ABS:ACL) AND (TITLE_ABS:randomized OR TITLE_ABS:systematic OR TITLE_ABS:cohort)',
+    "ortho-ai": '(TITLE_ABS:orthopaedic OR TITLE_ABS:orthopedic OR TITLE_ABS:fracture OR TITLE_ABS:arthroplasty OR TITLE_ABS:gait OR TITLE_ABS:rehabilitation OR TITLE_ABS:musculoskeletal OR TITLE_ABS:osteotomy OR TITLE_ABS:ACLR) AND (TITLE_ABS:"machine learning" OR TITLE_ABS:"artificial intelligence" OR TITLE_ABS:"deep learning" OR TITLE_ABS:"large language model" OR TITLE_ABS:"wearable sensor")',
+    "china-affiliation": '(AFF:China OR AFF:Chinese) AND (TITLE_ABS:arthroplasty OR TITLE_ABS:"adhesive capsulitis" OR TITLE_ABS:orthopaedic OR TITLE_ABS:fracture OR TITLE_ABS:musculoskeletal OR TITLE_ABS:osteotomy OR TITLE_ABS:ACL) AND (TITLE_ABS:randomized OR TITLE_ABS:systematic OR TITLE_ABS:"machine learning")',
     "clinical-ai": '(TITLE_ABS:"electronic health record" OR TITLE_ABS:"clinical decision support") AND (TITLE_ABS:"deep learning" OR TITLE_ABS:"machine learning" OR TITLE_ABS:"large language model")',
 }
 WEB_TOPICS = (
@@ -267,7 +267,9 @@ def crossref_card(doi):
     published = row.get("published-online") or row.get("published")
     dates = published.get("date-parts", [[]])[0] if published else []
     title = _strip_html((row.get("title") or [""])[0])
-    abstract = _strip_html(row.get("abstract") or "")
+    raw_abstract = row.get("abstract") or ""
+    raw_abstract = re.sub(r"<(?:jats:)?title[^>]*>(.*?)</(?:jats:)?title>", r" \1: ", raw_abstract, flags=re.I | re.S)
+    abstract = _strip_html(raw_abstract)
     journal = (row.get("container-title") or [""])[0]
     if len(dates) != 3 or not title or not abstract or not journal:
         return None

@@ -21,7 +21,9 @@ MAX_TOKENS = 1600
 MAX_REQUESTS = 5
 MAX_RUN_RESERVATION = 200_000
 LAYOUT = {"medical": 3, "policy": 1, "world": 2}
-PHASES = {"baseline", "candidate", "grounded", "holdout", "live",
+STAGE3_PHASES = {"s3-benchmark", "s3-preview", "s3-model", "s3-model-benchmark"}
+STAGE3_FREE = {"s3-benchmark", "s3-preview"}
+PHASES = STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
           "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm", "s2-archival"}
 CORE_PHASES = {"candidate", "grounded", "s2-compare", "s2-live", "s2-confirm"}
 
@@ -214,14 +216,22 @@ def read_dispatch(event, current_ref, current_sha, added, root=ROOT):
     manifest = root.parent / manifests[0]
     plan = json.loads(manifest.read_text(encoding="utf-8"))
     plans = [json.loads(path.read_text(encoding="utf-8")) for path in manifest.parent.glob("*.json")]
-    if (len(plans) > 20
-            or any(type(p["reserve_micro_cny"]) is not int or
-                   not 0 < p["reserve_micro_cny"] <=
-                       (2_000_000 if p["phase"].startswith("s2-") else MAX_RUN_RESERVATION)
-                       for p in plans)
+    if any(not isinstance(p, dict) or p.get("phase") not in PHASES for p in plans):
+        raise RuntimeError("Unknown dispatch phase")
+    rounds = [p["round"] for p in plans if "round" in p]
+    historical_rounds = sum(p["phase"] in CORE_PHASES for p in plans)
+    invalid_rounds = (
+        any(type(n) is not int or not historical_rounds < n <= 30 for n in rounds)
+        or len(set(rounds)) != len(rounds)
+        or historical_rounds + len(rounds) > 30
+    )
+    if (any(type(p.get("reserve_micro_cny")) is not int
+            or not (0 if p["phase"] in STAGE3_FREE else 1) <= p["reserve_micro_cny"] <=
+                (2_000_000 if p["phase"].startswith("s2-") else MAX_RUN_RESERVATION)
+            or (p["phase"] in STAGE3_FREE and p["reserve_micro_cny"] != 0)
+            for p in plans)
             or sum(p["reserve_micro_cny"] for p in plans) > 20_000_000
-            or sum(p["phase"] in CORE_PHASES for p in plans) > 5
-            or any(p["phase"] not in PHASES for p in plans)):
+            or invalid_rounds):
         raise RuntimeError("Dispatch ledger invalid")
     return manifest.stem, plan
 
@@ -259,6 +269,10 @@ def workflow(output):
     ).splitlines()
     identifier, plan = read_dispatch(event, os.environ["GITHUB_REF"], os.environ["GITHUB_SHA"], added)
     phase = plan["phase"]
+    if phase in STAGE3_PHASES:
+        from experiments.stage3.pipeline import run_stage3
+        run_stage3(identifier, plan, output)
+        return
     if phase.startswith("s2-"):
         from experiments.stage2.pipeline import run_stage2
         run_stage2(identifier, plan, output)

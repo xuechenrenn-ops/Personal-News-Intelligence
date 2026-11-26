@@ -537,7 +537,7 @@ def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
     ]
     if expanded:
         queries.extend([
-            ("证据与运动肩膝", '(meniscus[Title] OR "anterior cruciate ligament"[Title] OR "rotator cuff"[Title] OR "adhesive capsulitis"[Title] OR "plantar fasciitis"[Title]) AND (randomized[Title/Abstract] OR trial[Title/Abstract] OR "systematic review"[Title/Abstract])'),
+            ("证据与运动肩膝", '(meniscus[Title] OR "anterior cruciate ligament"[Title] OR ACL[Title] OR ACLR[Title] OR osteotom*[Title] OR "rotator cuff"[Title] OR "adhesive capsulitis"[Title] OR "plantar fasciitis"[Title]) AND (randomized[Title/Abstract] OR trial[Title/Abstract] OR "systematic review"[Title/Abstract])'),
             ("关节置换预测与随访", '(arthroplasty[Title] OR "fracture liaison"[Title] OR "lower extremity orthopaedic"[Title]) AND (predict*[Title/Abstract] OR ehealth[Title/Abstract] OR "digital health"[Title/Abstract] OR "randomized controlled trial"[Publication Type])'),
             ("中国研究团队骨科", '(China[Affiliation] OR Beijing[Affiliation] OR Shanghai[Affiliation]) AND (orthopaedic[Title/Abstract] OR "adhesive capsulitis"[Title/Abstract] OR arthroplasty[Title/Abstract] OR rehabilitation[Title/Abstract]) AND (randomized[Title/Abstract] OR validation[Title/Abstract] OR "systematic review"[Title/Abstract])'),
         ])
@@ -632,6 +632,7 @@ def _pubmed_records(pmids):
                              if a.text],
             "publication_types": [a.text for a in node.findall(".//PublicationTypeList/PublicationType")
                                   if a.text],
+            "mesh": [a.text for a in node.findall(".//MeshHeading/DescriptorName") if a.text],
         })
     return records
 

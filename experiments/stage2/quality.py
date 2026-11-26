@@ -4,15 +4,10 @@ import unicodedata
 from datetime import date
 from decimal import Decimal
 
-from experiments.discover import EXCLUDED
+from research_scope import research_lane
 from experiments.preview import clean_text
 from experiments.run import eligible
 
-ORTHO_TERMS = re.compile(r"orthop[ae]edi|arthroplast|arthroscop|fracture|menisc|ligament|"
-                         r"osteopor|lumbar|cervical|musculoskelet|plantar fasciitis|"
-                         r"frozen shoulder|adhesive capsulitis|rotator cuff|knee|cartilage|gait", re.I)
-AI_TERMS = re.compile(r"artificial intelligence|machine learning|deep learning|large language model|"
-                      r"neural network|clinical decision support|wearable|ehealth|digital health", re.I)
 ACCIDENT = re.compile(r"fuel tanker|hostage.tak|(?:crash|fire) (?:kills|killed)|FIFA|celebrity|"
                       r"娱乐|网红|油罐车|交通事故|火灾|起火|明星", re.I)
 EXCEPTION = re.compile(r"nationwide|one hundred|states of emergency|全国|百人|重大制度", re.I)
@@ -38,14 +33,7 @@ NO_RESULTS_DESIGN = re.compile(r"trial protocol|protocol for|technical note|bibl
 
 
 def classify(card):
-    title = card["title"]
-    if EXCLUDED.search(title) or re.search(r"dentistr|periodont", title, re.I):
-        return None
-    if ORTHO_TERMS.search(title):
-        return "ortho-ai" if AI_TERMS.search(title) else "clinical"
-    if AI_TERMS.search(title) and re.search(r"patient|clinical|medical|hospital|health care|electronic health", title, re.I):
-        return "medical-ai"
-    return None
+    return research_lane(card["title"], card.get("mesh", []))
 
 
 def choose_pool(cards, as_of, max_per=6, max_total=16):

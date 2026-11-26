@@ -1,0 +1,181 @@
+"""Render a narrow, traceable claim from the source rather than re-generating it."""
+import re
+from datetime import date
+
+from experiments.preview import clean_text
+from experiments.stage2.quality import NO_RESULTS_DESIGN, number_set
+from research_scope import research_lane
+
+HEADING = re.compile(
+    r"(?<!\w)(objective(?:s)?|purpose|aims?|background|methods?|materials and methods|"
+    r"study design|design|participants|results?|findings|limitations?|conclusions?|interpretation)\s*:\s*",
+    re.I,
+)
+SENTENCES = re.compile(r"(?<=[!?。])\s*|(?<!\bvs)(?<!\be\.g)(?<!\bi\.e)(?<=\.)\s+(?=[A-Z])")
+DESIGNS = [
+    (r"target trial emulation|emulated a target trial", "目标试验模拟（观察性）"),
+    (r"network meta.analysis", "网状荟萃分析"),
+    (r"meta.analysis", "荟萃分析"),
+    (r"systematic review", "系统评价"),
+    (r"randomi[sz]ed (?:controlled |clinical )?trial|randomly assign|randomly allocate|RCT\b", "随机试验"),
+    (r"retrospective", "回顾性研究"),
+    (r"prospective", "前瞻性研究"),
+    (r"cross.sectional", "横断面研究"),
+]
+NOUNS = r"patients?|participants?|adults?|subjects?|studies|trials|knees|shoulders|hips"
+SAMPLES = re.compile(
+    rf"\b(?:a total of |we (?:included|enrolled|identified) |trial included |included |enrolled )"
+    rf"([\d,]+)\s+({NOUNS})\b|"
+    rf"\b([\d,]+)\s+({NOUNS})\s+(?:were (?:enrolled|randomi[sz]ed|included))\b",
+    re.I,
+)
+UNIT_LABEL = {"patients": "例患者", "patient": "例患者", "participants": "名受试者",
+              "participant": "名受试者", "adults": "名成人", "subjects": "名受试者",
+              "studies": "项研究", "trials": "项试验", "knees": "膝", "shoulders": "肩", "hips": "髋"}
+METRIC = re.compile(r"\b(?:RR|HR|OR|AUC|AUROC|ICC|NNT|95% CI|sensitivity|specificity|accuracy|"
+                    r"mean difference|risk ratio|hazard ratio|odds ratio)\b", re.I)
+OUTCOME = re.compile(
+    r"improv|decreas|reduc|increas|differ|similar|associat|detect|discriminat|"
+    r"fracture|retear|mortality|pain|injur|mobilit|function|accuracy|sensitivity|"
+    r"\bKOOS\b|\bAUC\b|precision|performance|complication|failure|agreement|"
+    r"achiev|correlation|estimated|demonstrat|found|outperform",
+    re.I,
+)
+BAD_EXCERPT = re.compile(r"https?://|\[.*?\]\(|(?:ignore|disregard).{0,20}instructions|"
+                         r"shall prescribe|recommend(?:ed)? that patients", re.I)
+INSIGHTS = {
+    "clinical": "若用于科研选题，可事先定义最小临床重要差异，并复核随访期和可纳入人群。",
+    "ortho-ai": "若做本院复现，可保留独立外部验证集，分别报告区分度、校准和亚组误差。",
+    "medical-ai": "若评估临床落地，可前瞻记录漏报、人工复核工作量和科室间性能变化。",
+}
+
+
+def sections(abstract):
+    matches = list(HEADING.finditer(abstract))
+    parts = {}
+    for idx, match in enumerate(matches):
+        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(abstract)
+        name = match.group(1).lower()
+        parts[name] = (parts.get(name, "") + " " + abstract[match.end():end]).strip()
+    return parts
+
+
+def fragments(text):
+    for sentence in SENTENCES.split(text):
+        sentence = clean_text(sentence).strip()
+        if not sentence:
+            continue
+        yield sentence
+        # A semicolon separates clauses. Never cut at arbitrary character or word boundaries.
+        if ";" in sentence:
+            for clause in sentence.split(";"):
+                clause = clause.strip()
+                if clause and clause[-1] not in ".!?。":
+                    clause += "."
+                yield clause
+
+
+def choose_result(text):
+    confirmed = []
+    for value in fragments(text):
+        word_count = len(value.split())
+        if not 5 <= word_count <= 23 or len(value) > 240 or BAD_EXCERPT.search(value):
+            continue
+        if not OUTCOME.search(value) or value.count("(") != value.count(")"):
+            continue
+        counts = number_set(value)
+        score = (bool(METRIC.search(value)), bool(counts), not value.lower().startswith(("it ", "this ", "these ")))
+        confirmed.append((score, value))
+    return max(confirmed, key=lambda pair: pair[0])[1] if confirmed else ""
+
+
+def paper_card(card):
+    """Use outcomes from labeled Results with a narrow unstructured fallback."""
+    identifier = card.get("id")
+    def reject(reason):
+        return None, {"id": identifier, "status": reason}
+    if not card.get("primary") or not (card.get("pmid") or card.get("doi")):
+        return reject("missing_primary_identifier")
+    title = card["title"]
+    lane = research_lane(title, card.get("mesh", []))
+    if not lane:
+        return reject("outside_scope")
+    if NO_RESULTS_DESIGN.search(title):
+        return reject("protocol_or_non_outcome")
+    abstract = card.get("evidence") or ""
+    parts = sections(abstract)
+    result_text = parts.get("results") or parts.get("result") or parts.get("findings") or ""
+    # Journals with no structured labels can still report a numeric outcome explicitly.
+    outcome = choose_result(result_text) if result_text else ""
+    if not outcome and not result_text and not parts:
+        outcome = choose_result(abstract)
+        if not (outcome and METRIC.search(outcome) and number_set(outcome)):
+            outcome = ""
+    if not outcome:
+        return reject("no_complete_outcome_excerpt")
+    methods = " ".join(parts.get(k, "") for k in ("methods", "method", "materials and methods", "study design", "design", "participants"))
+    types = " ".join(card.get("publication_types", ()))
+    design = next((label for expr, label in DESIGNS if re.search(expr, title + " " + types + " " + methods, re.I)),
+                  "摘要未明确标示研究设计")
+    sample = None
+    for match in SAMPLES.finditer(methods):
+        count, unit = (match[1], match[2]) if match[1] else (match[3], match[4])
+        if unit.lower() in UNIT_LABEL and int(count.replace(",", "")) > 0:
+            sample = (int(count.replace(",", "")), UNIT_LABEL[unit.lower()])
+            break
+    provenance = "结果段原文短引" if result_text else "非结构化摘要原文短引"
+    quality = {
+        "id": identifier, "status": "eligible", "lane": lane, "sample_confirmed": bool(sample),
+        "structured_results": bool(result_text), "metric": bool(METRIC.search(outcome))
+    }
+    limitation = "摘要未能核实具体局限。仍需结合全文的偏倚、适用人群和终点判读。"
+    if "观察性" in design or "回顾性" in design or "横断面" in design:
+        limitation = "观察性证据，比较结果可能受残余混杂影响。"
+    elif lane != "clinical" and re.search(r"exam|benchmark|validation|performance", title, re.I):
+        limitation = "该研究评估模型或任务表现，临床获益仍需另行验证。"
+    row = {
+        "id": identifier, "lane": "medical",
+        "question": "研究对象和干预／模型见上方原始研究题名。",
+        "design": design + (f"；摘要明确报告 {sample[0]:,} {sample[1]}。" if sample else "；总样本量未从摘要明确提取。"),
+        "result": f'{provenance}　“{outcome}”',
+        "limits": limitation, "insight": INSIGHTS[lane],
+    }
+    return row, quality
+
+
+def medical_digest(cards, as_of, priority=()):
+    eligible, audit = [], []
+    today = date.fromisoformat(as_of)
+    for card in cards:
+        if card["lane"] != "medical":
+            continue
+        age = (today - date.fromisoformat(card["date"])).days
+        if not 0 <= age <= 30:
+            audit.append({"id": card["id"], "status": "outside_date_window"})
+            continue
+        row, quality = paper_card(card)
+        audit.append(quality)
+        if row:
+            eligible.append((age, card, row, quality))
+    by_priority = {key: order for order, key in enumerate(priority)}
+    eligible.sort(key=lambda x: (
+        x[0] > 14, x[3]["lane"] == "medical-ai",
+        x[1]["id"] not in by_priority, by_priority.get(x[1]["id"], 999),
+        x[1]["title"].startswith("["), not x[3]["structured_results"],
+        not x[3]["sample_confirmed"], x[0], not x[3]["metric"],
+    ))
+    used = set()
+    unique = []
+    for entry in eligible:
+        _, card, _, _ = entry
+        aliases = {str(card[key]).casefold() for key in ("pmid", "doi") if card.get(key)}
+        if aliases & used:
+            continue
+        used |= aliases
+        unique.append(entry)
+    finalists = unique[:3]
+    if finalists and {row[3]["lane"] for row in finalists} == {"clinical"}:
+        alternative = next((x for x in unique if x[3]["lane"] == "ortho-ai" and x[0] <= 14 and x[3]["structured_results"]), None)
+        if alternative and len(finalists) > 1:
+            finalists[-1] = alternative
+    return [x[2] for x in finalists], audit

@@ -7,6 +7,8 @@ import re
 import sys
 from urllib.parse import urlsplit
 
+from research_scope import OUTSIDE_SCOPE as EXCLUDED, research_lane
+
 from news_push import (
     GENERAL_FEEDS, _medical_candidate_lane, _normalized_title, _strip_html,
     balance_medical_candidates, fetch_candidates, fetch_official_page_candidates,
@@ -23,15 +25,6 @@ POLICY_SOURCE = {
     "encoding": "utf-8",
     "keywords": ["医保", "用药", "药学", "医疗服务"], "max_items": 4,
 }
-ORTHO = re.compile(r"orthop[ae]edic|musculoskeletal|arthroplast|arthroscop|fracture|"
-                   r"ligament|menisc|laminoplast|osteopor|spine|gait|rotator cuff|"
-                   r"adhesive capsulitis|frozen shoulder|plantar fasciitis|anterior cruciate", re.I)
-CLINICAL_AI = re.compile(
-    r"machine learning|deep learning|artificial intelligence|large language model|"
-    r"electronic health record|clinical decision support|wearable", re.I
-)
-MEDICINE = re.compile(r"clinical|patient|hospital|medic|health|disease|surg|rehab", re.I)
-EXCLUDED = re.compile(r"orthodont|dental|maxillofacial|battery|cathode|marketing", re.I)
 NON_ORIGINAL = {"Editorial", "News", "Comment", "Published Erratum",
                 "Retracted Publication", "Retraction of Publication"}
 COUNTRIES = {"中国": r"\bChina\b", "日本": r"\bJapan\b", "韩国": r"\b(?:South Korea|Republic of Korea)\b",
@@ -69,7 +62,7 @@ def medical_card(item):
     types = set(rec.get("publication_types", []))
     if (not pmid or not journal or not abstract or EXCLUDED.search(title)
             or types & NON_ORIGINAL
-            or not (ORTHO.search(title) or CLINICAL_AI.search(title) and MEDICINE.search(title))):
+            or not research_lane(title, rec.get("mesh", []))):
         return None
     published = full_date(rec.get("online_date") or rec.get("publication_date") or "")
     if not published:
@@ -77,7 +70,8 @@ def medical_card(item):
     card = {"id": item["id"], "lane": "medical", "title": title, "source": journal,
             "date": published, "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
             "pmid": pmid, "region": region_for(rec.get("affiliations", [])),
-            "primary": True, "evidence": abstract[:2000]}
+            "primary": True, "evidence": abstract[:2000],
+            "mesh": rec.get("mesh", []), "publication_types": sorted(types)}
     if rec.get("doi"):
         card["doi"] = rec["doi"]
     return card
