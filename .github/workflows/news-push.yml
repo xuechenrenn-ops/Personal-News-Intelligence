@@ -30,9 +30,9 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Validate V1.6-B production configuration
+      - name: Validate V1.7 production configuration
         run: python -m unittest discover -s tests -q
-      - name: Run V1.6-B
+      - name: Run V1.7
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
@@ -49,4 +49,5 @@ jobs:
           if-no-files-found: ignore
           path: |
             ${{ runner.temp }}/pni/news-preview/*.md
+            ${{ runner.temp }}/pni/news-preview/*.html
             ${{ runner.temp }}/pni/run-summary.json

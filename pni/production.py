@@ -1,6 +1,7 @@
 """The V1.6-B publishing entry point. GitHub state stores no article text or credentials."""
 from base64 import b64decode, b64encode
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,7 @@ from experiments.discover import CST
 from experiments.run import Flash
 from experiments.v14.pipeline import identities, prepare_preview
 from experiments.v15.sources import SearchFetch, TOOL_PRICE
+from pni.presentation import measure, plan
 
 DAILY = 300_000
 MONTHLY = 10_000_000
@@ -116,12 +118,12 @@ class PushPlus:
         except (requests.RequestException, ValueError, TypeError, KeyError):
             self.lookup_issue = "access_key_unavailable"
 
-    def send(self, title, content):
+    def send(self, title, content, *, template="markdown"):
         try:
             response = self.transport.post(
                 f"{PUSHPLUS}/send",
                 json={"token": self.token, "title": title, "content": content,
-                      "template": "markdown", "channel": "wechat"},
+                      "template": template, "channel": "wechat"},
                 timeout=(8, 20), allow_redirects=False,
             )
             if response.status_code != 200:
@@ -206,6 +208,45 @@ def deliver(state, batch, day, briefs, records, alerts, transport):
     state.save()
 
 
+def deliver_html(state, batch, day, messages, records, alerts, transport):
+    """One durable status per immutable part; only a confirmed failure may be retried."""
+    transport.authenticate()
+    provider_attempts = 0
+
+    def submit(title, markup):
+        nonlocal provider_attempts
+        if provider_attempts and provider_attempts % 5 == 0:
+            time.sleep(61)
+        provider_attempts += 1
+        return transport.send(title, markup, template="html")
+
+    for index, message in enumerate(messages, 1):
+        key = f"part-{index}"
+        if key in batch["lanes"]:
+            continue
+        details = {"sha256": sha256(message.html.encode()).hexdigest(),
+                   "title": message.title, **measure(message.html)}
+        for attempt in range(1, 3):
+            part = {**details, "status": "submission_unknown", "attempt": attempt}
+            batch["lanes"][key] = part
+            state.save()
+            response, code = submit(message.title, message.html)
+            part.update(response)
+            state.save()
+            if code:
+                part.update(transport.lookup(code))
+            if part["status"] != "delivery_failed" or batch["mode"] != "daily":
+                break
+        if part["status"] in {"accepted", "sent"}:
+            urls = {url for article in message.articles for url in article.urls}
+            add_history(state, [item for item in [*records, *alerts] if item.get("url") in urls], day)
+        state.save()
+    statuses = {part["status"] for part in batch["lanes"].values()}
+    batch["state"] = ("sent" if statuses == {"sent"} else "accepted_waiting_status"
+                      if statuses and statuses <= {"sent", "accepted"} else "needs_review")
+    state.save()
+
+
 def execute(mode, output):
     now = datetime.now(CST)
     day = now.date().isoformat()
@@ -249,6 +290,7 @@ def execute(mode, output):
             age = trial_age(day, os.environ.get("PNI_TRIAL_START"))
             if age is not None and 0 <= age < 7:
                 summary["trial_day"] = age + 1
+        render_error = None
         if state:
             state.data["source_health"] = json.loads(source_health.read_text(encoding="utf-8"))
             state.data["budgets"][day[:7]]["observed"] += observed
@@ -257,13 +299,24 @@ def execute(mode, output):
             state.save()
             briefs = {lane: (output / "news-preview" / filename).read_text(encoding="utf-8")
                       for lane, filename in FILES.items()}
-            deliver(state, batch, day, briefs, result["selected"], result["alerts"], sender)
+            try:
+                messages = plan(briefs["professional"], briefs["extended"], date.fromisoformat(day))
+            except ValueError as exc:
+                render_error = exc
+                batch.update(state="render_failed", render_error=str(exc))
+                state.save()
+            else:
+                for index, message in enumerate(messages, 1):
+                    (output / "news-preview" / f"part-{index}.html").write_text(message.html, encoding="utf-8")
+                deliver_html(state, batch, day, messages, result["selected"], result["alerts"], sender)
             summary["delivery"] = batch
             state.purge_logs(day)
         # Acquisition files are confined to this run's temporary directory.
         (output / "run-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
                                                 encoding="utf-8")
         print(json.dumps(summary, ensure_ascii=False), flush=True)
+        if render_error:
+            raise render_error
         if state and batch["state"] == "needs_review":
             raise RuntimeError("Review partial or unknown delivery before any manual retry")
 
