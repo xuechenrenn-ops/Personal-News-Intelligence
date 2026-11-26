@@ -1,0 +1,50 @@
+name: News experiment preflight
+on:
+  push:
+    branches: [upgrade/news-pipeline-v1]
+    paths: [.github/workflows/experiment-preflight.yml]
+permissions: {}
+concurrency:
+  group: news-pipeline-experiment
+  cancel-in-progress: false
+jobs:
+  preflight:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check credentials and read-only DeepSeek balance
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          BAICHUAN_API_KEY: ${{ secrets.BAICHUAN_API_KEY }}
+          TAVILY_KEY: ${{ secrets.TAVILY_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+          from decimal import Decimal
+          names = ("DEEPSEEK_API_KEY", "BAICHUAN_API_KEY", "TAVILY_KEY", "PUSHPLUS_TOKEN")
+          for name in names:
+              print(f"{name}_PRESENT={bool(os.environ.get(name, '').strip())}")
+          key = os.environ.get("DEEPSEEK_API_KEY")
+          if key:
+              request = urllib.request.Request(
+                  "https://api.deepseek.com/user/balance",
+                  headers={"Authorization": "Bearer " + key},
+                  method="GET",
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=15) as response:
+                      data = json.load(response)
+                  enough = data.get("is_available") is True and any(
+                      row.get("currency") == "CNY" and Decimal(row["total_balance"]) >= 0.5
+                      for row in data.get("balance_infos", [])
+                  )
+                  print(f"DEEPSEEK_CNY_BALANCE_AT_LEAST_0_5={enough}")
+              except Exception as error:
+                  print(f"DEEPSEEK_BALANCE_UNVERIFIED={type(error).__name__}")
+          print("PAID_REQUESTS=0 TAVILY_CREDITS=0 WECHAT_REQUESTS=0")
+          PY
