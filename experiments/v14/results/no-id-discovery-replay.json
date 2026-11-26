@@ -1,0 +1,315 @@
+{
+  "coverage": {
+    "2026-11-07": {
+      "reference": [
+        "42910733",
+        "42969761",
+        "42982479"
+      ],
+      "found": [
+        "42982479"
+      ],
+      "counts": {
+        "pubmed": {
+          "returned": 161,
+          "verified": 68,
+          "target_hits": [
+            "42982479"
+          ],
+          "status": "ok"
+        },
+        "europe:ortho-clinical": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:ortho-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:china-affiliation": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:clinical-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "science-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "npj-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        }
+      }
+    },
+    "2026-11-17": {
+      "reference": [
+        "43033273",
+        "43035607",
+        "43038553"
+      ],
+      "found": [
+        "43035607",
+        "43038553"
+      ],
+      "counts": {
+        "pubmed": {
+          "returned": 165,
+          "verified": 67,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "europe:ortho-clinical": {
+          "returned": 36,
+          "verified": 34,
+          "target_hits": [
+            "43035607"
+          ],
+          "status": "ok"
+        },
+        "europe:ortho-ai": {
+          "returned": 36,
+          "verified": 23,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "europe:china-affiliation": {
+          "returned": 36,
+          "verified": 26,
+          "target_hits": [
+            "43038553"
+          ],
+          "status": "ok"
+        },
+        "europe:clinical-ai": {
+          "returned": 21,
+          "verified": 8,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "science-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "npj-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        }
+      }
+    },
+    "2026-11-21": {
+      "reference": [
+        "43058301",
+        "43062698",
+        "43065626"
+      ],
+      "found": [
+        "43058301",
+        "43062698",
+        "43065626"
+      ],
+      "counts": {
+        "pubmed": {
+          "returned": 164,
+          "verified": 61,
+          "target_hits": [
+            "43058301",
+            "43062698",
+            "43065626"
+          ],
+          "status": "ok"
+        },
+        "europe:ortho-clinical": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:ortho-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:china-affiliation": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:clinical-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "science-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "npj-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        }
+      }
+    },
+    "2026-11-26": {
+      "reference": [
+        "10.3389/fmed.2026.1992527",
+        "43077730",
+        "43082058"
+      ],
+      "found": [
+        "43077730",
+        "43082058"
+      ],
+      "counts": {
+        "pubmed": {
+          "returned": 155,
+          "verified": 94,
+          "target_hits": [
+            "43077730",
+            "43082058"
+          ],
+          "status": "ok"
+        },
+        "europe:ortho-clinical": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:ortho-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:china-affiliation": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:clinical-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "science-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "npj-rss": {
+          "returned": 8,
+          "verified": 3,
+          "target_hits": [],
+          "status": "ok"
+        }
+      }
+    },
+    "2026-10-27": {
+      "reference": [
+        "42897441",
+        "42913286",
+        "42928573"
+      ],
+      "found": [
+        "42897441",
+        "42928573"
+      ],
+      "counts": {
+        "pubmed": {
+          "returned": 157,
+          "verified": 91,
+          "target_hits": [
+            "42897441",
+            "42928573"
+          ],
+          "status": "ok"
+        },
+        "europe:ortho-clinical": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:ortho-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:china-affiliation": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "europe:clinical-ai": {
+          "returned": 0,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ReadTimeout"
+        },
+        "science-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        },
+        "npj-rss": {
+          "returned": 8,
+          "verified": 0,
+          "target_hits": [],
+          "status": "ok"
+        }
+      }
+    }
+  },
+  "source_access": {
+    "cn-hospital": {
+      "status": 503
+    },
+    "cn-science-media": {
+      "status": "ReadTimeout"
+    },
+    "cn-public-science": {
+      "status": 403
+    },
+    "foreign-journal": {
+      "status": 200,
+      "doi_count": 1
+    }
+  },
+  "phase": "s3-coverage",
+  "calls": [],
+  "wechat_requests": 0,
+  "tavily_credits": 0,
+  "elapsed_seconds": 666.212
+}

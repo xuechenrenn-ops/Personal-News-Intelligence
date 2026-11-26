@@ -1,0 +1,117 @@
+{
+  "phase": "live",
+  "as_of": "2026-11-26",
+  "run_id": 45753833048,
+  "items": [
+    {
+      "id": "P13",
+      "lane": "medical",
+      "headline": "全膝置换术后血栓预防，因子 XI 抑制剂完成中国Ⅱ期试验",
+      "summary": "在初次单侧全膝关节置换患者中，研究者比较 KN060 与依诺肝素预防术后静脉血栓栓塞的效果与安全性。",
+      "evidence": "中国19家中心开展开放标签随机试验，241例随机，213例进入疗效分析。术后第10–14天造影检出的静脉血栓栓塞率，KN060三个剂量组分别为0%、1.9%和1.9%，依诺肝素组为7.3%。各剂量组均达到非劣效终点。各组均未观察到大出血或临床相关非大出血。",
+      "limitations": "Ⅱ期试验且主要结局来自短期造影。临床症状性事件的获益与少见出血风险仍需更大样本验证。",
+      "sports_medicine_insight": "后续试验可把症状性血栓和临床重要出血设为共同关注的结局，并验证不同基线血栓风险患者的结果。"
+    },
+    {
+      "id": "P24",
+      "lane": "medical",
+      "headline": "两种推理模型参加骨科住院医师训练考试，图像题拉开差距",
+      "summary": "研究比较 ChatGPT 5.2 Extended Thinking 与 Claude Opus 4.5 Extended Thinking 在骨科训练考试中的正确率和推理质量。",
+      "evidence": "两模型均作答同一批622道归档题，其中280道是图像题。总体正确率分别为88.1%和81.7%，图像题分别为84.6%和75.4%。",
+      "limitations": "模型作答的是归档题目子集，住院医师参考数据来自完整考试，两者只能作描述性比较。题库成绩也无法衡量真实病例中的安全性。",
+      "sports_medicine_insight": "可在教学验收中分别评价答案正确率、图像解读和理由质量，记录高置信度的错误。"
+    },
+    {
+      "id": "P1",
+      "lane": "medical",
+      "headline": "颈椎前路术后，哪些影像指标与二次椎管成形术有关",
+      "summary": "研究关注同时有脊髓型颈椎病和椎管狭窄的患者，分析前路术后非计划二次单开门椎管成形的相关因素。",
+      "evidence": "回顾性队列共92例。回归分析中，X线下C6椎管前后径每增加0.1 cm，二次手术的优势比为0.422。MRI下C3脊髓与椎管比值每增加1个百分点，优势比为0.670。二次手术患者中，术后进行性退变是最常见原因，占44.9%。",
+      "limitations": "回顾性研究，样本量有限，相关指标需要前瞻性和外部验证。",
+      "sports_medicine_insight": "可将影像指标与手术节段、疾病严重程度一起纳入预先注册的模型，检验其在外部队列中的预测表现。"
+    },
+    {
+      "id": "policy-O3",
+      "lane": "policy",
+      "headline": "湖北推进 DRG/DIP 医保智能监管试点",
+      "summary": "国家医保局介绍，湖北推进定点机构事前提醒、智能审核和反欺诈监测，并在十堰、咸宁、随州试点全病历数据采集。"
+    },
+    {
+      "id": "G1-3",
+      "lane": "world",
+      "headline": "埃及大开罗环路油罐车事故起火",
+      "summary": "埃及当地11月25日，大开罗环路吉萨路段一辆运输石油产品的车辆翻车并起火。据埃及主管部门当时通报，已报告31人死亡、21人受伤。"
+    },
+    {
+      "id": "G0-2",
+      "lane": "world",
+      "headline": "三部门提出到2030年建成新一代通信网",
+      "summary": "工信部、国家网信办、国家发展改革委联合印发实施方案，提出推进5G-A、万兆光网和卫星互联网建设，并适时开展6G网络建设。"
+    }
+  ],
+  "sources": [
+    {
+      "id": "P13",
+      "lane": "medical",
+      "title": "Factor XI Inhibitor for Prevention of Venous Thromboembolism in Patients Undergoing Total Knee Arthroplasty: A Phase 2 Randomized Clinical Trial.",
+      "source": "JAMA Surgery",
+      "date": "2026-11-25",
+      "url": "https://jamanetwork.com/journals/jamasurgery/article-abstract/2857164",
+      "pmid": "43084330",
+      "region": "中国",
+      "primary": true,
+      "doi": "10.1001/jamasurg.2026.5668"
+    },
+    {
+      "id": "P24",
+      "lane": "medical",
+      "title": "Performance of Reasoning-intensive Large Language Models on the Orthopaedic In-training Examination.",
+      "source": "The Journal of the American Academy of Orthopaedic Surgeons",
+      "date": "2026-11-25",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43082058/",
+      "pmid": "43082058",
+      "region": "研究机构地域未核实",
+      "primary": true,
+      "doi": "10.5435/JAAOS-D-26-00860"
+    },
+    {
+      "id": "P1",
+      "lane": "medical",
+      "title": "Radiologic Predictors and Etiological Analysis of Secondary Single-Door Laminoplasty Following Anterior Cervical Spine Surgery for Cervical Spondylotic Myelopathy Complicated With Cervical Spinal Stenosis.",
+      "source": "Clinical Spine Surgery",
+      "date": "2026-11-25",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43084815/",
+      "pmid": "43084815",
+      "region": "中国",
+      "primary": true,
+      "doi": "10.1097/BSD.0000000000002201"
+    },
+    {
+      "id": "policy-O3",
+      "lane": "policy",
+      "title": "湖北健全DRG/DIP医保智能监管体系持续筑牢监管防线",
+      "source": "国家医保局",
+      "date": "2026-11-26",
+      "url": "https://www.nhsa.gov.cn/art/2026/11/26/art_14_23532.html",
+      "primary": true
+    },
+    {
+      "id": "G1-3",
+      "lane": "world",
+      "title": "Thirty-one killed in massive fire as fuel tanker crashes on Cairo highway",
+      "source": "路透社",
+      "date": "2026-11-26",
+      "url": "https://www.reuters.com/world/africa/least-21-killed-blaze-after-vehicle-overturns-egypt-health-ministry-says-2026-11-25/",
+      "primary": true
+    },
+    {
+      "id": "G0-2",
+      "lane": "world",
+      "title": "中国提出到2030年建成覆盖完善、性能领先的新一代通信网",
+      "source": "新华财经",
+      "date": "2026-11-26",
+      "url": "https://m.cnfin.com/yw-lb/zixun/20261126/4500372_1.html",
+      "primary": true
+    }
+  ]
+}

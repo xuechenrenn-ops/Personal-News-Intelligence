@@ -1,0 +1,83 @@
+{
+  "version": "1.0",
+  "reminder_days": 30,
+  "urgent_days": 7,
+  "events": [
+    {
+      "id": "AAOS-2027",
+      "name": "AAOS Annual Meeting 2027",
+      "scope": "国际骨科",
+      "start_date": "2027-03-03",
+      "end_date": "2027-03-06",
+      "location": "Las Vegas, Nevada, USA",
+      "url": "https://www.aaos.org/annual/attend/future-meetings",
+      "source": "AAOS 官方未来会议安排",
+      "verified_on": "2026-11-25"
+    },
+    {
+      "id": "AOSSM-2027",
+      "name": "AOSSM Annual Meeting 2027",
+      "scope": "国际运动医学",
+      "start_date": "2027-07-07",
+      "end_date": "2027-07-10",
+      "location": "Boston, Massachusetts, USA",
+      "url": "https://events.sportsmed.org/am2026",
+      "source": "AOSSM 官方年会页面",
+      "verified_on": "2026-11-25"
+    },
+    {
+      "id": "ESSKA-2028",
+      "name": "ESSKA Congress 2028",
+      "scope": "国际运动医学与关节镜",
+      "start_date": "2028-06-07",
+      "end_date": "2028-06-09",
+      "location": "Gothenburg, Sweden",
+      "url": "https://www.esska.org/page/ESSKACongress",
+      "source": "ESSKA 官方大会页面",
+      "verified_on": "2026-11-25"
+    },
+    {
+      "id": "AAOS-AOSSM-AANA-2027",
+      "name": "27th Annual AAOS/AOSSM/AANA Sports Medicine Course 2027",
+      "scope": "国际骨科与运动医学",
+      "start_date": "2027-01-24",
+      "end_date": "2027-01-27",
+      "location": "Park City, Utah, USA",
+      "url": "https://www.sportsmed.org/education/programs",
+      "source": "AOSSM 官方 Featured Programs & Events",
+      "verified_on": "2026-11-25"
+    }
+  ],
+  "watch_sources": [
+    {
+      "name": "中华医学会骨科学分会 / COA",
+      "scope": "国内骨科",
+      "url": "https://xue.sciconf.cn/infomation-detail?id=25B58036-FAFF-9071-8394-05A317F3393E&type=21",
+      "note": "中华医学会骨科学分会官方COA2026会议通知页；当前为历史会议信息入口，后续需更新下一届官方链接。",
+      "enabled": true
+    },
+    {
+      "name": "中华医学会运动医疗分会",
+      "scope": "国内运动医学",
+      "url": "https://www.cma.org.cn/"
+    },
+    {
+      "name": "AAOS Future Meetings",
+      "scope": "国际骨科",
+      "url": "https://www.aaos.org/annual/attend/future-meetings"
+    },
+    {
+      "name": "AOSSM Events",
+      "scope": "国际运动医学",
+      "url": "https://www.sportsmed.org/education/programs"
+    },
+    {
+      "name": "ESSKA Congress",
+      "scope": "国际运动医学与关节镜",
+      "url": "https://www.esska.org/page/ESSKACongress",
+      "enabled": false,
+      "access_note": "2026-11-25 GitHub Actions runner returned HTTP 403; retained as official reference but not automatically fetched."
+    }
+  ],
+  "note": "已公布的日期以组织方官网为准。国内下一届 COA 和运动医疗分会年会日期尚未录入；发现正式通知后再补充，避免推测日期。"
+}

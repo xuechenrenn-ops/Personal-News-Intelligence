@@ -1,0 +1,2560 @@
+{
+  "as_of": "2026-11-26",
+  "ordered_ids": [
+    "43069407",
+    "43085613",
+    "43076101",
+    "10.1186/s12891-026-10762-8",
+    "43008926",
+    "10.3389/fmed.2026.1992527",
+    "43077730",
+    "43034949",
+    "10.3389/fneur.2026.1955966",
+    "10.3390/nu18233943",
+    "43046345",
+    "43071535",
+    "10.3389/fendo.2026.1974048",
+    "43085651",
+    "10.1038/s41746-026-03460-1",
+    "43085446",
+    "43079149",
+    "43076026",
+    "10.2196/101633",
+    "10.1186/s12911-026-03965-5",
+    "43086037",
+    "43086036",
+    "43086035",
+    "43086116",
+    "43086127",
+    "43085978",
+    "43085977",
+    "43085976",
+    "43085742",
+    "43085741",
+    "43085738",
+    "43085718",
+    "43085649",
+    "43085627",
+    "43085614",
+    "43085543",
+    "43081951",
+    "43085748",
+    "43085534",
+    "43085342",
+    "43085225",
+    "43085212",
+    "43085057",
+    "43085034",
+    "43085021",
+    "43084986",
+    "43084910",
+    "43084835",
+    "43084077",
+    "10.70818/bmcj.v012i02.365",
+    "43077725",
+    "43077187",
+    "43076908",
+    "43076592",
+    "43076193",
+    "43075852",
+    "43073385",
+    "43085139",
+    "43078218",
+    "43075676",
+    "10.1038/s41746-026-03451-2",
+    "10.69693/ijim.v4i4.3453",
+    "10.1186/s13018-026-07343-9",
+    "43072681",
+    "43071148",
+    "43069546",
+    "43069377",
+    "43085149",
+    "43073614",
+    "43072661",
+    "43072652",
+    "43072157",
+    "43076396",
+    "43072735",
+    "43072632",
+    "10.3390/jpm16120588",
+    "10.1177/07334648261512088",
+    "43069558",
+    "10.1186/s13102-026-02273-9",
+    "43064035",
+    "43062698",
+    "43064033",
+    "43080842",
+    "43055269",
+    "43082976",
+    "43065626",
+    "43050508",
+    "43052145",
+    "43049942",
+    "43050472",
+    "43081883",
+    "43054583",
+    "43043068",
+    "43046524",
+    "43045910",
+    "43043480",
+    "43045145",
+    "43042728",
+    "43044889",
+    "43046329",
+    "43042938",
+    "10.25258/ijddt.16.80s.104",
+    "10.1186/s12984-026-02222-0",
+    "43037930",
+    "43054794",
+    "43037685",
+    "43038553",
+    "43039190",
+    "43038842",
+    "43039059",
+    "10.52965/001c.173764",
+    "10.35988/sm-hs.2026.321",
+    "43036512",
+    "43033358",
+    "43032979",
+    "43025169",
+    "43021664",
+    "43025145",
+    "43014516",
+    "43020872",
+    "43020156",
+    "43015184",
+    "43017586",
+    "43014555",
+    "43015358",
+    "43010060",
+    "43014557",
+    "43035064",
+    "10.3389/fresc.2026.2006179",
+    "43009963",
+    "43009638",
+    "43006808",
+    "43001664",
+    "43003379",
+    "43002284",
+    "42855074",
+    "43019684",
+    "42998936",
+    "42994689",
+    "43081366",
+    "42988998",
+    "42994647",
+    "42987277",
+    "42986467",
+    "42989400",
+    "42988204",
+    "42987453",
+    "43060502",
+    "43076907",
+    "10.1186/s12911-026-03961-9",
+    "43085079",
+    "43086126",
+    "10.1038/s41746-026-03494-5",
+    "43069476",
+    "43085723",
+    "43085647",
+    "43082058",
+    "43078221",
+    "43002334",
+    "42989357"
+  ],
+  "scores": {
+    "43085613": {
+      "scores": {
+        "relevance": 5,
+        "research": 4,
+        "clinical": 5,
+        "methods": 4,
+        "innovation": 3,
+        "recency": 5
+      },
+      "weighted": 88.0,
+      "reason": "肩袖修复双排与单排的大样本系统评价/Meta分析，按撕裂分层，直接指导术式选择，证据质量较高且时效新。",
+      "unrelated": false
+    },
+    "43034949": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 4,
+        "methods": 3,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 78.0,
+      "reason": "颈椎术后结局的机器学习预测系统评价，方法学整合有价值，但纳入研究异质性限制证据强度。",
+      "unrelated": false
+    },
+    "43079149": {
+      "scores": {
+        "relevance": 1,
+        "research": 2,
+        "clinical": 1,
+        "methods": 3,
+        "innovation": 2,
+        "recency": 4
+      },
+      "weighted": 36.0,
+      "reason": "卒中后上肢康复的NIBS联合任务导向训练Meta分析，与骨科临床关联弱。",
+      "unrelated": false
+    },
+    "10.3389/fendo.2026.1974048": {
+      "scores": {
+        "relevance": 2,
+        "research": 3,
+        "clinical": 2,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 5
+      },
+      "weighted": 53.0,
+      "reason": "非心脏手术后MACE的血糖白蛋白比预测，双队列外部验证设计较好，但骨科相关性有限。",
+      "unrelated": false
+    },
+    "10.3390/nu18233943": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 3,
+        "methods": 3,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 74.0,
+      "reason": "踝骨折制动期维生素K2对腓肠肌萎缩的随机对照先导试验，创新点明确但样本量小。",
+      "unrelated": false
+    },
+    "10.3389/fneur.2026.1955966": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 4,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 4
+      },
+      "weighted": 75.0,
+      "reason": "颈髓损伤28天死亡的可解释机器学习模型并外部验证，临床价值明确但样本量有限。",
+      "unrelated": false
+    },
+    "10.1038/s41746-026-03460-1": {
+      "scores": {
+        "relevance": 1,
+        "research": 2,
+        "clinical": 2,
+        "methods": 3,
+        "innovation": 2,
+        "recency": 5
+      },
+      "weighted": 41.0,
+      "reason": "多媒体辅助知情同意的系统评价，与骨科临床科研关联弱。",
+      "unrelated": false
+    },
+    "10.2196/101633": {
+      "scores": {
+        "relevance": 1,
+        "research": 2,
+        "clinical": 1,
+        "methods": 3,
+        "innovation": 2,
+        "recency": 4
+      },
+      "weighted": 36.0,
+      "reason": "乳腺癌无病生存机器学习预测，方法可借鉴但主题非骨科。",
+      "unrelated": false
+    },
+    "43076101": {
+      "scores": {
+        "relevance": 5,
+        "research": 4,
+        "clinical": 5,
+        "methods": 3,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 87.0,
+      "reason": "骨骺未闭合患者ACLR联合关节外术式生长障碍的系统评价/Meta分析，直接关系儿童骨科决策，但原始研究证据等级有限。",
+      "unrelated": false
+    },
+    "43077730": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 4,
+        "methods": 3,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 78.0,
+      "reason": "可穿戴压力传感器步态周期分析系统的临床初步评估，技术转化潜力好但证据尚初步。",
+      "unrelated": false
+    },
+    "10.1038/s41746-026-03494-5": {
+      "scores": {
+        "relevance": 0,
+        "research": 1,
+        "clinical": 0,
+        "methods": 3,
+        "innovation": 1,
+        "recency": 5
+      },
+      "weighted": 21.0,
+      "reason": "慢性呼吸疾病扩展现实干预的系统评价，与骨科无关。",
+      "unrelated": true
+    },
+    "10.1186/s12911-026-03965-5": {
+      "scores": {
+        "relevance": 1,
+        "research": 2,
+        "clinical": 1,
+        "methods": 3,
+        "innovation": 2,
+        "recency": 4
+      },
+      "weighted": 36.0,
+      "reason": "输尿管镜嵌顿结石的机器学习预测模型，方法可参考但非骨科主题。",
+      "unrelated": false
+    },
+    "10.3389/fmed.2026.1992527": {
+      "scores": {
+        "relevance": 5,
+        "research": 4,
+        "clinical": 4,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 5
+      },
+      "weighted": 81.0,
+      "reason": "ACLR后膝前痛髋膝联合强化随机试验，含髌股运动学，临床相关但样本量小。",
+      "unrelated": false
+    },
+    "43071535": {
+      "scores": {
+        "relevance": 3,
+        "research": 3,
+        "clinical": 2,
+        "methods": 2,
+        "innovation": 3,
+        "recency": 4
+      },
+      "weighted": 54.0,
+      "reason": "脊髓损伤运动员可穿戴EMG辅助运动服的批判性综述与概念框架，创新但证据基础薄弱。",
+      "unrelated": false
+    },
+    "43076026": {
+      "scores": {
+        "relevance": 1,
+        "research": 2,
+        "clinical": 1,
+        "methods": 3,
+        "innovation": 2,
+        "recency": 4
+      },
+      "weighted": 36.0,
+      "reason": "音乐治疗对帕金森病功能影响的Meta分析，与骨科临床关联弱。",
+      "unrelated": false
+    },
+    "43085446": {
+      "scores": {
+        "relevance": 1,
+        "research": 2,
+        "clinical": 1,
+        "methods": 3,
+        "innovation": 2,
+        "recency": 5
+      },
+      "weighted": 37.0,
+      "reason": "常规细胞学指标联合机器学习诊断恶性积液的大样本回顾研究，非骨科主题。",
+      "unrelated": false
+    },
+    "10.1186/s12891-026-10762-8": {
+      "scores": {
+        "relevance": 5,
+        "research": 4,
+        "clinical": 4,
+        "methods": 4,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 86.0,
+      "reason": "ACLR后径向体外冲击波改善神经肌肉控制与活动度的单盲随机试验，设计规范且临床可操作。",
+      "unrelated": false
+    },
+    "43046345": {
+      "scores": {
+        "relevance": 3,
+        "research": 3,
+        "clinical": 3,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 4
+      },
+      "weighted": 61.0,
+      "reason": "择期关节置换患者内科会诊适宜性的机器学习模型，单中心回顾性，管理价值大于临床证据。",
+      "unrelated": false
+    },
+    "43069476": {
+      "scores": {
+        "relevance": 0,
+        "research": 1,
+        "clinical": 0,
+        "methods": 3,
+        "innovation": 1,
+        "recency": 4
+      },
+      "weighted": 20.0,
+      "reason": "COPD急性加重期肺康复护理Meta分析，与骨科无关。",
+      "unrelated": true
+    },
+    "43085651": {
+      "scores": {
+        "relevance": 2,
+        "research": 3,
+        "clinical": 2,
+        "methods": 2,
+        "innovation": 3,
+        "recency": 5
+      },
+      "weighted": 50.0,
+      "reason": "AI从预测到因果推断的方法学综述，具方法启发但以牙科为例，骨科相关性有限。",
+      "unrelated": false
+    },
+    "43069407": {
+      "scores": {
+        "relevance": 5,
+        "research": 4,
+        "clinical": 5,
+        "methods": 4,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 90.0,
+      "reason": "机器人辅助TKA保留交叉韧带与髁稳定型的前瞻双盲随机对照试验，直接指导假体选择。",
+      "unrelated": false
+    },
+    "43008926": {
+      "scores": {
+        "relevance": 5,
+        "research": 4,
+        "clinical": 4,
+        "methods": 4,
+        "innovation": 4,
+        "recency": 4
+      },
+      "weighted": 85.0,
+      "reason": "个性化eHealth促进膝置换后回归日常活动的多中心随机试验，临床与康复管理价值高。",
+      "unrelated": false
+    }
+  },
+  "scoring_priority_count": 22,
+  "reference_holdout": {
+    "10.3389/fmed.2026.1992527": {
+      "found": true,
+      "ranked": true,
+      "published": false
+    },
+    "43058301": {
+      "found": false,
+      "ranked": false,
+      "published": false
+    },
+    "42999027": {
+      "found": false,
+      "ranked": false,
+      "published": false
+    },
+    "10.1007/s00423-026-04363-1": {
+      "found": false,
+      "ranked": false,
+      "published": false
+    }
+  },
+  "discovery": {
+    "per_window": {
+      "2026-11-26": {
+        "pubmed": {
+          "rows": 151,
+          "ids": [
+            "42302095",
+            "42437501",
+            "42855074",
+            "42913686",
+            "42983106",
+            "42986467",
+            "42987277",
+            "42987453",
+            "42988204",
+            "42988998",
+            "42989357",
+            "42989400",
+            "42994647",
+            "42994689",
+            "42995121",
+            "42998936",
+            "43001664",
+            "43002284",
+            "43002334",
+            "43003379",
+            "43005567",
+            "43006808",
+            "43008926",
+            "43009638",
+            "43009963",
+            "43010060",
+            "43014516",
+            "43014555",
+            "43014557",
+            "43015184",
+            "43015358",
+            "43017586",
+            "43019684",
+            "43020156",
+            "43020872",
+            "43021664",
+            "43025145",
+            "43025169",
+            "43032979",
+            "43033358",
+            "43034949",
+            "43035064",
+            "43036512",
+            "43036705",
+            "43037685",
+            "43037930",
+            "43038553",
+            "43038842",
+            "43039059",
+            "43039190",
+            "43042728",
+            "43042938",
+            "43043068",
+            "43043480",
+            "43044889",
+            "43045145",
+            "43045910",
+            "43046329",
+            "43046345",
+            "43046524",
+            "43049942",
+            "43050472",
+            "43050508",
+            "43052145",
+            "43054583",
+            "43054794",
+            "43055269",
+            "43060502",
+            "43062698",
+            "43064033",
+            "43064035",
+            "43065626",
+            "43069377",
+            "43069407",
+            "43069476",
+            "43069546",
+            "43069558",
+            "43071148",
+            "43071535",
+            "43072157",
+            "43072632",
+            "43072652",
+            "43072661",
+            "43072681",
+            "43072735",
+            "43073385",
+            "43073614",
+            "43075676",
+            "43075852",
+            "43076026",
+            "43076101",
+            "43076193",
+            "43076396",
+            "43076592",
+            "43076907",
+            "43076908",
+            "43077187",
+            "43077725",
+            "43077730",
+            "43078218",
+            "43078221",
+            "43079149",
+            "43080842",
+            "43081366",
+            "43081883",
+            "43081951",
+            "43082058",
+            "43082680",
+            "43082976",
+            "43084077",
+            "43084835",
+            "43084910",
+            "43084986",
+            "43085021",
+            "43085034",
+            "43085057",
+            "43085079",
+            "43085139",
+            "43085149",
+            "43085212",
+            "43085225",
+            "43085342",
+            "43085446",
+            "43085534",
+            "43085543",
+            "43085613",
+            "43085614",
+            "43085616",
+            "43085627",
+            "43085647",
+            "43085649",
+            "43085651",
+            "43085660",
+            "43085718",
+            "43085723",
+            "43085738",
+            "43085741",
+            "43085742",
+            "43085748",
+            "43085802",
+            "43085976",
+            "43085977",
+            "43085978",
+            "43085996",
+            "43086035",
+            "43086036",
+            "43086037",
+            "43086110",
+            "43086116",
+            "43086126",
+            "43086127"
+          ],
+          "verified": [
+            "42855074",
+            "42986467",
+            "42987277",
+            "42987453",
+            "42988204",
+            "42988998",
+            "42989357",
+            "42989400",
+            "42994647",
+            "42994689",
+            "42998936",
+            "43001664",
+            "43002284",
+            "43002334",
+            "43003379",
+            "43006808",
+            "43008926",
+            "43009638",
+            "43009963",
+            "43010060",
+            "43014516",
+            "43014555",
+            "43014557",
+            "43015184",
+            "43015358",
+            "43017586",
+            "43019684",
+            "43020156",
+            "43020872",
+            "43021664",
+            "43025145",
+            "43025169",
+            "43032979",
+            "43033358",
+            "43034949",
+            "43035064",
+            "43036512",
+            "43037685",
+            "43037930",
+            "43038553",
+            "43038842",
+            "43039059",
+            "43039190",
+            "43042728",
+            "43042938",
+            "43043068",
+            "43043480",
+            "43044889",
+            "43045145",
+            "43045910",
+            "43046329",
+            "43046345",
+            "43046524",
+            "43049942",
+            "43050472",
+            "43050508",
+            "43052145",
+            "43054583",
+            "43054794",
+            "43055269",
+            "43060502",
+            "43062698",
+            "43064033",
+            "43064035",
+            "43065626",
+            "43069377",
+            "43069407",
+            "43069476",
+            "43069546",
+            "43069558",
+            "43071148",
+            "43071535",
+            "43072157",
+            "43072632",
+            "43072652",
+            "43072661",
+            "43072681",
+            "43072735",
+            "43073385",
+            "43073614",
+            "43075676",
+            "43075852",
+            "43076026",
+            "43076101",
+            "43076193",
+            "43076396",
+            "43076592",
+            "43076907",
+            "43076908",
+            "43077187",
+            "43077725",
+            "43077730",
+            "43078218",
+            "43078221",
+            "43079149",
+            "43080842",
+            "43081366",
+            "43081883",
+            "43081951",
+            "43082058",
+            "43082976",
+            "43084077",
+            "43084835",
+            "43084910",
+            "43084986",
+            "43085021",
+            "43085034",
+            "43085057",
+            "43085079",
+            "43085139",
+            "43085149",
+            "43085212",
+            "43085225",
+            "43085342",
+            "43085446",
+            "43085534",
+            "43085543",
+            "43085613",
+            "43085614",
+            "43085627",
+            "43085647",
+            "43085649",
+            "43085651",
+            "43085718",
+            "43085723",
+            "43085738",
+            "43085741",
+            "43085742",
+            "43085748",
+            "43085976",
+            "43085977",
+            "43085978",
+            "43086035",
+            "43086036",
+            "43086037",
+            "43086116",
+            "43086126",
+            "43086127"
+          ]
+        },
+        "europe:ortho-clinical": {
+          "rows": 0,
+          "ids": [],
+          "status": "ReadTimeout",
+          "http_status": null,
+          "verified": []
+        },
+        "europe:ortho-ai": {
+          "rows": 0,
+          "ids": [],
+          "status": "ReadTimeout",
+          "http_status": null,
+          "verified": []
+        },
+        "europe:china-affiliation": {
+          "rows": 0,
+          "ids": [],
+          "status": "ReadTimeout",
+          "http_status": null,
+          "verified": []
+        },
+        "europe:clinical-ai": {
+          "rows": 0,
+          "ids": [],
+          "status": "ReadTimeout",
+          "http_status": null,
+          "verified": []
+        },
+        "science-rss": {
+          "rows": 8,
+          "ids": [],
+          "doi_hints": 0,
+          "domains": [
+            "paper.sciencenet.cn"
+          ],
+          "verified": []
+        },
+        "npj-rss": {
+          "rows": 8,
+          "ids": [],
+          "doi_hints": 8,
+          "domains": [
+            "www.nature.com"
+          ],
+          "verified": [
+            "10.1038/s41746-026-03451-2",
+            "10.1038/s41746-026-03460-1",
+            "10.1038/s41746-026-03494-5"
+          ]
+        },
+        "crossref-ortho-rehab": {
+          "rows": 18,
+          "ids": [
+            "10.1186/s12891-026-10762-8",
+            "10.1186/s13018-026-07343-9",
+            "10.1186/s13102-026-02273-9",
+            "10.3389/fmed.2026.1992527",
+            "10.3389/fresc.2026.2006179",
+            "10.3390/jpm16120588",
+            "10.35988/sm-hs.2026.321",
+            "10.52965/001c.173764",
+            "10.69693/ijim.v4i4.3453",
+            "43054794",
+            "43069407"
+          ],
+          "status": "ok",
+          "verified": [
+            "10.1186/s12891-026-10762-8",
+            "10.1186/s13018-026-07343-9",
+            "10.1186/s13102-026-02273-9",
+            "10.3389/fmed.2026.1992527",
+            "10.3389/fresc.2026.2006179",
+            "10.3390/jpm16120588",
+            "10.35988/sm-hs.2026.321",
+            "10.52965/001c.173764",
+            "10.69693/ijim.v4i4.3453",
+            "43054794",
+            "43069407"
+          ]
+        },
+        "crossref-clinical": {
+          "rows": 18,
+          "ids": [
+            "10.1177/07334648261512088",
+            "10.1186/s12984-026-02222-0",
+            "10.25258/ijddt.16.80s.104",
+            "10.3389/fmed.2026.1990645",
+            "10.3390/nu18233943",
+            "10.70818/bmcj.v012i02.365"
+          ],
+          "status": "ok",
+          "verified": [
+            "10.1177/07334648261512088",
+            "10.1186/s12984-026-02222-0",
+            "10.25258/ijddt.16.80s.104",
+            "10.3389/fmed.2026.1990645",
+            "10.3390/nu18233943",
+            "10.70818/bmcj.v012i02.365"
+          ]
+        },
+        "crossref-ai": {
+          "rows": 18,
+          "ids": [
+            "10.1186/s12911-026-03961-9",
+            "10.1186/s12911-026-03965-5",
+            "10.2196/101633",
+            "10.3389/fendo.2026.1974048",
+            "10.3389/fneur.2026.1955966"
+          ],
+          "status": "ok",
+          "verified": [
+            "10.1186/s12911-026-03961-9",
+            "10.1186/s12911-026-03965-5",
+            "10.2196/101633",
+            "10.3389/fendo.2026.1974048",
+            "10.3389/fneur.2026.1955966"
+          ]
+        }
+      }
+    },
+    "access_probes": {
+      "cn-hospital": {
+        "status": "cooldown"
+      },
+      "cn-science-media": {
+        "status": 200,
+        "doi_count": 1
+      },
+      "cn-public-science": {
+        "status": "cooldown"
+      },
+      "foreign-journal": {
+        "status": 202,
+        "doi_count": 0
+      }
+    },
+    "tavily": {
+      "attempted": 0,
+      "credits": 0,
+      "unverified": 0
+    }
+  },
+  "errors": [
+    {
+      "type": "localization",
+      "reason": "fallback to original title"
+    }
+  ],
+  "gate": {
+    "43069407": {
+      "title": "accepted",
+      "question": "source_or_numeric_mismatch",
+      "methods": "source_or_numeric_mismatch",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "source_or_numeric_mismatch",
+      "clinical": "source_or_numeric_mismatch",
+      "insight": "source_or_numeric_mismatch",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    },
+    "43085613": {
+      "title": "accepted",
+      "question": "accepted",
+      "methods": "source_or_numeric_mismatch",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "accepted",
+      "clinical": "accepted",
+      "insight": "accepted",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    },
+    "43076101": {
+      "title": "accepted",
+      "question": "accepted",
+      "methods": "source_or_numeric_mismatch",
+      "result": "accepted",
+      "limitations": "accepted",
+      "clinical": "accepted",
+      "insight": "accepted",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    },
+    "10.1186/s12891-026-10762-8": {
+      "title": "accepted",
+      "question": "accepted",
+      "methods": "source_or_numeric_mismatch",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "accepted",
+      "clinical": "accepted",
+      "insight": "accepted",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    },
+    "policy-NH7": {
+      "title": "accepted",
+      "question": "source_or_numeric_mismatch",
+      "methods": "source_or_numeric_mismatch",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "source_or_numeric_mismatch",
+      "clinical": "source_or_numeric_mismatch",
+      "insight": "source_or_numeric_mismatch",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "accepted"
+    },
+    "G2-5": {
+      "title": "accepted",
+      "question": "source_or_numeric_mismatch",
+      "methods": "source_or_numeric_mismatch",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "source_or_numeric_mismatch",
+      "clinical": "source_or_numeric_mismatch",
+      "insight": "source_or_numeric_mismatch",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "accepted"
+    },
+    "G3-3": {
+      "title": "accepted",
+      "question": "source_or_numeric_mismatch",
+      "methods": "source_or_numeric_mismatch",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "source_or_numeric_mismatch",
+      "clinical": "source_or_numeric_mismatch",
+      "insight": "source_or_numeric_mismatch",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "accepted"
+    }
+  },
+  "draft_ids": [
+    "10.1186/s12891-026-10762-8",
+    "43069407",
+    "43076101",
+    "43085613",
+    "G2-5",
+    "G3-3",
+    "policy-NH7"
+  ],
+  "fallback_audit": [
+    {
+      "id": "43069407",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085613",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43076101",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.1186/s12891-026-10762-8",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43008926",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.3389/fmed.2026.1992527",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43077730",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43034949",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.3389/fneur.2026.1955966",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.3390/nu18233943",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43046345",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "43071535",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "10.3389/fendo.2026.1974048",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": true
+    },
+    {
+      "id": "43085651",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.1038/s41746-026-03460-1",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085446",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43079149",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43076026",
+      "status": "outside_scope"
+    },
+    {
+      "id": "10.2196/101633",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": true
+    },
+    {
+      "id": "10.1186/s12911-026-03965-5",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": true,
+      "external_validation": true
+    },
+    {
+      "id": "43086037",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43086036",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43086035",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43086116",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43086127",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085978",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085977",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43085976",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "43085742",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085741",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085738",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085718",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085649",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085627",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085614",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085543",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43081951",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085748",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085534",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085342",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085225",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085212",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085057",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085034",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085021",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43084986",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43084910",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43084835",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43084077",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.70818/bmcj.v012i02.365",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43077725",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43077187",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43076908",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43076592",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43076193",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43075852",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43073385",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43085139",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43078218",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43075676",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "10.1038/s41746-026-03451-2",
+      "status": "outside_scope"
+    },
+    {
+      "id": "10.69693/ijim.v4i4.3453",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.1186/s13018-026-07343-9",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43072681",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43071148",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "43069546",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43069377",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43085149",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43073614",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43072661",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43072652",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43072157",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43076396",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43072735",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43072632",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "10.3390/jpm16120588",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "10.1177/07334648261512088",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43069558",
+      "status": "outside_scope"
+    },
+    {
+      "id": "10.1186/s13102-026-02273-9",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43064035",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43062698",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43064033",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43080842",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43055269",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43082976",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43065626",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43050508",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43052145",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43049942",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43050472",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43081883",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43054583",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43043068",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43046524",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43045910",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43043480",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43045145",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43042728",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43044889",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43046329",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43042938",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "10.25258/ijddt.16.80s.104",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "10.1186/s12984-026-02222-0",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43037930",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43054794",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43037685",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43038553",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "43039190",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43038842",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43039059",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "10.52965/001c.173764",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "10.35988/sm-hs.2026.321",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43036512",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43033358",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43032979",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43025169",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43021664",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43025145",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43014516",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43020872",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43020156",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43015184",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43017586",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43014555",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43015358",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "43010060",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43014557",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43035064",
+      "status": "outside_scope"
+    },
+    {
+      "id": "10.3389/fresc.2026.2006179",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43009963",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43009638",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43006808",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43001664",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43003379",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43002284",
+      "status": "outside_scope"
+    },
+    {
+      "id": "42855074",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43019684",
+      "status": "outside_scope"
+    },
+    {
+      "id": "42998936",
+      "status": "outside_scope"
+    },
+    {
+      "id": "42994689",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43081366",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "42988998",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "42994647",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "42987277",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "42986467",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "42989400",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "42988204",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "42987453",
+      "status": "outside_scope"
+    },
+    {
+      "id": "43060502",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43076907",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "10.1186/s12911-026-03961-9",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "43085079",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": false
+    },
+    {
+      "id": "43086126",
+      "status": "no_complete_outcome_excerpt"
+    }
+  ],
+  "news_ranked": [
+    "G2-5",
+    "G3-3"
+  ],
+  "news_candidates": [
+    {
+      "id": "policy-NH7",
+      "lane": "policy",
+      "title": "国家医保局：“连续用药管理”功能上线 用药更安心",
+      "source": "中新网健康新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/jk/2026/11-26/10737907.shtml",
+      "primary": true,
+      "verification_note": "媒体援引主管部门，官方原文未核验"
+    },
+    {
+      "id": "G0-1",
+      "lane": "world",
+      "title": "江西南昌特色“村晚”精彩上演 打造乡土文化盛宴",
+      "source": "中新网即时新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cul/2026/11-26/10738203.shtml",
+      "primary": true
+    },
+    {
+      "id": "G0-2",
+      "lane": "world",
+      "title": "内塔尼亚胡：以军打死哈马斯经济和教育部门负责人",
+      "source": "中新网即时新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738212.shtml",
+      "primary": true
+    },
+    {
+      "id": "G0-3",
+      "lane": "world",
+      "title": "四地致公党党员齐聚山城 共话侨海资源转化新路径",
+      "source": "中新网即时新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gn/2026/11-26/10738202.shtml",
+      "primary": true
+    },
+    {
+      "id": "G0-4",
+      "lane": "world",
+      "title": "从大促冲量到品牌沉淀 国货美妆借双11开启高质量转型",
+      "source": "中新网即时新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cj/2026/11-26/10738200.shtml",
+      "primary": true
+    },
+    {
+      "id": "G0-5",
+      "lane": "world",
+      "title": "美美与共，天下大美——白云山“美小伴”旅护套装闪亮APEC新闻中心“亚太朋友之家”",
+      "source": "中新网即时新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cj/2026/11-26/10738199.shtml",
+      "primary": true
+    },
+    {
+      "id": "G0-7",
+      "lane": "world",
+      "title": "获刑十三年 韩松受贿案一审宣判",
+      "source": "中新网即时新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gn/2026/11-26/10738208.shtml",
+      "primary": true
+    },
+    {
+      "id": "G1-3",
+      "lane": "world",
+      "title": "商务部：中国和墨西哥将成立工作组 围绕降低关税问题开展对话",
+      "source": "中新网财经新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cj/2026/11-26/10738197.shtml",
+      "primary": true
+    },
+    {
+      "id": "G1-4",
+      "lane": "world",
+      "title": "平台识破暗语当“前哨”，野生动物黑灰产治理需织密共治网",
+      "source": "中新网财经新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cj/2026/11-26/10738201.shtml",
+      "primary": true
+    },
+    {
+      "id": "G1-5",
+      "lane": "world",
+      "title": "商务部：望美中推动对等降税安排尽快落地实施",
+      "source": "中新网财经新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cj/2026/11-26/10738193.shtml",
+      "primary": true
+    },
+    {
+      "id": "G1-6",
+      "lane": "world",
+      "title": "山东实施自贸试验区数据出境管理清单 首批覆盖征信、医疗两大领域",
+      "source": "中新网财经新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cj/2026/11-26/10738184.shtml",
+      "primary": true
+    },
+    {
+      "id": "G1-7",
+      "lane": "world",
+      "title": "无锡东港：一张能源网铺就绿色“生意经”",
+      "source": "中新网财经新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/cj/2026/11-26/10738182.shtml",
+      "primary": true
+    },
+    {
+      "id": "G2-2",
+      "lane": "world",
+      "title": "瑞典智库驳斥所谓“中国挤压”：那是近现代历史上前所未有的“共赢”！",
+      "source": "中新网国际新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738167.shtml",
+      "primary": true
+    },
+    {
+      "id": "G2-3",
+      "lane": "world",
+      "title": "美国批准马斯克旗下公司部署百万卫星 建太空数据中心",
+      "source": "中新网国际新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738140.shtml",
+      "primary": true
+    },
+    {
+      "id": "G2-4",
+      "lane": "world",
+      "title": "印尼一处矿井发生事故 13人遇难13人被困",
+      "source": "中新网国际新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738134.shtml",
+      "primary": true
+    },
+    {
+      "id": "G2-5",
+      "lane": "world",
+      "title": "韩国央行将基准利率上调至3.25%",
+      "source": "中新网国际新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738071.shtml",
+      "primary": true
+    },
+    {
+      "id": "G2-6",
+      "lane": "world",
+      "title": "日本民众：政府应铭记历史教训 高市正将日本推向危险路口",
+      "source": "中新网国际新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738069.shtml",
+      "primary": true
+    },
+    {
+      "id": "G2-7",
+      "lane": "world",
+      "title": "“喀什—第比利斯—达曼”货运航线开通",
+      "source": "中新网国际新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738044.shtml",
+      "primary": true
+    },
+    {
+      "id": "G3-1",
+      "lane": "world",
+      "title": "German boat dealer suspected of supplying Channel smuggling gangs, BBC finds",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/cqlymky8kpzjo?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G3-2",
+      "lane": "world",
+      "title": "Watch: BBC confronts German man suspected of supplying migrant gangs with small boats",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/videos/cvglrz5yr79go?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G3-3",
+      "lane": "world",
+      "title": "Desperate appeals from women on death row in Iran after protests",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/cm8x0ve4yd7wo?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G3-4",
+      "lane": "world",
+      "title": "New UK-EU treaty has 10-year termination clause, BBC understands",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/c98r7p65edvgo?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G3-5",
+      "lane": "world",
+      "title": "US approves SpaceX plan to send a million data satellites to space",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/cwp836l8n1jgo?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G3-6",
+      "lane": "world",
+      "title": "DR Congo demands answers over Ugandan general's threats",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/cwz0k90rgpm8o?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G3-7",
+      "lane": "world",
+      "title": "Duran Duran guitarist Andy Taylor dies aged 65",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/cmp3vk6vr44po?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G4-1",
+      "lane": "world",
+      "title": "Explosion occurs at oil facility in Thailand’s Bangkok",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/news/2026/11/26/explosion-occurs-at-oil-facility-in-thailands-bangkok?traffic_source=rss",
+      "primary": true
+    },
+    {
+      "id": "G4-2",
+      "lane": "world",
+      "title": "Thanksgiving and National Day of Mourning: What is the history?",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/news/2026/11/26/thanksgiving-and-national-day-of-mourning-what-is-the-history?traffic_source=rss",
+      "primary": true
+    },
+    {
+      "id": "G4-3",
+      "lane": "world",
+      "title": "Ms Rachel on Gaza: ‘everybody should speak out’",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/26/ms-rachel-on-gaza-everybody-should-speak?traffic_source=rss",
+      "primary": true
+    },
+    {
+      "id": "G4-4",
+      "lane": "world",
+      "title": "Rescuers recover bodies after flood at illegal Indonesia gold mine",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/26/rescuers-recover-bodies-after-flood-at-illegal-indonesia-gold-mine?traffic_source=rss",
+      "primary": true
+    },
+    {
+      "id": "G4-5",
+      "lane": "world",
+      "title": "Photos: Rallies around the world denounce violence against women",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/gallery/2026/11/26/photos-rallies-around-the-world-denounce-violence-against-women?traffic_source=rss",
+      "primary": true
+    },
+    {
+      "id": "G4-6",
+      "lane": "world",
+      "title": "DR Congo Ebola cases surpass 12,000 as fighting disrupts response in east",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/news/2026/11/26/dr-congo-ebola-cases-surpass-12000-as-fighting-disrupts-response-in-east?traffic_source=rss",
+      "primary": true
+    },
+    {
+      "id": "G4-7",
+      "lane": "world",
+      "title": "At least 13 dead in Indonesia gold mine flood as rescue efforts intensify",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/news/2026/11/26/at-least-13-dead-in-indonesia-gold-mine-flood-as-rescue-efforts-intensify?traffic_source=rss",
+      "primary": true
+    }
+  ],
+  "selected": [
+    {
+      "id": "43085613",
+      "lane": "medical",
+      "title": "Structural Benefit, Selective Functional Gain: Double-Row Versus Single-Row Arthroscopic Rotator Cuff Repair - A Tear-Stratified Systematic Review and Meta-Analysis.",
+      "source": "Journal of shoulder and elbow surgery",
+      "date": "2026-11-25",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43085613/",
+      "pmid": "43085613",
+      "region": "埃及",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article",
+        "Review"
+      ],
+      "doi": "10.1016/j.jse.2026.11.049",
+      "channels": [
+        "pubmed"
+      ]
+    },
+    {
+      "id": "43076101",
+      "lane": "medical",
+      "title": "Growth disturbance following anterior cruciate ligament reconstruction with or without lateral extra-articular procedures in skeletally immature patients: A systematic review and meta-analysis.",
+      "source": "Knee surgery, sports traumatology, arthroscopy : official journal of the ESSKA",
+      "date": "2026-11-24",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43076101/",
+      "pmid": "43076101",
+      "region": "国际合作（法国、意大利）",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article",
+        "Review"
+      ],
+      "doi": "10.1002/ksa.70701",
+      "channels": [
+        "pubmed"
+      ]
+    },
+    {
+      "id": "43085976",
+      "lane": "medical",
+      "title": "Development and Internal Validation of a Preoperative Prediction Model for Pain-Function Discordance Among Pain Responders After Percutaneous Vertebroplasty for Osteoporotic Vertebral Compression Fractures.",
+      "source": "Orthopaedic surgery",
+      "date": "2026-11-25",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43085976/",
+      "pmid": "43085976",
+      "region": "中国",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article"
+      ],
+      "doi": "10.1111/os.70470",
+      "channels": [
+        "pubmed"
+      ]
+    },
+    {
+      "id": "policy-NH7",
+      "lane": "policy",
+      "title": "国家医保局：“连续用药管理”功能上线 用药更安心",
+      "source": "中新网健康新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/jk/2026/11-26/10737907.shtml",
+      "primary": true,
+      "verification_note": "媒体援引主管部门，官方原文未核验"
+    },
+    {
+      "id": "G2-5",
+      "lane": "world",
+      "title": "韩国央行将基准利率上调至3.25%",
+      "source": "中新网国际新闻",
+      "date": "2026-11-26",
+      "url": "https://www.chinanews.com.cn/gj/2026/11-26/10738071.shtml",
+      "primary": true
+    },
+    {
+      "id": "G3-3",
+      "lane": "world",
+      "title": "Desperate appeals from women on death row in Iran after protests",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/cm8x0ve4yd7wo?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    }
+  ],
+  "counts": {
+    "medical": 3,
+    "policy": 1,
+    "world": 2
+  },
+  "history": {
+    "restored": 0,
+    "written": 0
+  },
+  "enhancement": {
+    "state": "disabled"
+  },
+  "account_balance_delta_micro_cny": 60000,
+  "phase": "v14-live",
+  "calls": [
+    {
+      "phase": "v14-score",
+      "reserved_micro_cny": 65356,
+      "model": "deepseek-flash",
+      "thinking": false,
+      "max_output_tokens": 2200,
+      "peak_estimate_micro_cny": 20232,
+      "prompt_tokens": 5052,
+      "completion_tokens": 1266,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 5052,
+      "seconds": 6.09
+    },
+    {
+      "phase": "v14-generate",
+      "reserved_micro_cny": 49208,
+      "model": "deepseek-flash",
+      "thinking": false,
+      "max_output_tokens": 2700,
+      "peak_estimate_micro_cny": 24108,
+      "prompt_tokens": 3018,
+      "completion_tokens": 2259,
+      "prompt_cache_hit_tokens": 768,
+      "prompt_cache_miss_tokens": 2250,
+      "seconds": 11.3
+    },
+    {
+      "phase": "v14-appraise",
+      "reserved_micro_cny": 30444,
+      "model": "deepseek-flash",
+      "thinking": true,
+      "max_output_tokens": 2800,
+      "peak_estimate_micro_cny": 5482,
+      "prompt_tokens": 749,
+      "completion_tokens": 498,
+      "prompt_cache_hit_tokens": 512,
+      "prompt_cache_miss_tokens": 237,
+      "reasoning_tokens": 372,
+      "seconds": 4.0
+    },
+    {
+      "phase": "v14-verify",
+      "reserved_micro_cny": 51266,
+      "model": "deepseek-flash",
+      "thinking": false,
+      "max_output_tokens": 945,
+      "peak_estimate_micro_cny": 11738,
+      "prompt_tokens": 5209,
+      "completion_tokens": 165,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 5209,
+      "seconds": 1.63
+    }
+  ],
+  "wechat_requests": 0,
+  "tavily_credits": 0,
+  "elapsed_seconds": 214.112
+}

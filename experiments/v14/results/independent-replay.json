@@ -1,0 +1,420 @@
+{
+  "as_of": "2026-11-21",
+  "ordered_ids": [
+    "43058301",
+    "43062698",
+    "43065626",
+    "43034954",
+    "42999027",
+    "43020153",
+    "43015530",
+    "43037611"
+  ],
+  "scores": {
+    "43065626": {
+      "scores": {
+        "relevance": 4,
+        "research": 3,
+        "clinical": 4,
+        "methods": 3,
+        "innovation": 2,
+        "recency": 4
+      },
+      "weighted": 68.0,
+      "reason": "系统综述聚焦武术格斗运动ACL重建后重返运动，直接服务运动医学与康复决策，但仅6项研究且终点异质性限制证据强度。",
+      "unrelated": false
+    },
+    "43058301": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 4,
+        "methods": 4,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 81.0,
+      "reason": "多中心外部验证CT深度学习股骨近端骨折分型与骨折线定量，样本与外部验证设计扎实，对术前规划有直接转化价值。",
+      "unrelated": false
+    },
+    "43062698": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 5,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 5
+      },
+      "weighted": 80.0,
+      "reason": "城市级多医院注册研究评估数字化骨折联络服务对再骨折与死亡率的影响，具公共卫生与政策价值，但为回顾性观察设计。",
+      "unrelated": false
+    },
+    "43034954": {
+      "scores": {
+        "relevance": 3,
+        "research": 3,
+        "clinical": 3,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 4
+      },
+      "weighted": 61.0,
+      "reason": "可解释机器学习预测胸腰段骨质疏松椎体骨折3个月不良结局并外部验证，方法规范但区分度有限（AUC约0.675）。",
+      "unrelated": false
+    },
+    "43020153": {
+      "scores": {
+        "relevance": 3,
+        "research": 3,
+        "clinical": 3,
+        "methods": 2,
+        "innovation": 3,
+        "recency": 4
+      },
+      "weighted": 58.0,
+      "reason": "导航联合3D打印定制假体用于复杂/翻修THA骨缺损重建，临床相关但为小样本前瞻性病例系列，缺乏对照。",
+      "unrelated": false
+    },
+    "43015530": {
+      "scores": {
+        "relevance": 2,
+        "research": 2,
+        "clinical": 2,
+        "methods": 2,
+        "innovation": 2,
+        "recency": 4
+      },
+      "weighted": 42.0,
+      "reason": "骨科影像AI系统综述与统一分类学，覆盖面广但为二次研究，对具体临床决策的直接启发有限。",
+      "unrelated": false
+    },
+    "42999027": {
+      "scores": {
+        "relevance": 3,
+        "research": 3,
+        "clinical": 3,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 4
+      },
+      "weighted": 61.0,
+      "reason": "I型胶原基质与微骨折治疗膝关节软骨缺损的随机对照先导研究，设计有价值但样本小、证据初步。",
+      "unrelated": false
+    },
+    "43037611": {
+      "scores": {
+        "relevance": 2,
+        "research": 2,
+        "clinical": 2,
+        "methods": 1,
+        "innovation": 2,
+        "recency": 4
+      },
+      "weighted": 39.0,
+      "reason": "骨科负责任AI指导原则属立场性论述，无原始数据，对科研方法启发有限，但具伦理与政策参考价值。",
+      "unrelated": false
+    }
+  },
+  "scoring_priority_count": 8,
+  "reference_holdout": {
+    "10.3389/fmed.2026.1992527": {
+      "found": false,
+      "ranked": false,
+      "published": false
+    },
+    "43058301": {
+      "found": true,
+      "ranked": true,
+      "published": true
+    },
+    "42999027": {
+      "found": true,
+      "ranked": true,
+      "published": false
+    },
+    "10.1007/s00423-026-04363-1": {
+      "found": false,
+      "ranked": false,
+      "published": false
+    }
+  },
+  "discovery": {},
+  "errors": [],
+  "gate": {
+    "43058301": {
+      "title": "accepted",
+      "question": "accepted",
+      "methods": "source_or_numeric_mismatch",
+      "result": "accepted",
+      "limitations": "source_or_numeric_mismatch",
+      "clinical": "accepted",
+      "insight": "accepted",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    },
+    "43062698": {
+      "title": "accepted",
+      "question": "accepted",
+      "methods": "accepted",
+      "result": "accepted",
+      "limitations": "accepted",
+      "clinical": "accepted",
+      "insight": "accepted",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    },
+    "43065626": {
+      "title": "accepted",
+      "question": "accepted",
+      "methods": "source_or_numeric_mismatch",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "accepted",
+      "clinical": "accepted",
+      "insight": "accepted",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    },
+    "43034954": {
+      "title": "accepted",
+      "question": "accepted",
+      "methods": "accepted",
+      "result": "source_or_numeric_mismatch",
+      "limitations": "source_or_numeric_mismatch",
+      "clinical": "accepted",
+      "insight": "accepted",
+      "supplement": "source_or_numeric_mismatch",
+      "summary": "source_or_numeric_mismatch"
+    }
+  },
+  "draft_ids": [
+    "43034954",
+    "43058301",
+    "43062698",
+    "43065626"
+  ],
+  "fallback_audit": [
+    {
+      "id": "43058301",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": true
+    },
+    {
+      "id": "43062698",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43065626",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43034954",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true,
+      "test_only": false,
+      "validation": true,
+      "external_validation": true
+    },
+    {
+      "id": "42999027",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43020153",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": false,
+      "test_only": false,
+      "validation": false,
+      "external_validation": false
+    },
+    {
+      "id": "43015530",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43037611",
+      "status": "no_complete_outcome_excerpt"
+    }
+  ],
+  "news_ranked": [],
+  "news_candidates": [],
+  "selected": [
+    {
+      "id": "43058301",
+      "lane": "medical",
+      "title": "Multicenter external validation of CT-based deep learning for proximal femoral fracture classification and quantitative fracture-line assessment.",
+      "source": "Skeletal radiology",
+      "date": "2026-11-20",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43058301/",
+      "pmid": "43058301",
+      "region": "日本",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article"
+      ],
+      "doi": "10.1007/s00256-026-05447-1"
+    },
+    {
+      "id": "43062698",
+      "lane": "medical",
+      "title": "Digital-health fracture liaison service continuation in a citywide multihospital registry: subsequent fracture, mortality, and injectable treatment initiation after osteoporotic fracture surgery.",
+      "source": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+      "date": "2026-11-20",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43062698/",
+      "pmid": "43062698",
+      "region": "中国",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article"
+      ],
+      "doi": "10.1007/s00198-026-08277-y"
+    },
+    {
+      "id": "43065626",
+      "lane": "medical",
+      "title": "Return to Sport Following Anterior Cruciate Ligament Reconstruction in Martial Arts and Combat Sports: A Systematic Review.",
+      "source": "HSS journal : the musculoskeletal journal of Hospital for Special Surgery",
+      "date": "2026-11-19",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43065626/",
+      "pmid": "43065626",
+      "region": "美国",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article",
+        "Review"
+      ],
+      "doi": "10.1177/15563316261504774"
+    }
+  ],
+  "counts": {
+    "medical": 3,
+    "policy": 0,
+    "world": 0
+  },
+  "history": {
+    "restored": 0,
+    "written": 0
+  },
+  "enhancement": {
+    "state": "disabled"
+  },
+  "fixed_pool_reference": {
+    "Priority": [
+      "43065626",
+      "43058301",
+      "42999027"
+    ],
+    "Available": [
+      "42999027",
+      "43015530",
+      "43020153",
+      "43034954",
+      "43037611",
+      "43057369",
+      "43058301",
+      "43062698",
+      "43065626"
+    ],
+    "PriorityPublished": [
+      "43058301",
+      "43065626"
+    ],
+    "DistractorsPublished": []
+  },
+  "account_balance_delta_micro_cny": 0,
+  "phase": "v14-holdout",
+  "calls": [
+    {
+      "phase": "v14-score",
+      "reserved_micro_cny": 33304,
+      "model": "deepseek-flash",
+      "thinking": false,
+      "max_output_tokens": 2200,
+      "peak_estimate_micro_cny": 6902,
+      "prompt_tokens": 1523,
+      "completion_tokens": 482,
+      "prompt_cache_hit_tokens": 128,
+      "prompt_cache_miss_tokens": 1395,
+      "seconds": 5.0
+    },
+    {
+      "phase": "v14-generate",
+      "reserved_micro_cny": 42718,
+      "model": "deepseek-flash",
+      "thinking": false,
+      "max_output_tokens": 2700,
+      "peak_estimate_micro_cny": 19924,
+      "prompt_tokens": 2126,
+      "completion_tokens": 1959,
+      "prompt_cache_hit_tokens": 128,
+      "prompt_cache_miss_tokens": 1998,
+      "seconds": 10.39
+    },
+    {
+      "phase": "v14-appraise",
+      "reserved_micro_cny": 29582,
+      "model": "deepseek-flash",
+      "thinking": true,
+      "max_output_tokens": 2800,
+      "peak_estimate_micro_cny": 4552,
+      "prompt_tokens": 580,
+      "completion_tokens": 424,
+      "prompt_cache_hit_tokens": 384,
+      "prompt_cache_miss_tokens": 196,
+      "reasoning_tokens": 294,
+      "seconds": 3.25
+    },
+    {
+      "phase": "v14-verify",
+      "reserved_micro_cny": 43304,
+      "model": "deepseek-flash",
+      "thinking": false,
+      "max_output_tokens": 945,
+      "peak_estimate_micro_cny": 8830,
+      "prompt_tokens": 3979,
+      "completion_tokens": 109,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 3979,
+      "seconds": 1.23
+    }
+  ],
+  "wechat_requests": 0,
+  "tavily_credits": 0,
+  "elapsed_seconds": 22.764
+}

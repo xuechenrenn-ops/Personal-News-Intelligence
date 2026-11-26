@@ -1,0 +1,511 @@
+{
+  "phase": "v16-pair",
+  "as_of": "2026-11-26",
+  "fixed_ids": [
+    "43058301",
+    "43085541",
+    "43085613"
+  ],
+  "fixed_world": [],
+  "evidence_sha256": "39e2834291a63540c1e88c7160cf2341b55b750abe766bd7dfb451a324ba396f",
+  "scores": {
+    "43085541": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 4,
+        "methods": 3,
+        "innovation": 3,
+        "recency": 5
+      },
+      "weighted": 76.0,
+      "reason": "RCT评估肩袖修复术后认知行为物理治疗，直接针对心理因素与康复策略，临床相关且设计较严谨，但样本量小、失访较多。",
+      "unrelated": false
+    },
+    "43058301": {
+      "scores": {
+        "relevance": 4,
+        "research": 4,
+        "clinical": 4,
+        "methods": 4,
+        "innovation": 4,
+        "recency": 5
+      },
+      "weighted": 81.0,
+      "reason": "多中心外部验证CT深度学习用于股骨近端骨折分型与骨折线定量，证据质量较好且具临床转化潜力。",
+      "unrelated": false
+    },
+    "43085613": {
+      "scores": {
+        "relevance": 4,
+        "research": 3,
+        "clinical": 4,
+        "methods": 4,
+        "innovation": 3,
+        "recency": 5
+      },
+      "weighted": 74.0,
+      "reason": "大样本系统综述与荟萃分析比较单排与双排肩袖修复，结构获益明确但功能获益有限，证据等级较高。",
+      "unrelated": false
+    }
+  },
+  "wechat_requests": 0,
+  "baichuan": {
+    "attempts": 1,
+    "model": "Baichuan-M3-Plus",
+    "status": "completed",
+    "medical_search_calls": null,
+    "token_cost_micro_cny": 118146,
+    "total_cost_micro_cny": null,
+    "http_status": 200,
+    "finish_reason": "stop",
+    "seconds": 37.49,
+    "prompt_tokens": 21327,
+    "completion_tokens": 1279,
+    "total_tokens": 22606
+  },
+  "evidence": [
+    {
+      "claimed": {
+        "pmid": "35711073",
+        "doi": "10.1007/s10278-022-00658-3"
+      },
+      "status": "unverified"
+    },
+    {
+      "claimed": {
+        "pmid": "35396184",
+        "doi": "10.1016/S2589-7500(22)00035-7"
+      },
+      "status": "unverified"
+    },
+    {
+      "claimed": {
+        "pmid": "37615504",
+        "doi": "10.1097/CORR.0000000000002748"
+      },
+      "status": "unverified"
+    },
+    {
+      "claimed": {
+        "pmid": "39272664",
+        "doi": "10.3390/diagnostics14161784"
+      },
+      "status": "unverified"
+    }
+  ],
+  "arms": {
+    "B": {
+      "counts": {
+        "medical": 3,
+        "policy": 1,
+        "world": 2
+      },
+      "selected": [
+        {
+          "id": "43058301",
+          "lane": "medical",
+          "title": "Multicenter external validation of CT-based deep learning for proximal femoral fracture classification and quantitative fracture-line assessment.",
+          "source": "Skeletal radiology",
+          "date": "2026-11-20",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43058301/",
+          "pmid": "43058301",
+          "region": "日本",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.1007/s00256-026-05447-1"
+        },
+        {
+          "id": "43085541",
+          "lane": "medical",
+          "title": "Short-term effects of cognitive-behavioral physical therapy after arthroscopic rotator cuff repair: a randomized controlled trial.",
+          "source": "Orthopaedics & traumatology, surgery & research : OTSR",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085541/",
+          "pmid": "43085541",
+          "region": "中国",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.1016/j.otsr.2026.105040"
+        },
+        {
+          "id": "43085613",
+          "lane": "medical",
+          "title": "Structural Benefit, Selective Functional Gain: Double-Row Versus Single-Row Arthroscopic Rotator Cuff Repair - A Tear-Stratified Systematic Review and Meta-Analysis.",
+          "source": "Journal of shoulder and elbow surgery",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085613/",
+          "pmid": "43085613",
+          "region": "埃及",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article",
+            "Review"
+          ],
+          "doi": "10.1016/j.jse.2026.11.049"
+        },
+        {
+          "id": "policy-O3",
+          "lane": "policy",
+          "title": "湖北健全DRG/DIP医保智能监管体系持续筑牢监管防线",
+          "source": "国家医保局",
+          "date": "2026-11-26",
+          "url": "https://www.nhsa.gov.cn/art/2026/11/26/art_14_23532.html",
+          "primary": true
+        },
+        {
+          "id": "G0-2",
+          "lane": "world",
+          "title": "国家能源局四川监管办公室原党组成员、一级调研员张毅接受纪律审查和监察调查",
+          "source": "中新网即时新闻",
+          "date": "2026-11-26",
+          "url": "https://www.chinanews.com.cn/gn/2026/11-26/10738310.shtml",
+          "primary": true
+        },
+        {
+          "id": "G3-3",
+          "lane": "world",
+          "title": "Desperate appeals from women on death row in Iran after protests",
+          "source": "BBC News",
+          "date": "2026-11-26",
+          "url": "https://www.bbc.co.uk/news/articles/cm8x0ve4yd7wo?at_medium=RSS&at_campaign=rss",
+          "primary": true
+        }
+      ],
+      "gate": {
+        "43058301": {
+          "title": "accepted",
+          "question": "accepted",
+          "methods": "source_or_numeric_mismatch",
+          "result": "accepted",
+          "limitations": "accepted",
+          "clinical": "accepted",
+          "insight": "accepted",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch"
+        },
+        "43085541": {
+          "title": "accepted",
+          "question": "accepted",
+          "methods": "accepted",
+          "result": "accepted",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "accepted",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch",
+          "result_repair": "accepted"
+        },
+        "43085613": {
+          "title": "accepted",
+          "question": "accepted",
+          "methods": "source_or_numeric_mismatch",
+          "result": "accepted",
+          "limitations": "semantic_verification_failed",
+          "clinical": "accepted",
+          "insight": "accepted",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch",
+          "result_repair": "accepted"
+        },
+        "policy-O3": {
+          "title": "accepted",
+          "question": "source_or_numeric_mismatch",
+          "methods": "source_or_numeric_mismatch",
+          "result": "source_or_numeric_mismatch",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "source_or_numeric_mismatch",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch"
+        },
+        "G0-2": {
+          "title": "accepted",
+          "question": "source_or_numeric_mismatch",
+          "methods": "source_or_numeric_mismatch",
+          "result": "source_or_numeric_mismatch",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "source_or_numeric_mismatch",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "accepted"
+        },
+        "G3-3": {
+          "title": "accepted",
+          "question": "source_or_numeric_mismatch",
+          "methods": "source_or_numeric_mismatch",
+          "result": "source_or_numeric_mismatch",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "source_or_numeric_mismatch",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "accepted"
+        }
+      },
+      "errors": []
+    },
+    "A": {
+      "counts": {
+        "medical": 3,
+        "policy": 1,
+        "world": 2
+      },
+      "selected": [
+        {
+          "id": "43058301",
+          "lane": "medical",
+          "title": "Multicenter external validation of CT-based deep learning for proximal femoral fracture classification and quantitative fracture-line assessment.",
+          "source": "Skeletal radiology",
+          "date": "2026-11-20",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43058301/",
+          "pmid": "43058301",
+          "region": "日本",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.1007/s00256-026-05447-1"
+        },
+        {
+          "id": "43085541",
+          "lane": "medical",
+          "title": "Short-term effects of cognitive-behavioral physical therapy after arthroscopic rotator cuff repair: a randomized controlled trial.",
+          "source": "Orthopaedics & traumatology, surgery & research : OTSR",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085541/",
+          "pmid": "43085541",
+          "region": "中国",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.1016/j.otsr.2026.105040"
+        },
+        {
+          "id": "43085613",
+          "lane": "medical",
+          "title": "Structural Benefit, Selective Functional Gain: Double-Row Versus Single-Row Arthroscopic Rotator Cuff Repair - A Tear-Stratified Systematic Review and Meta-Analysis.",
+          "source": "Journal of shoulder and elbow surgery",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085613/",
+          "pmid": "43085613",
+          "region": "埃及",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article",
+            "Review"
+          ],
+          "doi": "10.1016/j.jse.2026.11.049"
+        },
+        {
+          "id": "policy-O3",
+          "lane": "policy",
+          "title": "湖北健全DRG/DIP医保智能监管体系持续筑牢监管防线",
+          "source": "国家医保局",
+          "date": "2026-11-26",
+          "url": "https://www.nhsa.gov.cn/art/2026/11/26/art_14_23532.html",
+          "primary": true
+        },
+        {
+          "id": "G0-2",
+          "lane": "world",
+          "title": "国家能源局四川监管办公室原党组成员、一级调研员张毅接受纪律审查和监察调查",
+          "source": "中新网即时新闻",
+          "date": "2026-11-26",
+          "url": "https://www.chinanews.com.cn/gn/2026/11-26/10738310.shtml",
+          "primary": true
+        },
+        {
+          "id": "G3-3",
+          "lane": "world",
+          "title": "Desperate appeals from women on death row in Iran after protests",
+          "source": "BBC News",
+          "date": "2026-11-26",
+          "url": "https://www.bbc.co.uk/news/articles/cm8x0ve4yd7wo?at_medium=RSS&at_campaign=rss",
+          "primary": true
+        }
+      ],
+      "gate": {
+        "43058301": {
+          "title": "accepted",
+          "question": "accepted",
+          "methods": "source_or_numeric_mismatch",
+          "result": "accepted",
+          "limitations": "accepted",
+          "clinical": "accepted",
+          "insight": "accepted",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch"
+        },
+        "43085541": {
+          "title": "accepted",
+          "question": "accepted",
+          "methods": "accepted",
+          "result": "accepted",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "accepted",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch",
+          "result_repair": "accepted"
+        },
+        "43085613": {
+          "title": "accepted",
+          "question": "accepted",
+          "methods": "source_or_numeric_mismatch",
+          "result": "accepted",
+          "limitations": "accepted",
+          "clinical": "accepted",
+          "insight": "accepted",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch",
+          "result_repair": "accepted"
+        },
+        "policy-O3": {
+          "title": "accepted",
+          "question": "source_or_numeric_mismatch",
+          "methods": "source_or_numeric_mismatch",
+          "result": "source_or_numeric_mismatch",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "source_or_numeric_mismatch",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "source_or_numeric_mismatch"
+        },
+        "G0-2": {
+          "title": "accepted",
+          "question": "source_or_numeric_mismatch",
+          "methods": "source_or_numeric_mismatch",
+          "result": "source_or_numeric_mismatch",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "source_or_numeric_mismatch",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "accepted"
+        },
+        "G3-3": {
+          "title": "accepted",
+          "question": "source_or_numeric_mismatch",
+          "methods": "source_or_numeric_mismatch",
+          "result": "source_or_numeric_mismatch",
+          "limitations": "source_or_numeric_mismatch",
+          "clinical": "source_or_numeric_mismatch",
+          "insight": "source_or_numeric_mismatch",
+          "supplement": "source_or_numeric_mismatch",
+          "summary": "accepted"
+        }
+      },
+      "errors": []
+    }
+  },
+  "calls": {
+    "common": [
+      {
+        "phase": "v14-score",
+        "reserved_micro_cny": 36604,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 2200,
+        "peak_estimate_micro_cny": 5764,
+        "prompt_tokens": 1970,
+        "completion_tokens": 228,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 1842,
+        "seconds": 1.61
+      }
+    ],
+    "A": [
+      {
+        "phase": "v14-generate",
+        "reserved_micro_cny": 53992,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 3350,
+        "peak_estimate_micro_cny": 22086,
+        "prompt_tokens": 2839,
+        "completion_tokens": 2051,
+        "prompt_cache_hit_tokens": 2688,
+        "prompt_cache_miss_tokens": 151,
+        "seconds": 11.11
+      },
+      {
+        "phase": "v15-repair-result",
+        "reserved_micro_cny": 13654,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 650,
+        "peak_estimate_micro_cny": 3466,
+        "prompt_tokens": 841,
+        "completion_tokens": 223,
+        "prompt_cache_hit_tokens": 640,
+        "prompt_cache_miss_tokens": 201,
+        "seconds": 1.71
+      },
+      {
+        "phase": "v14-verify",
+        "reserved_micro_cny": 45400,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 480,
+        "peak_estimate_micro_cny": 10260,
+        "prompt_tokens": 4622,
+        "completion_tokens": 127,
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 4110,
+        "seconds": 1.01
+      }
+    ],
+    "B": [
+      {
+        "phase": "v14-generate",
+        "reserved_micro_cny": 53992,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 3350,
+        "peak_estimate_micro_cny": 21766,
+        "prompt_tokens": 2839,
+        "completion_tokens": 2011,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 2839,
+        "seconds": 10.35
+      },
+      {
+        "phase": "v15-repair-result",
+        "reserved_micro_cny": 13654,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 650,
+        "peak_estimate_micro_cny": 4314,
+        "prompt_tokens": 841,
+        "completion_tokens": 329,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 841,
+        "seconds": 3.67
+      },
+      {
+        "phase": "v14-verify",
+        "reserved_micro_cny": 45660,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 480,
+        "peak_estimate_micro_cny": 10366,
+        "prompt_tokens": 4687,
+        "completion_tokens": 124,
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 4175,
+        "seconds": 1.79
+      }
+    ]
+  },
+  "admitted": []
+}

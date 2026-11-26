@@ -1,0 +1,1646 @@
+{
+  "as_of": "2026-11-26",
+  "mode": "evidence-only",
+  "selected": [
+    {
+      "id": "43071148",
+      "lane": "medical",
+      "title": "The level of maximum compression and spinal cord motion readouts improve classification models of patients with mild versus moderate-severe degenerative cervical myelopathy.",
+      "source": "European spine journal : official publication of the European Spine Society, the European Spinal Deformity Society, and the European Section of the Cervical Spine Research Society",
+      "date": "2026-11-23",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43071148/",
+      "pmid": "43071148",
+      "region": "研究机构地域未核实",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article"
+      ],
+      "doi": "10.1007/s00586-026-10522-1",
+      "channels": [
+        "pubmed"
+      ]
+    },
+    {
+      "id": "43058301",
+      "lane": "medical",
+      "title": "Multicenter external validation of CT-based deep learning for proximal femoral fracture classification and quantitative fracture-line assessment.",
+      "source": "Skeletal radiology",
+      "date": "2026-11-20",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43058301/",
+      "pmid": "43058301",
+      "region": "日本",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article"
+      ],
+      "doi": "10.1007/s00256-026-05447-1",
+      "channels": [
+        "europe:ortho-ai"
+      ]
+    },
+    {
+      "id": "43067125",
+      "lane": "medical",
+      "title": "Traumaplasty for acetabular fractures: Factors associated with additional fracture fixation.",
+      "source": "Injury",
+      "date": "2026-11-19",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43067125/",
+      "pmid": "43067125",
+      "region": "国际合作（美国、德国）",
+      "primary": true,
+      "mesh": [],
+      "publication_types": [
+        "Journal Article"
+      ],
+      "doi": "10.1016/j.injury.2026.113919",
+      "channels": [
+        "europe:ortho-clinical"
+      ]
+    },
+    {
+      "id": "policy-O1",
+      "lane": "policy",
+      "title": "智汇医保 创享未来——2026全国智慧医保大赛颁奖仪式在京举...",
+      "source": "国家医保局",
+      "date": "2026-11-25",
+      "url": "https://www.nhsa.gov.cn/art/2026/11/25/art_14_23527.html",
+      "primary": true
+    },
+    {
+      "id": "G1-1",
+      "lane": "world",
+      "title": "US announces new tariffs on host of countries including China",
+      "source": "BBC News",
+      "date": "2026-11-26",
+      "url": "https://www.bbc.co.uk/news/articles/c893r9ke5p97o?at_medium=RSS&at_campaign=rss",
+      "primary": true
+    },
+    {
+      "id": "G2-2",
+      "lane": "world",
+      "title": "Brazil blasts ‘unacceptable’ new US tariff proposals",
+      "source": "Al Jazeera – Breaking News, World News and Video from Al Jazeera",
+      "date": "2026-11-26",
+      "url": "https://www.aljazeera.com/news/2026/11/26/brazil-blasts-unacceptable-new-us-tariff-proposals?traffic_source=rss",
+      "primary": true
+    }
+  ],
+  "counts": {
+    "medical": 3,
+    "policy": 1,
+    "world": 2
+  },
+  "audit": [
+    {
+      "id": "43086035",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085978",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43085977",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43085976",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43085742",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085738",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085723",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43085718",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085614",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085613",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43082058",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43077730",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43077725",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true
+    },
+    {
+      "id": "43076908",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43076907",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43073385",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43071535",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43071148",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43055269",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43086126",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085651",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085446",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43085079",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true
+    },
+    {
+      "id": "43076101",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43069956",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43054583",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43036512",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43065626",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43081366",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43046524",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43033720",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43082976",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true
+    },
+    {
+      "id": "43045910",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43043068",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "42855074",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43015184",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43009963",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43017586",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43032979",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "42994689",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43035607",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43021664",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43054794",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43043480",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43076910",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43009638",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43033358",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43014516",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43078220",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43008926",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43078218",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43069407",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43052145",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43042728",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43006808",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43044889",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "42994647",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43062698",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43003379",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43024366",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43039190",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43072652",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "42988204",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43064033",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43075676",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43038842",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43038553",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43072157",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43015358",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43045145",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43039059",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43076396",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43010060",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43014557",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "42988998",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43080842",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43002334",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43060502",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "42994645",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43042938",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43020156",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "42993983",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43021490",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43023816",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43024856",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43025169",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43025303",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43025519",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43026113",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43026642",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43036013",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43037483",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43037611",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43037794",
+      "status": "protocol_or_non_outcome"
+    },
+    {
+      "id": "43037930",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43041642",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43042633",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43043009",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43043086",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43044517",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43046345",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43046726",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43048927",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43049136",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43050047",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43050508",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43051306",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43053013",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43057288",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43057522",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43058301",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43063155",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43065586",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43066843",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43066901",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43067125",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": true,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43067527",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43067911",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43068635",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43073614",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43073891",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43075510",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43076035",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43076092",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": false
+    },
+    {
+      "id": "43076395",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43076610",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43077539",
+      "status": "no_complete_outcome_excerpt"
+    },
+    {
+      "id": "43078221",
+      "status": "eligible",
+      "lane": "ortho-ai",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43078259",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": true,
+      "metric": true
+    },
+    {
+      "id": "43078963",
+      "status": "eligible",
+      "lane": "medical-ai",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true
+    },
+    {
+      "id": "43082013",
+      "status": "eligible",
+      "lane": "clinical",
+      "sample_confirmed": false,
+      "structured_results": false,
+      "metric": true
+    },
+    {
+      "id": "10.1038/s41746-026-03460-1",
+      "status": "outside_scope"
+    }
+  ],
+  "discovery": {
+    "per_window": {
+      "2026-11-26": {
+        "pubmed": {
+          "rows": 142,
+          "ids": [
+            "42302095",
+            "42437501",
+            "42740707",
+            "42855074",
+            "42983106",
+            "42987453",
+            "42988204",
+            "42988998",
+            "42993983",
+            "42994645",
+            "42994647",
+            "42994689",
+            "42995121",
+            "42998936",
+            "43002284",
+            "43002334",
+            "43003379",
+            "43005567",
+            "43006808",
+            "43008926",
+            "43009638",
+            "43009963",
+            "43010060",
+            "43014516",
+            "43014557",
+            "43015184",
+            "43015358",
+            "43017586",
+            "43020156",
+            "43021664",
+            "43024311",
+            "43024366",
+            "43025145",
+            "43032979",
+            "43033358",
+            "43033720",
+            "43035607",
+            "43036512",
+            "43036705",
+            "43038553",
+            "43038842",
+            "43039059",
+            "43039190",
+            "43042070",
+            "43042728",
+            "43042938",
+            "43043068",
+            "43043480",
+            "43044889",
+            "43045145",
+            "43045910",
+            "43046329",
+            "43046524",
+            "43049942",
+            "43052145",
+            "43054583",
+            "43054794",
+            "43055269",
+            "43060502",
+            "43061478",
+            "43062698",
+            "43063116",
+            "43064033",
+            "43065626",
+            "43067151",
+            "43069377",
+            "43069407",
+            "43069476",
+            "43069546",
+            "43069558",
+            "43069956",
+            "43071148",
+            "43071535",
+            "43072157",
+            "43072652",
+            "43072681",
+            "43073385",
+            "43074916",
+            "43075172",
+            "43075676",
+            "43075852",
+            "43076026",
+            "43076101",
+            "43076193",
+            "43076396",
+            "43076592",
+            "43076907",
+            "43076908",
+            "43076910",
+            "43077187",
+            "43077725",
+            "43077730",
+            "43078218",
+            "43078220",
+            "43079149",
+            "43080842",
+            "43081366",
+            "43081951",
+            "43082058",
+            "43082680",
+            "43082976",
+            "43084835",
+            "43084910",
+            "43084986",
+            "43085021",
+            "43085034",
+            "43085057",
+            "43085079",
+            "43085139",
+            "43085149",
+            "43085212",
+            "43085225",
+            "43085342",
+            "43085446",
+            "43085534",
+            "43085543",
+            "43085613",
+            "43085614",
+            "43085616",
+            "43085627",
+            "43085647",
+            "43085649",
+            "43085651",
+            "43085660",
+            "43085718",
+            "43085723",
+            "43085738",
+            "43085741",
+            "43085742",
+            "43085748",
+            "43085802",
+            "43085976",
+            "43085977",
+            "43085978",
+            "43085996",
+            "43086035",
+            "43086036",
+            "43086037",
+            "43086110",
+            "43086116",
+            "43086126",
+            "43086127"
+          ],
+          "verified": [
+            "42855074",
+            "42988204",
+            "42988998",
+            "42993983",
+            "42994645",
+            "42994647",
+            "42994689",
+            "43002334",
+            "43003379",
+            "43006808",
+            "43008926",
+            "43009638",
+            "43009963",
+            "43010060",
+            "43014516",
+            "43014557",
+            "43015184",
+            "43015358",
+            "43017586",
+            "43020156",
+            "43021664",
+            "43024366",
+            "43032979",
+            "43033358",
+            "43033720",
+            "43035607",
+            "43036512",
+            "43038553",
+            "43038842",
+            "43039059",
+            "43039190",
+            "43042728",
+            "43042938",
+            "43043068",
+            "43043480",
+            "43044889",
+            "43045145",
+            "43045910",
+            "43046524",
+            "43052145",
+            "43054583",
+            "43054794",
+            "43055269",
+            "43060502",
+            "43062698",
+            "43064033",
+            "43065626",
+            "43069407",
+            "43069956",
+            "43071148",
+            "43071535",
+            "43072157",
+            "43072652",
+            "43073385",
+            "43075676",
+            "43076101",
+            "43076396",
+            "43076907",
+            "43076908",
+            "43076910",
+            "43077725",
+            "43077730",
+            "43078218",
+            "43078220",
+            "43080842",
+            "43081366",
+            "43082058",
+            "43082976",
+            "43085079",
+            "43085446",
+            "43085613",
+            "43085614",
+            "43085651",
+            "43085718",
+            "43085723",
+            "43085738",
+            "43085742",
+            "43085976",
+            "43085977",
+            "43085978",
+            "43086035",
+            "43086126"
+          ]
+        },
+        "europe:ortho-clinical": {
+          "rows": 36,
+          "ids": [
+            "43025169",
+            "43025303",
+            "43026642",
+            "43032979",
+            "43033720",
+            "43035607",
+            "43036013",
+            "43037930",
+            "43041642",
+            "43043009",
+            "43043086",
+            "43043480",
+            "43044517",
+            "43045910",
+            "43046524",
+            "43046726",
+            "43048927",
+            "43050047",
+            "43051306",
+            "43054583",
+            "43054794",
+            "43057288",
+            "43065626",
+            "43066901",
+            "43067125",
+            "43068435",
+            "43073891",
+            "43076035",
+            "43076092",
+            "43076101",
+            "43076197",
+            "43076395",
+            "43076610",
+            "43077539",
+            "43078259",
+            "43082976"
+          ],
+          "verified": [
+            "43025169",
+            "43025303",
+            "43026642",
+            "43032979",
+            "43033720",
+            "43035607",
+            "43036013",
+            "43037930",
+            "43041642",
+            "43043009",
+            "43043086",
+            "43043480",
+            "43044517",
+            "43045910",
+            "43046524",
+            "43046726",
+            "43048927",
+            "43050047",
+            "43051306",
+            "43054583",
+            "43054794",
+            "43057288",
+            "43065626",
+            "43066901",
+            "43067125",
+            "43073891",
+            "43076035",
+            "43076092",
+            "43076101",
+            "43076395",
+            "43076610",
+            "43077539",
+            "43078259",
+            "43082976"
+          ]
+        },
+        "europe:ortho-ai": {
+          "rows": 36,
+          "ids": [
+            "43024063",
+            "43025519",
+            "43033330",
+            "43034290",
+            "43035340",
+            "43037483",
+            "43037611",
+            "43038553",
+            "43042070",
+            "43042633",
+            "43045581",
+            "43046345",
+            "43049136",
+            "43050472",
+            "43050508",
+            "43052639",
+            "43053013",
+            "43053559",
+            "43057522",
+            "43058301",
+            "43062673",
+            "43062774",
+            "43063155",
+            "43065586",
+            "43066577",
+            "43067579",
+            "43068635",
+            "43073205",
+            "43073385",
+            "43073614",
+            "43076908",
+            "43077187",
+            "43078221",
+            "43079844",
+            "43081951",
+            "43082013"
+          ],
+          "verified": [
+            "43025519",
+            "43037483",
+            "43037611",
+            "43038553",
+            "43042633",
+            "43046345",
+            "43049136",
+            "43050508",
+            "43053013",
+            "43057522",
+            "43058301",
+            "43063155",
+            "43065586",
+            "43068635",
+            "43073385",
+            "43073614",
+            "43076908",
+            "43078221",
+            "43082013"
+          ]
+        },
+        "europe:china-affiliation": {
+          "rows": 0,
+          "ids": [],
+          "status": "ReadTimeout",
+          "http_status": null,
+          "verified": []
+        },
+        "europe:clinical-ai": {
+          "rows": 20,
+          "ids": [
+            "42669108",
+            "43021490",
+            "43023457",
+            "43023816",
+            "43024856",
+            "43026113",
+            "43037794",
+            "43040225",
+            "43050769",
+            "43056652",
+            "43063551",
+            "43066646",
+            "43066843",
+            "43067527",
+            "43067911",
+            "43068853",
+            "43075510",
+            "43077357",
+            "43078963",
+            "43083744"
+          ],
+          "verified": [
+            "43021490",
+            "43023816",
+            "43024856",
+            "43026113",
+            "43037794",
+            "43066843",
+            "43067527",
+            "43067911",
+            "43075510",
+            "43078963"
+          ]
+        },
+        "science-rss": {
+          "rows": 8,
+          "ids": [],
+          "doi_hints": 0,
+          "domains": [
+            "paper.sciencenet.cn"
+          ],
+          "verified": []
+        },
+        "npj-rss": {
+          "rows": 8,
+          "ids": [],
+          "doi_hints": 8,
+          "domains": [
+            "www.nature.com"
+          ],
+          "verified": [
+            "10.1038/s41746-026-03460-1"
+          ]
+        },
+        "tavily-en": {
+          "rows": 8,
+          "ids": [],
+          "doi_hints": 5,
+          "domains": [
+            "bjsm.bmj.com",
+            "journals.lww.com",
+            "link.springer.com",
+            "pubmed.ncbi.nlm.nih.gov",
+            "rapm.bmj.com",
+            "www.bmj.com"
+          ],
+          "verified": []
+        },
+        "tavily-zh-institution": {
+          "rows": 12,
+          "ids": [],
+          "doi_hints": 1,
+          "domains": [
+            "ee.zju.edu.cn",
+            "hr.zju.edu.cn",
+            "life.tongji.edu.cn",
+            "news.pku.edu.cn",
+            "www.cbeis.zju.edu.cn",
+            "www.ncsti.gov.cn",
+            "zje.zju.edu.cn"
+          ],
+          "verified": []
+        },
+        "tavily-zh-media": {
+          "rows": 11,
+          "ids": [],
+          "doi_hints": 0,
+          "domains": [
+            "news.sciencenet.cn",
+            "www.chinanews.com.cn",
+            "www.cn-healthcare.com",
+            "www.ncsti.gov.cn",
+            "www.sh.chinanews.com.cn"
+          ],
+          "verified": []
+        },
+        "tavily-wechat": {
+          "rows": 6,
+          "ids": [],
+          "doi_hints": 0,
+          "domains": [
+            "mp.weixin.qq.com"
+          ],
+          "verified": []
+        }
+      }
+    },
+    "access_probes": {
+      "cn-hospital": {
+        "status": "cooldown"
+      },
+      "cn-science-media": {
+        "status": 200,
+        "doi_count": 1
+      },
+      "cn-public-science": {
+        "status": "cooldown"
+      },
+      "foreign-journal": {
+        "status": 202,
+        "doi_count": 0
+      },
+      "public-wechat": {
+        "status": 200,
+        "doi_count": 0
+      }
+    },
+    "tavily": {
+      "attempted": 4,
+      "credits": 4,
+      "unverified": 0,
+      "available_before": true,
+      "paygo_counter_available": true,
+      "observed_key_credit_change": 0,
+      "observed_plan_credit_change": 0,
+      "observed_paygo_change": 0
+    }
+  },
+  "alternatives": {
+    "flash_A": {
+      "model_order": [
+        "43085978",
+        "43085613",
+        "43082058"
+      ],
+      "selected": [
+        "43085978",
+        "43085613",
+        "43082058"
+      ],
+      "papers": [
+        {
+          "id": "43085978",
+          "lane": "medical",
+          "title": "Triple Antibiotic Prophylaxis and Revision Risk in Adult Spinal Deformity Surgery: A Propensity Score-Matched Analysis.",
+          "source": "International journal of spine surgery",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085978/",
+          "pmid": "43085978",
+          "region": "美国",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.14444/8998",
+          "channels": [
+            "pubmed"
+          ]
+        },
+        {
+          "id": "43085613",
+          "lane": "medical",
+          "title": "Structural Benefit, Selective Functional Gain: Double-Row Versus Single-Row Arthroscopic Rotator Cuff Repair - A Tear-Stratified Systematic Review and Meta-Analysis.",
+          "source": "Journal of shoulder and elbow surgery",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085613/",
+          "pmid": "43085613",
+          "region": "研究机构地域未核实",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article",
+            "Review"
+          ],
+          "doi": "10.1016/j.jse.2026.11.049",
+          "channels": [
+            "pubmed"
+          ]
+        },
+        {
+          "id": "43082058",
+          "lane": "medical",
+          "title": "Performance of Reasoning-intensive Large Language Models on the Orthopaedic In-training Examination.",
+          "source": "The Journal of the American Academy of Orthopaedic Surgeons",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43082058/",
+          "pmid": "43082058",
+          "region": "研究机构地域未核实",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.5435/JAAOS-D-26-00860",
+          "channels": [
+            "pubmed"
+          ]
+        }
+      ]
+    },
+    "flash_B": {
+      "model_order": [
+        "43085978",
+        "43085613",
+        "43085976"
+      ],
+      "selected": [
+        "43085978",
+        "43085613",
+        "43058301"
+      ],
+      "papers": [
+        {
+          "id": "43085978",
+          "lane": "medical",
+          "title": "Triple Antibiotic Prophylaxis and Revision Risk in Adult Spinal Deformity Surgery: A Propensity Score-Matched Analysis.",
+          "source": "International journal of spine surgery",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085978/",
+          "pmid": "43085978",
+          "region": "美国",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.14444/8998",
+          "channels": [
+            "pubmed"
+          ]
+        },
+        {
+          "id": "43085613",
+          "lane": "medical",
+          "title": "Structural Benefit, Selective Functional Gain: Double-Row Versus Single-Row Arthroscopic Rotator Cuff Repair - A Tear-Stratified Systematic Review and Meta-Analysis.",
+          "source": "Journal of shoulder and elbow surgery",
+          "date": "2026-11-25",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43085613/",
+          "pmid": "43085613",
+          "region": "研究机构地域未核实",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article",
+            "Review"
+          ],
+          "doi": "10.1016/j.jse.2026.11.049",
+          "channels": [
+            "pubmed"
+          ]
+        },
+        {
+          "id": "43058301",
+          "lane": "medical",
+          "title": "Multicenter external validation of CT-based deep learning for proximal femoral fracture classification and quantitative fracture-line assessment.",
+          "source": "Skeletal radiology",
+          "date": "2026-11-20",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/43058301/",
+          "pmid": "43058301",
+          "region": "日本",
+          "primary": true,
+          "mesh": [],
+          "publication_types": [
+            "Journal Article"
+          ],
+          "doi": "10.1007/s00256-026-05447-1",
+          "channels": [
+            "europe:ortho-ai"
+          ]
+        }
+      ]
+    }
+  },
+  "account_balance_delta_micro_cny": 0,
+  "phase": "s3-compare",
+  "calls": [
+    {
+      "phase": "s3-select-A",
+      "reserved_micro_cny": 26730,
+      "model": "deepseek-flash",
+      "thinking": false,
+      "max_output_tokens": 650,
+      "peak_estimate_micro_cny": 4332,
+      "prompt_tokens": 2062,
+      "completion_tokens": 26,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 2062,
+      "seconds": 1.14
+    },
+    {
+      "phase": "s3-select-B",
+      "reserved_micro_cny": 40730,
+      "model": "deepseek-flash",
+      "thinking": true,
+      "max_output_tokens": 2400,
+      "peak_estimate_micro_cny": 11086,
+      "prompt_tokens": 2087,
+      "completion_tokens": 864,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 2087,
+      "reasoning_tokens": 837,
+      "seconds": 6.28
+    }
+  ],
+  "wechat_requests": 0,
+  "tavily_credits": 4,
+  "elapsed_seconds": 81.69
+}

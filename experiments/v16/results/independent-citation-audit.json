@@ -1,0 +1,54 @@
+{
+  "pubmed": [
+    {
+      "pmid": "35711073",
+      "title": "Recognition and Segmentation of Individual Bone Fragments with a Deep Learning Approach in CT Scans of Complex Intertrochanteric Fractures: A Retrospective Study.",
+      "doi": "10.1007/s10278-022-00669-w"
+    },
+    {
+      "pmid": "35396184",
+      "title": "Validation and algorithmic audit of a deep learning system for the detection of proximal femoral fractures in patients in the emergency department: a diagnostic accuracy study.",
+      "doi": "10.1016/S2589-7500(22)00004-8"
+    },
+    {
+      "pmid": "37615504",
+      "title": "Development and Validation of a Convolutional Neural Network Model to Predict a Pathologic Fracture in the Proximal Femur Using Abdomen and Pelvis CT Images of Patients With Advanced Cancer.",
+      "doi": "10.1097/CORR.0000000000002771"
+    },
+    {
+      "pmid": "39272664",
+      "title": "Artificial Intelligence-Based Applications for Bone Fracture Detection Using Medical Images: A Systematic Review.",
+      "doi": "10.3390/diagnostics14171879"
+    }
+  ],
+  "crossref": [
+    {
+      "queried_doi": "10.1007/s10278-022-00658-3",
+      "http_status": 404,
+      "returned_title": [],
+      "matches_registered_doi": false
+    },
+    {
+      "queried_doi": "10.1016/S2589-7500(22)00035-7",
+      "http_status": 404,
+      "returned_title": [],
+      "matches_registered_doi": false
+    },
+    {
+      "queried_doi": "10.1097/CORR.0000000000002748",
+      "http_status": 200,
+      "returned_title": [
+        "Your Best Life: Real Change Occurs Within"
+      ],
+      "matches_registered_doi": true
+    },
+    {
+      "queried_doi": "10.3390/diagnostics14161784",
+      "http_status": 200,
+      "returned_title": [
+        "Analytical Validation of a DNA Methylation Biomarker Test for the Diagnosis of Barrett’s Esophagus and Esophageal Adenocarcinoma from Samples Collected Using EsoCheck®, a Non-Endoscopic Esophageal Cell Collection Device"
+      ],
+      "matches_registered_doi": true
+    }
+  ]
+}

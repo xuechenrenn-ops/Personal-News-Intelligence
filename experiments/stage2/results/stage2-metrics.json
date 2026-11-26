@@ -1,0 +1,2106 @@
+{
+  "channels": {
+    "run": 45756208378,
+    "bundle_sha256": "ff92fa07c2892f5fcd9a50aec53b367eb7cba09a39f17afe0936f13c85312dc5",
+    "phase": "s2-search",
+    "calls": [],
+    "elapsed_seconds": 107.671,
+    "wechat_requests": 0,
+    "discovery": {
+      "per_window": {
+        "2026-11-07": {
+          "pubmed": {
+            "rows": 58,
+            "primary_ids_count": 58,
+            "verified_count": 15,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-ai": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:china-affiliation": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:clinical-ai": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-en": {
+            "rows": 12,
+            "doi_hints": 4,
+            "domains": [
+              "journals.lww.com",
+              "link.springer.com",
+              "pubmed.ncbi.nlm.nih.gov"
+            ],
+            "primary_ids_count": 2,
+            "verified_count": 1,
+            "target_hits": [],
+            "unique_vs_pubmed": 1
+          },
+          "tavily-zh-institution": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "medgroup.tongji.edu.cn",
+              "news.pku.edu.cn",
+              "puh3.net.cn",
+              "pyramid.pku.edu.cn",
+              "www.ncsti.gov.cn",
+              "www.nihds.pku.edu.cn",
+              "www.shsmu.edu.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-zh-media": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "news.sciencenet.cn",
+              "www.cn-healthcare.com",
+              "www.ncsti.gov.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-wechat": {
+            "rows": 7,
+            "doi_hints": 1,
+            "domains": [
+              "mp.weixin.qq.com"
+            ],
+            "primary_ids_count": 1,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          }
+        },
+        "2026-11-17": {
+          "pubmed": {
+            "rows": 59,
+            "primary_ids_count": 59,
+            "verified_count": 16,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-ai": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:china-affiliation": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:clinical-ai": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-en": {
+            "rows": 12,
+            "doi_hints": 9,
+            "domains": [
+              "bjsm.bmj.com",
+              "journals.lww.com",
+              "link.springer.com",
+              "pubmed.ncbi.nlm.nih.gov",
+              "rapm.bmj.com",
+              "www.bmj.com"
+            ],
+            "primary_ids_count": 7,
+            "verified_count": 2,
+            "target_hits": [],
+            "unique_vs_pubmed": 2
+          },
+          "tavily-zh-institution": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "medgroup.tongji.edu.cn",
+              "news.pku.edu.cn",
+              "puh3.net.cn",
+              "www.cbeis.zju.edu.cn",
+              "www.nihds.pku.edu.cn",
+              "zje.zju.edu.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-zh-media": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "www.cn-healthcare.com",
+              "www.ncsti.gov.cn",
+              "www.xj.chinanews.com.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-wechat": {
+            "rows": 3,
+            "doi_hints": 0,
+            "domains": [
+              "mp.weixin.qq.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          }
+        },
+        "2026-11-26": {
+          "pubmed": {
+            "rows": 60,
+            "primary_ids_count": 60,
+            "verified_count": 17,
+            "target_hits": [
+              "43077730",
+              "43082058"
+            ],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-ai": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:china-affiliation": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:clinical-ai": {
+            "rows": 0,
+            "status": "HTTPError",
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-en": {
+            "rows": 12,
+            "doi_hints": 5,
+            "domains": [
+              "bjsm.bmj.com",
+              "link.springer.com",
+              "pubmed.ncbi.nlm.nih.gov",
+              "rapm.bmj.com",
+              "www.bmj.com"
+            ],
+            "primary_ids_count": 4,
+            "verified_count": 1,
+            "target_hits": [],
+            "unique_vs_pubmed": 1
+          },
+          "tavily-zh-institution": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "hr.zju.edu.cn",
+              "imir.puh3.net.cn",
+              "news.pku.edu.cn",
+              "www.ncsti.gov.cn",
+              "www.puh3.net.cn",
+              "www.shsmu.edu.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-zh-media": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "mcase.cn-healthcare.com",
+              "news.sciencenet.cn",
+              "www.chinanews.com.cn",
+              "www.cn-healthcare.com",
+              "www.ncsti.gov.cn",
+              "www.sh.chinanews.com.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-wechat": {
+            "rows": 5,
+            "doi_hints": 0,
+            "domains": [
+              "mp.weixin.qq.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          }
+        }
+      },
+      "access_probes": {
+        "cn-hospital": {
+          "status": "ConnectionError"
+        },
+        "cn-science-media": {
+          "status": 200,
+          "doi_count": 1
+        },
+        "cn-public-science": {
+          "status": 403
+        },
+        "foreign-journal": {
+          "status": 202,
+          "doi_count": 0
+        },
+        "public-wechat": {
+          "status": 200,
+          "doi_count": 0
+        }
+      },
+      "tavily": {
+        "attempted": 12,
+        "credits": 12,
+        "unverified": 0,
+        "available_before": true,
+        "paygo_counter_available": true,
+        "observed_key_credit_change": 0,
+        "observed_plan_credit_change": 0,
+        "observed_paygo_change": 0
+      }
+    }
+  },
+  "pair": {
+    "run": 45756480931,
+    "bundle_sha256": "5c2274218a45d24b39b035149b3cd9b0b0d4ff737e31e3de52df98783b966619",
+    "phase": "s2-compare",
+    "calls": [
+      {
+        "phase": "2026-11-07-A",
+        "reserved_micro_cny": 37384,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 2600,
+        "peak_estimate_micro_cny": 9446,
+        "prompt_tokens": 1611,
+        "completion_tokens": 778,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1611,
+        "seconds": 4.53
+      },
+      {
+        "phase": "2026-11-07-B",
+        "reserved_micro_cny": 54984,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 4800,
+        "peak_estimate_micro_cny": 22976,
+        "prompt_tokens": 1636,
+        "completion_tokens": 2463,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1636,
+        "reasoning_tokens": 1829,
+        "seconds": 12.81
+      },
+      {
+        "phase": "2026-11-17-A",
+        "reserved_micro_cny": 52648,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 2600,
+        "peak_estimate_micro_cny": 16148,
+        "prompt_tokens": 3086,
+        "completion_tokens": 1247,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 2958,
+        "seconds": 7.01
+      },
+      {
+        "phase": "2026-11-17-B",
+        "reserved_micro_cny": 70248,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 4800,
+        "peak_estimate_micro_cny": 41230,
+        "prompt_tokens": 3111,
+        "completion_tokens": 4376,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 2983,
+        "reasoning_tokens": 3496,
+        "seconds": 22.19
+      }
+    ],
+    "elapsed_seconds": 49.406,
+    "account_balance_delta_micro_cny": 0,
+    "evaluation": {
+      "2026-11-07": {
+        "pool_ids": [
+          "42982479",
+          "42910733"
+        ],
+        "A": {
+          "score": {
+            "targets": [
+              "42910733",
+              "42969761",
+              "42982479"
+            ],
+            "targets_available": [
+              "42910733",
+              "42982479"
+            ],
+            "targets_ranked": [
+              "42910733",
+              "42982479"
+            ],
+            "targets_published": [
+              "42910733",
+              "42982479"
+            ],
+            "accepted": [
+              "42910733",
+              "42982479"
+            ],
+            "bad_id_attempts": [],
+            "facts_emitted": 8,
+            "facts_suppressed": 2
+          },
+          "items": [
+            {
+              "id": "42982479",
+              "lane": "medical",
+              "question": "对于粘连性肩关节囊炎，各种治疗干预的获益与危害如何比较？",
+              "result": "短期随访中，中等确定性证据提示体外冲击波治疗相比常规护理可能减轻疼痛（0-10分量表平均差-1.97，95% CI -2.97至-0.97）；低确定性证据提示其可能改善功能（0-100分量表平均差-11.42，95% CI -16.68至-6.15），但直接与间接估计存在重要不一致。短期活动度方面，中等确定性证据提示麻醉下手法松解联合关节内类固醇注射可能改善屈曲（平均差33.29°，95% CI 11.19°至55.39°），单纯麻醉下手法松解亦然（26.16°，8.19°至44.13°）。主要结局中多数试验存在高偏倚风险（疼痛71%、功能72%、活动度71%）。",
+              "limits": "多数其他比较估计仅由低或极低确定性证据支持；不良事件报告不完整且不一致，比较安全性高度不确定；中期效应证据不足；证据主要为短期且限于特定结局；对以原发性粘连性肩关节囊炎为主人群之外的可适用性不确定。",
+              "insight": "需在更长随访、统一不良事件报告的前瞻性随机试验中验证体外冲击波与麻醉下手法松解（联合或不联合关节内类固醇注射）的长期比较效果与安全性。"
+            },
+            {
+              "id": "42910733",
+              "lane": "medical",
+              "question": "在常规康复基础上增加功能性运动训练（FET）能否改善半月板修复术后的膝关节恢复？",
+              "result": "6个月时FET组活动度大于CON组（134.36°±3.04° vs 127.62°±3.66°；平均差6.74°，95% CI 5.37-8.10；校正P＜0.001）。经Holm-Bonferroni多重校正后，FET组1个月和6个月IKDC评分更高、1个月LRS评分更高、两次随访VAS评分更低；1个月时PGE2、5-HT水平及被动60°位置觉误差和60°运动觉值更低。1个月活动度及6个月被动60°位置觉差异经多重校正后不再显著；6个月时LRS、PGE2、5-HT、60°运动觉及术后并发症率组间无显著差异。",
+              "limits": "试验注册为回顾性；次要结局多重比较需谨慎解读并进一步验证。",
+              "insight": "需在前瞻性注册、预设主要结局的随机试验中验证FET对半月板修复术后活动度以外功能结局的效应及其持久性。"
+            }
+          ],
+          "audit": [
+            {
+              "id": "42982479",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question",
+                "result"
+              ],
+              "fields_removed": [
+                "design"
+              ],
+              "retained": true
+            },
+            {
+              "id": "42910733",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question",
+                "result"
+              ],
+              "fields_removed": [
+                "design"
+              ],
+              "retained": true
+            }
+          ]
+        },
+        "B": {
+          "score": {
+            "targets": [
+              "42910733",
+              "42969761",
+              "42982479"
+            ],
+            "targets_available": [
+              "42910733",
+              "42982479"
+            ],
+            "targets_ranked": [
+              "42910733",
+              "42982479"
+            ],
+            "targets_published": [
+              "42910733",
+              "42982479"
+            ],
+            "accepted": [
+              "42910733",
+              "42982479"
+            ],
+            "bad_id_attempts": [],
+            "facts_emitted": 9,
+            "facts_suppressed": 1
+          },
+          "items": [
+            {
+              "id": "42982479",
+              "lane": "medical",
+              "question": "对于成人肩周炎（粘连性肩关节囊炎），各种治疗干预的获益与风险如何比较？",
+              "result": "短期随访中，中等确定性证据提示体外冲击波治疗与常规照护相比可能减轻疼痛（0-10分量表平均差 -1.97，95% CI -2.97至-0.97）；中等确定性证据提示麻醉下手法松解联合关节腔内类固醇注射可能改善屈曲（平均差33.29°，95% CI 11.19°至55.39°），单纯麻醉下手法松解为26.16°（8.19°至44.13°）。",
+              "limits": "多数贡献主要结局的试验存在高偏倚风险（疼痛71%、功能72%、活动度71%）；多项比较为低或极低确定性且存在重要不一致性；不良事件报告不完整，比较安全性高度不确定；证据以短期、特定结局为主。",
+              "insight": "在原发性肩周炎人群中开展长期随访、采用盲法结局评估的随机对照试验，验证体外冲击波治疗与麻醉下手法松解（联合或不联合关节腔内类固醇注射）的持久疗效及安全性。"
+            },
+            {
+              "id": "42910733",
+              "lane": "medical",
+              "question": "在半月板修复术后常规康复基础上加用功能性运动训练，能否改善膝关节术后恢复？",
+              "design": "前瞻性随机对照试验；96例接受半月板修复的患者随机分为常规康复组（n=48）和常规康复加功能性运动训练组（n=48），6个月随访并纳入意向性分析。",
+              "result": "6个月时功能性运动训练组活动度大于常规康复组（134.36°±3.04° vs 127.62°±3.66°；平均差6.74°，95% CI 5.37-8.10；校正P＜0.001）；经Holm-Bonferroni校正后，1个月和6个月IKDC评分更高、1个月Lysholm评分更高、两次随访VAS疼痛评分更低；1个月PGE2、5-HT及被动60°位置觉误差和60°运动觉数值更低。",
+              "limits": "原始摘要报告的关键局限包括回顾性试验注册和多重次要结局；次要结局需谨慎解释并进一步验证。",
+              "insight": "在独立、前瞻注册、多中心随机对照试验中验证功能性运动训练对半月板修复术后活动度的效应可重复性，并预先定义次要结局的临床意义。"
+            }
+          ],
+          "audit": [
+            {
+              "id": "42982479",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question",
+                "result"
+              ],
+              "fields_removed": [
+                "design"
+              ],
+              "retained": true
+            },
+            {
+              "id": "42910733",
+              "fields_allowed": [
+                "design",
+                "insight",
+                "limits",
+                "question",
+                "result"
+              ],
+              "fields_removed": [],
+              "retained": true
+            }
+          ]
+        }
+      },
+      "2026-11-17": {
+        "pool_ids": [
+          "43038553",
+          "43037611",
+          "43035607",
+          "43015530",
+          "43033273",
+          "43008926"
+        ],
+        "A": {
+          "score": {
+            "targets": [
+              "43033273",
+              "43035607",
+              "43038553"
+            ],
+            "targets_available": [
+              "43033273",
+              "43035607",
+              "43038553"
+            ],
+            "targets_ranked": [
+              "43033273",
+              "43035607",
+              "43038553"
+            ],
+            "targets_published": [],
+            "accepted": [],
+            "bad_id_attempts": [],
+            "facts_emitted": 0,
+            "facts_suppressed": 10
+          },
+          "items": [],
+          "audit": [
+            {
+              "id": "43038553",
+              "fields_allowed": [
+                "insight",
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result",
+                "limits"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43035607",
+              "fields_allowed": [
+                "insight"
+              ],
+              "fields_removed": [
+                "question",
+                "design",
+                "result",
+                "limits"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43008926",
+              "fields_allowed": [
+                "insight",
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result",
+                "limits"
+              ],
+              "retained": false
+            }
+          ]
+        },
+        "B": {
+          "score": {
+            "targets": [
+              "43033273",
+              "43035607",
+              "43038553"
+            ],
+            "targets_available": [
+              "43033273",
+              "43035607",
+              "43038553"
+            ],
+            "targets_ranked": [
+              "43035607",
+              "43038553"
+            ],
+            "targets_published": [
+              "43038553"
+            ],
+            "accepted": [
+              "43008926",
+              "43038553"
+            ],
+            "bad_id_attempts": [],
+            "facts_emitted": 7,
+            "facts_suppressed": 8
+          },
+          "items": [
+            {
+              "id": "43038553",
+              "lane": "medical",
+              "question": "AI预测初次全膝关节置换术后出院去向的模型，其区分性能、研究质量和适用性如何？",
+              "result": "内部验证合并AUC为0.75（95% CI 0.67–0.82；I²=99.9%；P＜.001），外部验证合并AUC为0.77（95% CI 0.51–1.00；I²=99.8%；P＜.001）；所有研究PROBAST+AI均评为高偏倚风险；机器学习与深度学习模型亚组差异无统计学意义（P＞.05）。",
+              "limits": "全部纳入研究为高偏倚风险，异质性极高，且均在美国开展，对其他医疗体系的普适性有限。",
+              "insight": "在美国以外多国医疗系统中，按PROBAST+AI和TRIPOD+AI开发并外部验证出院去向预测模型，重点评估校准度、公平性及不同数据分布下的可迁移性。"
+            },
+            {
+              "id": "43008926",
+              "lane": "medical",
+              "question": "个性化eHealth项目能否缩短全膝或单髁膝关节置换术后回归自选日常生活活动的时间？",
+              "result": "干预组回归自选日常生活活动的中位时间为52天（32–84），对照组为75天（36–137）；危险比1.6（1.3–2.0）；结论报告中位缩短23天。",
+              "insight": "在独立人群中验证iRecover对重返工作与运动的效应，并评估全膝与单髁置换、基线活动水平及依从性对效果的修饰作用。"
+            }
+          ],
+          "audit": [
+            {
+              "id": "43038553",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question",
+                "result"
+              ],
+              "fields_removed": [
+                "design"
+              ],
+              "retained": true
+            },
+            {
+              "id": "43035607",
+              "fields_allowed": [],
+              "fields_removed": [
+                "question",
+                "design",
+                "result",
+                "limits",
+                "insight"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43008926",
+              "fields_allowed": [
+                "insight",
+                "question",
+                "result"
+              ],
+              "fields_removed": [
+                "design",
+                "limits"
+              ],
+              "retained": true
+            }
+          ]
+        }
+      }
+    },
+    "wechat_requests": 0
+  },
+  "holdout": {
+    "run": 45756628273,
+    "bundle_sha256": "8e7b03901489bb72424dd0b2923abb882f1048ae359bd3cb8cf2502e74a65aaf",
+    "phase": "s2-holdout",
+    "calls": [
+      {
+        "phase": "2026-11-21-A",
+        "reserved_micro_cny": 51442,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 2600,
+        "peak_estimate_micro_cny": 19250,
+        "prompt_tokens": 2973,
+        "completion_tokens": 1663,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 2845,
+        "seconds": 9.55
+      },
+      {
+        "phase": "2026-11-21-B",
+        "reserved_micro_cny": 69042,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 4800,
+        "peak_estimate_micro_cny": 44396,
+        "prompt_tokens": 2998,
+        "completion_tokens": 4800,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 2870,
+        "reasoning_tokens": 4800,
+        "seconds": 29.61
+      },
+      {
+        "phase": "2026-11-26-A",
+        "reserved_micro_cny": 54958,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 2600,
+        "peak_estimate_micro_cny": 22738,
+        "prompt_tokens": 3625,
+        "completion_tokens": 1936,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 3497,
+        "seconds": 10.95
+      },
+      {
+        "phase": "2026-11-26-B",
+        "reserved_micro_cny": 72558,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 4800,
+        "peak_estimate_micro_cny": 33556,
+        "prompt_tokens": 3650,
+        "completion_tokens": 3282,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 3522,
+        "reasoning_tokens": 2050,
+        "seconds": 28.69
+      }
+    ],
+    "elapsed_seconds": 81.469,
+    "account_balance_delta_micro_cny": 20000,
+    "evaluation": {
+      "2026-11-21": {
+        "pool_ids": [
+          "43062698",
+          "43058301",
+          "43065626",
+          "43037611",
+          "43020153",
+          "43015530"
+        ],
+        "A": {
+          "score": {
+            "targets": [
+              "43058301",
+              "43062698",
+              "43065626"
+            ],
+            "targets_available": [
+              "43058301",
+              "43062698",
+              "43065626"
+            ],
+            "targets_ranked": [
+              "43058301",
+              "43062698",
+              "43065626"
+            ],
+            "targets_published": [],
+            "accepted": [],
+            "bad_id_attempts": [],
+            "facts_emitted": 0,
+            "facts_suppressed": 7
+          },
+          "items": [],
+          "audit": [
+            {
+              "id": "43062698",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43058301",
+              "fields_allowed": [
+                "insight",
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result",
+                "limits"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43065626",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result"
+              ],
+              "retained": false
+            }
+          ]
+        },
+        "B": {
+          "error": "RuntimeError",
+          "message": "Incomplete model output"
+        }
+      },
+      "2026-11-26": {
+        "pool_ids": [
+          "43084330",
+          "43082058",
+          "43084815",
+          "43077730",
+          "10.3389/fmed.2026.1992527",
+          "43020153"
+        ],
+        "A": {
+          "score": {
+            "targets": [
+              "10.3389/fmed.2026.1992527",
+              "43077730",
+              "43082058"
+            ],
+            "targets_available": [
+              "10.3389/fmed.2026.1992527",
+              "43077730",
+              "43082058"
+            ],
+            "targets_ranked": [
+              "10.3389/fmed.2026.1992527",
+              "43077730",
+              "43082058"
+            ],
+            "targets_published": [],
+            "accepted": [],
+            "bad_id_attempts": [],
+            "facts_emitted": 0,
+            "facts_suppressed": 10
+          },
+          "items": [],
+          "audit": [
+            {
+              "id": "43084330",
+              "fields_allowed": [
+                "insight",
+                "limits"
+              ],
+              "fields_removed": [
+                "question",
+                "design",
+                "result"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43082058",
+              "fields_allowed": [
+                "insight"
+              ],
+              "fields_removed": [
+                "question",
+                "design",
+                "result",
+                "limits"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43084815",
+              "fields_allowed": [
+                "insight",
+                "limits"
+              ],
+              "fields_removed": [
+                "question",
+                "design",
+                "result"
+              ],
+              "retained": false
+            }
+          ]
+        },
+        "B": {
+          "score": {
+            "targets": [
+              "10.3389/fmed.2026.1992527",
+              "43077730",
+              "43082058"
+            ],
+            "targets_available": [
+              "10.3389/fmed.2026.1992527",
+              "43077730",
+              "43082058"
+            ],
+            "targets_ranked": [
+              "10.3389/fmed.2026.1992527",
+              "43082058"
+            ],
+            "targets_published": [
+              "10.3389/fmed.2026.1992527"
+            ],
+            "accepted": [
+              "10.3389/fmed.2026.1992527"
+            ],
+            "bad_id_attempts": [],
+            "facts_emitted": 3,
+            "facts_suppressed": 8
+          },
+          "items": [
+            {
+              "id": "10.3389/fmed.2026.1992527",
+              "lane": "medical",
+              "question": "在前交叉韧带重建（ACLR）后前膝痛患者中，髋膝联合强化训练相比标准康复能否改善患者报告结局和髌股关节运动学？",
+              "result": "术后6个月，髋膝联合强化组除症状外四个KOOS子量表评分更高；术后9个月五个子量表评分均更高（均P＜0.05）。KOOS疼痛的组×时间交互作用不显著（Greenhouse-Geisser校正P=0.314）。组间等速肌力比较不显著。探索性运动学比较显示，术后9个月深屈膝时髋膝联合强化组内侧髌骨倾斜和外侧平移更大（P＜0.05）。",
+              "insight": "需在样本量充足、设盲和终点预设的随机试验中验证髋膝联合强化训练是否通过改变髌股关节运动学来改善ACLR后前膝痛患者的疼痛和功能。"
+            }
+          ],
+          "audit": [
+            {
+              "id": "43084330",
+              "fields_allowed": [
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result",
+                "limits",
+                "insight"
+              ],
+              "retained": false
+            },
+            {
+              "id": "43082058",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result"
+              ],
+              "retained": false
+            },
+            {
+              "id": "10.3389/fmed.2026.1992527",
+              "fields_allowed": [
+                "insight",
+                "question",
+                "result"
+              ],
+              "fields_removed": [
+                "design",
+                "limits"
+              ],
+              "retained": true
+            }
+          ]
+        }
+      }
+    },
+    "wechat_requests": 0
+  },
+  "expanded": {
+    "run": 45756823576,
+    "bundle_sha256": "9a3999f2857123427b7036178aecf0af4e6537bf87066443a33bbd26cb28b0d4",
+    "phase": "s2-search",
+    "calls": [],
+    "elapsed_seconds": 64.612,
+    "wechat_requests": 0,
+    "discovery": {
+      "per_window": {
+        "2026-11-07": {
+          "pubmed": {
+            "rows": 161,
+            "primary_ids_count": 161,
+            "verified_count": 49,
+            "target_hits": [
+              "42910733",
+              "42982479"
+            ],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 26,
+            "target_hits": [],
+            "unique_vs_pubmed": 19
+          },
+          "europe:ortho-ai": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:china-affiliation": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:clinical-ai": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "science-rss": {
+            "rows": 8,
+            "doi_hints": 0,
+            "domains": [
+              "paper.sciencenet.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "npj-rss": {
+            "rows": 8,
+            "doi_hints": 8,
+            "domains": [
+              "www.nature.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          }
+        },
+        "2026-11-17": {
+          "pubmed": {
+            "rows": 160,
+            "primary_ids_count": 160,
+            "verified_count": 44,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 29,
+            "target_hits": [
+              "43035607"
+            ],
+            "unique_vs_pubmed": 22
+          },
+          "europe:ortho-ai": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 24,
+            "target_hits": [],
+            "unique_vs_pubmed": 23
+          },
+          "europe:china-affiliation": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:clinical-ai": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "science-rss": {
+            "rows": 8,
+            "doi_hints": 0,
+            "domains": [
+              "paper.sciencenet.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "npj-rss": {
+            "rows": 8,
+            "doi_hints": 8,
+            "domains": [
+              "www.nature.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          }
+        },
+        "2026-11-26": {
+          "pubmed": {
+            "rows": 161,
+            "primary_ids_count": 161,
+            "verified_count": 87,
+            "target_hits": [
+              "43082058"
+            ],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 32,
+            "target_hits": [],
+            "unique_vs_pubmed": 17
+          },
+          "europe:ortho-ai": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 21,
+            "target_hits": [],
+            "unique_vs_pubmed": 19
+          },
+          "europe:china-affiliation": {
+            "rows": 17,
+            "primary_ids_count": 17,
+            "verified_count": 8,
+            "target_hits": [],
+            "unique_vs_pubmed": 5
+          },
+          "europe:clinical-ai": {
+            "rows": 20,
+            "primary_ids_count": 20,
+            "verified_count": 10,
+            "target_hits": [],
+            "unique_vs_pubmed": 10
+          },
+          "science-rss": {
+            "rows": 8,
+            "doi_hints": 0,
+            "domains": [
+              "paper.sciencenet.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "npj-rss": {
+            "rows": 8,
+            "doi_hints": 8,
+            "domains": [
+              "www.nature.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 2,
+            "target_hits": [],
+            "unique_vs_pubmed": 2
+          }
+        }
+      },
+      "access_probes": {
+        "cn-hospital": {
+          "status": "ConnectionError"
+        },
+        "cn-science-media": {
+          "status": 200,
+          "doi_count": 1
+        },
+        "cn-public-science": {
+          "status": "cooldown"
+        },
+        "foreign-journal": {
+          "status": 202,
+          "doi_count": 0
+        }
+      },
+      "tavily": {
+        "attempted": 0,
+        "credits": 0,
+        "unverified": 0,
+        "quota_unavailable": true
+      }
+    }
+  },
+  "automatic1": {
+    "run": 45756992648,
+    "bundle_sha256": "03fe1d0a86c75d58ba96692c6690e12dbfd1935d8c704f31f1c4d4ee2b14da09",
+    "phase": "s2-live",
+    "calls": [
+      {
+        "phase": "live-rank",
+        "reserved_micro_cny": 35500,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 1000,
+        "peak_estimate_micro_cny": 5778,
+        "prompt_tokens": 2725,
+        "completion_tokens": 41,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 2725,
+        "seconds": 1.33
+      },
+      {
+        "phase": "live-B",
+        "reserved_micro_cny": 82004,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 6700,
+        "peak_estimate_micro_cny": 56274,
+        "prompt_tokens": 3053,
+        "completion_tokens": 6271,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 2925,
+        "reasoning_tokens": 5166,
+        "seconds": 32.06
+      },
+      {
+        "phase": "live-review",
+        "reserved_micro_cny": 62622,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 4900,
+        "peak_estimate_micro_cny": 44402,
+        "prompt_tokens": 2601,
+        "completion_tokens": 4900,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 2601,
+        "reasoning_tokens": 4900,
+        "seconds": 25.9
+      }
+    ],
+    "elapsed_seconds": 89.994,
+    "account_balance_delta_micro_cny": 10000,
+    "audit": [
+      {
+        "id": "43082058",
+        "fields_allowed": [
+          "design",
+          "insight",
+          "limits",
+          "question",
+          "result"
+        ],
+        "fields_removed": [],
+        "retained": true
+      },
+      {
+        "id": "43085613",
+        "fields_allowed": [
+          "insight",
+          "limits",
+          "question",
+          "result"
+        ],
+        "fields_removed": [
+          "design"
+        ],
+        "retained": true
+      },
+      {
+        "id": "43085541",
+        "fields_allowed": [
+          "question",
+          "result"
+        ],
+        "fields_removed": [
+          "design",
+          "limits",
+          "insight"
+        ],
+        "retained": true
+      },
+      {
+        "id": "policy-O3",
+        "fields_allowed": [],
+        "fields_removed": [
+          "summary"
+        ],
+        "retained": false
+      },
+      {
+        "id": "G0-3",
+        "fields_allowed": [
+          "summary"
+        ],
+        "fields_removed": [],
+        "retained": true
+      }
+    ],
+    "veto": [],
+    "candidate_counts": {
+      "medical": 8,
+      "policy": 3,
+      "world": 7
+    },
+    "wechat_requests": 0,
+    "discovery": {
+      "per_window": {
+        "2026-11-26": {
+          "pubmed": {
+            "rows": 160,
+            "primary_ids_count": 160,
+            "verified_count": 86,
+            "target_hits": [
+              "43082058"
+            ],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 32,
+            "target_hits": [],
+            "unique_vs_pubmed": 17
+          },
+          "europe:ortho-ai": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 21,
+            "target_hits": [],
+            "unique_vs_pubmed": 19
+          },
+          "europe:china-affiliation": {
+            "rows": 17,
+            "primary_ids_count": 17,
+            "verified_count": 8,
+            "target_hits": [],
+            "unique_vs_pubmed": 5
+          },
+          "europe:clinical-ai": {
+            "rows": 20,
+            "primary_ids_count": 20,
+            "verified_count": 10,
+            "target_hits": [],
+            "unique_vs_pubmed": 10
+          },
+          "science-rss": {
+            "rows": 8,
+            "doi_hints": 0,
+            "domains": [
+              "paper.sciencenet.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "npj-rss": {
+            "rows": 8,
+            "doi_hints": 8,
+            "domains": [
+              "www.nature.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 3,
+            "target_hits": [],
+            "unique_vs_pubmed": 3
+          }
+        }
+      },
+      "access_probes": {
+        "cn-hospital": {
+          "status": "ConnectionError"
+        },
+        "cn-science-media": {
+          "status": 200,
+          "doi_count": 1
+        },
+        "cn-public-science": {
+          "status": "cooldown"
+        },
+        "foreign-journal": {
+          "status": 202,
+          "doi_count": 0
+        }
+      },
+      "tavily": {
+        "attempted": 0,
+        "credits": 0,
+        "unverified": 0,
+        "quota_unavailable": true
+      }
+    },
+    "published_ids": []
+  },
+  "finalautomatic": {
+    "run": 45757324866,
+    "bundle_sha256": "5d7798203203a500f66795f1169419b86b25a53d11b7c86bcd9b12fff0e5a801",
+    "phase": "s2-confirm",
+    "calls": [
+      {
+        "phase": "live-rank",
+        "reserved_micro_cny": 27322,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 1000,
+        "peak_estimate_micro_cny": 4040,
+        "prompt_tokens": 1852,
+        "completion_tokens": 42,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1852,
+        "seconds": 1.3
+      },
+      {
+        "phase": "live-B",
+        "reserved_micro_cny": 75642,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 6700,
+        "peak_estimate_micro_cny": 24622,
+        "prompt_tokens": 2267,
+        "completion_tokens": 2511,
+        "prompt_cache_hit_tokens": 256,
+        "prompt_cache_miss_tokens": 2011,
+        "reasoning_tokens": 1733,
+        "seconds": 22.39
+      },
+      {
+        "phase": "live-news",
+        "reserved_micro_cny": 16024,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 1300,
+        "peak_estimate_micro_cny": 1850,
+        "prompt_tokens": 425,
+        "completion_tokens": 125,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 425,
+        "seconds": 1.64
+      },
+      {
+        "phase": "live-review",
+        "reserved_micro_cny": 18000,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 1500,
+        "peak_estimate_micro_cny": 926,
+        "prompt_tokens": 443,
+        "completion_tokens": 5,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 443,
+        "seconds": 0.98
+      }
+    ],
+    "elapsed_seconds": 236.685,
+    "account_balance_delta_micro_cny": 50000,
+    "audit": [
+      {
+        "id": "43058301",
+        "fields_allowed": [
+          "insight",
+          "limits",
+          "question"
+        ],
+        "fields_removed": [
+          "design",
+          "result"
+        ],
+        "retained": false
+      },
+      {
+        "id": "43085541",
+        "fields_allowed": [
+          "question"
+        ],
+        "fields_removed": [
+          "design",
+          "result",
+          "limits",
+          "insight"
+        ],
+        "retained": false
+      },
+      {
+        "id": "43082058",
+        "fields_allowed": [
+          "insight",
+          "limits",
+          "question"
+        ],
+        "fields_removed": [
+          "design",
+          "result"
+        ],
+        "retained": false
+      },
+      {
+        "id": "policy-NH2",
+        "fields_allowed": [
+          "summary"
+        ],
+        "fields_removed": [],
+        "retained": true
+      },
+      {
+        "id": "G0-3",
+        "fields_allowed": [
+          "summary"
+        ],
+        "fields_removed": [],
+        "retained": true
+      }
+    ],
+    "veto": [],
+    "candidate_counts": {
+      "medical": 8,
+      "policy": 1,
+      "world": 6
+    },
+    "wechat_requests": 0,
+    "discovery": {
+      "per_window": {
+        "2026-11-26": {
+          "pubmed": {
+            "rows": 141,
+            "primary_ids_count": 141,
+            "verified_count": 73,
+            "target_hits": [
+              "43077730",
+              "43082058"
+            ],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-clinical": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:ortho-ai": {
+            "rows": 36,
+            "primary_ids_count": 36,
+            "verified_count": 21,
+            "target_hits": [],
+            "unique_vs_pubmed": 18
+          },
+          "europe:china-affiliation": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "europe:clinical-ai": {
+            "rows": 0,
+            "status": "ReadTimeout",
+            "http_status": null,
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "science-rss": {
+            "rows": 8,
+            "doi_hints": 0,
+            "domains": [
+              "paper.sciencenet.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "npj-rss": {
+            "rows": 8,
+            "doi_hints": 8,
+            "domains": [
+              "www.nature.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 2,
+            "target_hits": [],
+            "unique_vs_pubmed": 2
+          },
+          "tavily-en": {
+            "rows": 12,
+            "doi_hints": 5,
+            "domains": [
+              "bjsm.bmj.com",
+              "link.springer.com",
+              "pubmed.ncbi.nlm.nih.gov",
+              "rapm.bmj.com",
+              "www.bmj.com"
+            ],
+            "primary_ids_count": 4,
+            "verified_count": 1,
+            "target_hits": [],
+            "unique_vs_pubmed": 1
+          },
+          "tavily-zh-institution": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "hr.zju.edu.cn",
+              "imir.puh3.net.cn",
+              "news.pku.edu.cn",
+              "www.ncsti.gov.cn",
+              "www.puh3.net.cn",
+              "www.shsmu.edu.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-zh-media": {
+            "rows": 12,
+            "doi_hints": 0,
+            "domains": [
+              "mcase.cn-healthcare.com",
+              "news.sciencenet.cn",
+              "www.chinanews.com.cn",
+              "www.cn-healthcare.com",
+              "www.ncsti.gov.cn",
+              "www.sh.chinanews.com.cn"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          },
+          "tavily-wechat": {
+            "rows": 4,
+            "doi_hints": 0,
+            "domains": [
+              "mp.weixin.qq.com"
+            ],
+            "primary_ids_count": 0,
+            "verified_count": 0,
+            "target_hits": [],
+            "unique_vs_pubmed": 0
+          }
+        }
+      },
+      "access_probes": {
+        "cn-hospital": {
+          "status": "cooldown"
+        },
+        "cn-science-media": {
+          "status": 200,
+          "doi_count": 1
+        },
+        "cn-public-science": {
+          "status": "cooldown"
+        },
+        "foreign-journal": {
+          "status": 202,
+          "doi_count": 0
+        },
+        "public-wechat": {
+          "status": 200,
+          "doi_count": 0
+        }
+      },
+      "tavily": {
+        "attempted": 4,
+        "credits": 4,
+        "unverified": 0,
+        "available_before": true,
+        "paygo_counter_available": true,
+        "observed_key_credit_change": 0,
+        "observed_plan_credit_change": 0,
+        "observed_paygo_change": 0
+      }
+    },
+    "published_ids": [
+      "policy-NH2",
+      "G0-3"
+    ]
+  },
+  "archival": {
+    "run": 45757396573,
+    "bundle_sha256": "c7b1bd735a5604b9bc020ed2b7dddfc3afb73a11af1f5bbfcd434c81d3e4ad76",
+    "phase": "s2-archival",
+    "calls": [
+      {
+        "phase": "2026-10-27-rank",
+        "reserved_micro_cny": 15424,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 1000,
+        "peak_estimate_micro_cny": 1398,
+        "prompt_tokens": 595,
+        "completion_tokens": 26,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 595,
+        "seconds": 1.01
+      },
+      {
+        "phase": "2026-10-27-B",
+        "reserved_micro_cny": 74734,
+        "model": "deepseek-flash",
+        "thinking": true,
+        "max_output_tokens": 6700,
+        "peak_estimate_micro_cny": 30022,
+        "prompt_tokens": 2279,
+        "completion_tokens": 3183,
+        "prompt_cache_hit_tokens": 256,
+        "prompt_cache_miss_tokens": 2023,
+        "reasoning_tokens": 2431,
+        "seconds": 16.22
+      },
+      {
+        "phase": "2026-10-27-review",
+        "reserved_micro_cny": 21012,
+        "model": "deepseek-flash",
+        "thinking": false,
+        "max_output_tokens": 1500,
+        "peak_estimate_micro_cny": 2518,
+        "prompt_tokens": 855,
+        "completion_tokens": 101,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 855,
+        "seconds": 1.5
+      }
+    ],
+    "elapsed_seconds": 21.472,
+    "account_balance_delta_micro_cny": 0,
+    "evaluation": {
+      "2026-10-27": {
+        "pool_ids": [
+          "42928573",
+          "42804769",
+          "42903211"
+        ],
+        "AB": {
+          "score": {
+            "targets": [
+              "42897441",
+              "42913286",
+              "42928573"
+            ],
+            "targets_available": [
+              "42928573"
+            ],
+            "targets_ranked": [
+              "42928573"
+            ],
+            "targets_published": [],
+            "accepted": [
+              "42804769"
+            ],
+            "bad_id_attempts": [],
+            "facts_emitted": 3,
+            "facts_suppressed": 8
+          },
+          "items": [
+            {
+              "id": "42804769",
+              "lane": "medical",
+              "question": "对ACLR后持续膝问题的年轻成人，物理治疗师监督的运动治疗联合教育是否优于单次教育加自主运动？",
+              "design": "平行组随机试验，184例18–40岁ACLR后9–36个月持续膝问题，SUPER 92例 vs 单次教育+自主运动92例，主要终点4个月KOOS4变化。",
+              "result": "4个月KOOS4改善14.1 vs 9.4，校正均差4.8（95%CI 1.4–8.2）；肌力和整体变化成功率更高，软骨厚度/成分无组间差异。"
+            }
+          ],
+          "audit": [
+            {
+              "id": "42928573",
+              "fields_allowed": [
+                "limits"
+              ],
+              "fields_removed": [
+                "question",
+                "design",
+                "result",
+                "insight"
+              ],
+              "retained": false
+            },
+            {
+              "id": "42804769",
+              "fields_allowed": [
+                "design",
+                "question",
+                "result"
+              ],
+              "fields_removed": [
+                "limits",
+                "insight"
+              ],
+              "retained": true
+            },
+            {
+              "id": "42903211",
+              "fields_allowed": [
+                "insight",
+                "limits",
+                "question"
+              ],
+              "fields_removed": [
+                "design",
+                "result"
+              ],
+              "retained": false
+            }
+          ]
+        }
+      }
+    },
+    "wechat_requests": 0
+  },
+  "prior_stage": {
+    "run_reservations_micro_cny": 670000,
+    "observed_peak_micro_cny": 62006,
+    "model_calls": 7,
+    "dispatches": 6,
+    "core_rounds": 2
+  },
+  "retrieval_local_replay": {
+    "per_window": {
+      "2026-11-07": {
+        "pubmed": {
+          "rows": 141,
+          "primary_ids_count": 141,
+          "verified_count": 51,
+          "target_hits": [
+            "42982479"
+          ],
+          "unique_vs_pubmed": 0
+        },
+        "europe:ortho-clinical": {
+          "rows": 36,
+          "primary_ids_count": 36,
+          "verified_count": 26,
+          "target_hits": [],
+          "unique_vs_pubmed": 17
+        },
+        "europe:ortho-ai": {
+          "rows": 0,
+          "status": "ReadTimeout",
+          "http_status": null,
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "europe:china-affiliation": {
+          "rows": 36,
+          "primary_ids_count": 36,
+          "verified_count": 25,
+          "target_hits": [
+            "42982479"
+          ],
+          "unique_vs_pubmed": 18
+        },
+        "europe:clinical-ai": {
+          "rows": 0,
+          "status": "ReadTimeout",
+          "http_status": null,
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "science-rss": {
+          "rows": 8,
+          "doi_hints": 0,
+          "domains": [
+            "paper.sciencenet.cn"
+          ],
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "npj-rss": {
+          "rows": 8,
+          "doi_hints": 8,
+          "domains": [
+            "www.nature.com"
+          ],
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        }
+      },
+      "2026-11-17": {
+        "pubmed": {
+          "rows": 141,
+          "primary_ids_count": 141,
+          "verified_count": 47,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "europe:ortho-clinical": {
+          "rows": 0,
+          "status": "ReadTimeout",
+          "http_status": null,
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "europe:ortho-ai": {
+          "rows": 36,
+          "primary_ids_count": 36,
+          "verified_count": 24,
+          "target_hits": [],
+          "unique_vs_pubmed": 20
+        },
+        "europe:china-affiliation": {
+          "rows": 0,
+          "status": "ReadTimeout",
+          "http_status": null,
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "europe:clinical-ai": {
+          "rows": 21,
+          "primary_ids_count": 21,
+          "verified_count": 9,
+          "target_hits": [],
+          "unique_vs_pubmed": 8
+        },
+        "science-rss": {
+          "rows": 8,
+          "doi_hints": 0,
+          "domains": [
+            "paper.sciencenet.cn"
+          ],
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "npj-rss": {
+          "rows": 8,
+          "doi_hints": 8,
+          "domains": [
+            "www.nature.com"
+          ],
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        }
+      },
+      "2026-11-26": {
+        "pubmed": {
+          "rows": 142,
+          "primary_ids_count": 142,
+          "verified_count": 74,
+          "target_hits": [
+            "43077730",
+            "43082058"
+          ],
+          "unique_vs_pubmed": 0
+        },
+        "europe:ortho-clinical": {
+          "rows": 36,
+          "primary_ids_count": 36,
+          "verified_count": 32,
+          "target_hits": [],
+          "unique_vs_pubmed": 19
+        },
+        "europe:ortho-ai": {
+          "rows": 36,
+          "primary_ids_count": 36,
+          "verified_count": 21,
+          "target_hits": [],
+          "unique_vs_pubmed": 18
+        },
+        "europe:china-affiliation": {
+          "rows": 17,
+          "primary_ids_count": 17,
+          "verified_count": 8,
+          "target_hits": [],
+          "unique_vs_pubmed": 5
+        },
+        "europe:clinical-ai": {
+          "rows": 20,
+          "primary_ids_count": 20,
+          "verified_count": 10,
+          "target_hits": [],
+          "unique_vs_pubmed": 10
+        },
+        "science-rss": {
+          "rows": 8,
+          "doi_hints": 0,
+          "domains": [
+            "paper.sciencenet.cn"
+          ],
+          "primary_ids_count": 0,
+          "verified_count": 0,
+          "target_hits": [],
+          "unique_vs_pubmed": 0
+        },
+        "npj-rss": {
+          "rows": 8,
+          "doi_hints": 8,
+          "domains": [
+            "www.nature.com"
+          ],
+          "primary_ids_count": 0,
+          "verified_count": 3,
+          "target_hits": [],
+          "unique_vs_pubmed": 3
+        }
+      }
+    },
+    "access_probes": {
+      "cn-hospital": {
+        "status": 503
+      },
+      "cn-science-media": {
+        "status": 200,
+        "doi_count": 1
+      },
+      "cn-public-science": {
+        "status": 403
+      },
+      "foreign-journal": {
+        "status": 200,
+        "doi_count": 1
+      }
+    },
+    "tavily": {
+      "attempted": 0,
+      "credits": 0,
+      "unverified": 0
+    }
+  },
+  "artifact_sha256": {
+    "extended-automatic.md": "46b63047eba81419c69acab8401de9a1485186ff3328f7f2e2dd309261e68ea4",
+    "professional-automatic.md": "3c2c341c5522ddd89b8ab9af07e812b5bd995ef6366d38eea2b589c2db1a4fa3"
+  },
+  "accounting": {
+    "stage2_tavily_credits": 16,
+    "stage2_model_calls": 18,
+    "stage2_peak_micro_cny": 381570,
+    "all_model_peak_micro_cny": 443576,
+    "all_search_upper_micro_cny": 1600000,
+    "committed_budget_micro_cny": 5370000,
+    "paid_or_credit_dispatches": 13,
+    "core_rounds": 5
+  }
+}

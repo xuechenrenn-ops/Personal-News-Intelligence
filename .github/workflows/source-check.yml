@@ -1,0 +1,33 @@
+name: Check News Sources
+
+on:
+  push:
+    branches:
+      - upgrade/news-pipeline-v1
+    paths:
+      - sources.json
+      - source_check.py
+      - .github/workflows/source-check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Validate source configuration
+        run: |
+          python -m json.tool sources.json > /dev/null
+      - name: Test RSS, PubMed and official pages
+        run: python source_check.py

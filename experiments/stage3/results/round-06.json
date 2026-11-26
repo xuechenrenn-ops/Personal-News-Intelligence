@@ -1,0 +1,116 @@
+{
+  "regression": {
+    "2026-10-27": {
+      "reference": [
+        "42897441",
+        "42913286",
+        "42928573"
+      ],
+      "available": [
+        "42897441",
+        "42913286",
+        "42928573"
+      ],
+      "evidence_eligible": [
+        "42913286",
+        "42928573"
+      ],
+      "selected": [
+        "42928573",
+        "42913286",
+        "42903211"
+      ],
+      "target_selected": [
+        "42913286",
+        "42928573"
+      ],
+      "audit": [
+        {
+          "id": "42759360",
+          "status": "outside_date_window"
+        },
+        {
+          "id": "42804769",
+          "status": "eligible",
+          "lane": "clinical",
+          "sample_confirmed": false,
+          "structured_results": true,
+          "metric": true
+        },
+        {
+          "id": "42897441",
+          "status": "no_complete_outcome_excerpt"
+        },
+        {
+          "id": "42903211",
+          "status": "eligible",
+          "lane": "clinical",
+          "sample_confirmed": false,
+          "structured_results": true,
+          "metric": false
+        },
+        {
+          "id": "42913286",
+          "status": "eligible",
+          "lane": "clinical",
+          "sample_confirmed": false,
+          "structured_results": true,
+          "metric": true
+        },
+        {
+          "id": "42928573",
+          "status": "eligible",
+          "lane": "clinical",
+          "sample_confirmed": false,
+          "structured_results": true,
+          "metric": false
+        }
+      ]
+    }
+  },
+  "independent": {
+    "2026-11-24": {
+      "reference": [
+        "10.1038/s41598-026-74572-7",
+        "43034954",
+        "43069171"
+      ],
+      "available": [
+        "43034954",
+        "43069171"
+      ],
+      "evidence_eligible": [
+        "43034954"
+      ],
+      "selected": [
+        "43034954"
+      ],
+      "target_selected": [
+        "43034954"
+      ],
+      "audit": [
+        {
+          "id": "42531919",
+          "status": "outside_date_window"
+        },
+        {
+          "id": "43034954",
+          "status": "eligible",
+          "lane": "clinical",
+          "sample_confirmed": false,
+          "structured_results": true,
+          "metric": true
+        },
+        {
+          "id": "43069171",
+          "status": "outside_date_window"
+        }
+      ]
+    }
+  },
+  "phase": "s3-benchmark",
+  "calls": [],
+  "wechat_requests": 0,
+  "tavily_credits": 0,
+  "elapsed_seconds": 1.952
+}

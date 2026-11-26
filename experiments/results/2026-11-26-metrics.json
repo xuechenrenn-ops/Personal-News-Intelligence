@@ -1,0 +1,146 @@
+{
+  "baseline": {
+    "run_id": 45753220100,
+    "selected_ids": [
+      "m1",
+      "m2",
+      "m3",
+      "n1",
+      "n2",
+      "n3"
+    ],
+    "price_date": "2026-11-26",
+    "calls": [
+      {
+        "phase": "baseline-screen",
+        "reserved_micro_cny": 25682,
+        "peak_estimate_micro_cny": 10022,
+        "prompt_tokens": 1295,
+        "completion_tokens": 929,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1295,
+        "seconds": 6.07
+      },
+      {
+        "phase": "baseline-review",
+        "reserved_micro_cny": 31988,
+        "peak_estimate_micro_cny": 11692,
+        "prompt_tokens": 1970,
+        "completion_tokens": 969,
+        "prompt_cache_hit_tokens": 256,
+        "prompt_cache_miss_tokens": 1714,
+        "seconds": 5.26
+      },
+      {
+        "phase": "baseline-news",
+        "reserved_micro_cny": 21804,
+        "peak_estimate_micro_cny": 6492,
+        "prompt_tokens": 858,
+        "completion_tokens": 597,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 858,
+        "seconds": 5.04
+      }
+    ]
+  },
+  "candidate": {
+    "run_id": 45753335587,
+    "selected_ids": [
+      "m1",
+      "m2",
+      "m3",
+      "n1",
+      "n2",
+      "n3"
+    ],
+    "price_date": "2026-11-26",
+    "calls": [
+      {
+        "phase": "candidate",
+        "reserved_micro_cny": 21374,
+        "peak_estimate_micro_cny": 8162,
+        "prompt_tokens": 761,
+        "completion_tokens": 830,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 761,
+        "seconds": 5.22
+      }
+    ]
+  },
+  "grounded": {
+    "run_id": 45753592598,
+    "selected_ids": [
+      "m1",
+      "m2",
+      "m3",
+      "n1",
+      "n2",
+      "n3"
+    ],
+    "price_date": "2026-11-26",
+    "calls": [
+      {
+        "phase": "grounded",
+        "reserved_micro_cny": 22332,
+        "peak_estimate_micro_cny": 6498,
+        "prompt_tokens": 861,
+        "completion_tokens": 597,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 861,
+        "seconds": 5.42
+      }
+    ]
+  },
+  "holdout": {
+    "run_id": 45753691338,
+    "selected_ids": [
+      "h1"
+    ],
+    "price_date": "2026-11-26",
+    "calls": [
+      {
+        "phase": "holdout",
+        "reserved_micro_cny": 18740,
+        "peak_estimate_micro_cny": 2170,
+        "prompt_tokens": 437,
+        "completion_tokens": 162,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 309,
+        "seconds": 1.55
+      }
+    ]
+  },
+  "live": {
+    "run_id": 45753833048,
+    "selected_ids": [
+      "P13",
+      "P24",
+      "P1",
+      "policy-O3",
+      "G1-3",
+      "G0-2"
+    ],
+    "price_date": "2026-11-26",
+    "calls": [
+      {
+        "phase": "live",
+        "reserved_micro_cny": 62024,
+        "peak_estimate_micro_cny": 16970,
+        "prompt_tokens": 5185,
+        "completion_tokens": 825,
+        "prompt_cache_hit_tokens": 128,
+        "prompt_cache_miss_tokens": 5057,
+        "seconds": 5.58
+      }
+    ]
+  },
+  "trigger_failure": {
+    "run_id": 45753100158,
+    "paid_calls": 0
+  },
+  "dispatched_reservation_micro_cny": 670000,
+  "sources": {
+    "tavily_search_credits": 0,
+    "wechat_requests": 0
+  }
+}
