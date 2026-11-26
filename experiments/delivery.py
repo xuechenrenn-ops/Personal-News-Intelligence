@@ -1,4 +1,5 @@
 """Delivery state for two reviewed messages. The experiment supplies no sender."""
+from enum import Enum
 import fcntl
 import hashlib
 import json
@@ -20,7 +21,12 @@ def _persist(path, state):
         os.close(directory)
 
 
-def deliver_once(state_path, batch_id, messages, send, *, approved=False):
+class Submission(Enum):
+    """Report retryable only after the transport proves the server rejected the submission."""
+    RETRYABLE_REJECTION = "retryable_rejection"
+
+
+def deliver_once(state_path, batch_id, messages, send, *, approved=False, cleanup=None):
     """Checkpoint before calling a sender. A lost reply always requires reconciliation."""
     if not approved:
         return {"status": "preview"}
@@ -36,9 +42,12 @@ def deliver_once(state_path, batch_id, messages, send, *, approved=False):
         if batch["fingerprint"] != fingerprint:
             raise ValueError("Previously attempted batch has different content")
         status = batch["status"]
+        attempts = batch.setdefault("attempts", {})
         for lane, message in messages.items():
-            if status.get(lane):
+            existing = status.get(lane)
+            if existing and (existing != Submission.RETRYABLE_REJECTION.value or attempts.get(lane, 0) >= 2):
                 continue
+            attempts[lane] = attempts.get(lane, 0) + 1
             status[lane] = "submission_unknown"
             _persist(path, state)
             try:
@@ -48,4 +57,11 @@ def deliver_once(state_path, batch_id, messages, send, *, approved=False):
             if accepted is True:
                 status[lane] = "accepted"
                 _persist(path, state)
+            elif accepted is Submission.RETRYABLE_REJECTION:
+                status[lane] = accepted.value
+                _persist(path, state)
+        if cleanup and all(status.get(lane) == "accepted" for lane in messages) and not batch.get("cleaned"):
+            cleanup()
+            batch["cleaned"] = True
+            _persist(path, state)
         return dict(status)
