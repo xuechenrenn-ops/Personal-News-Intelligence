@@ -49,7 +49,7 @@ OUTCOME = re.compile(
     r"improv|decreas|reduc|increas|differ|similar|associat|detect|discriminat|"
     r"fracture|retear|mortality|pain|injur|mobilit|function|accuracy|sensitivity|"
     r"\bKOOS\b|\bAUC\b|precision|performance|complication|failure|agreement|"
-    r"achiev|correlation|estimated|demonstrat|found|outperform|risk of bias|outcome|calibration",
+    r"achiev|correlation|estimated|demonstrat|found|outperform|risk of bias|outcome|calibration|growth disturbance",
     re.I,
 )
 BAD_EXCERPT = re.compile(r"https?://|\[.*?\]\(|(?:ignore|disregard).{0,20}instructions|"
