@@ -24,7 +24,7 @@ LAYOUT = {"medical": 3, "policy": 1, "world": 2}
 STAGE3_PHASES = {"s3-benchmark", "s3-preview", "s3-model", "s3-model-benchmark", "s3-compare", "s3-coverage", "s3-localize"}
 STAGE3_FREE = {"s3-benchmark", "s3-preview", "s3-coverage"}
 V14_PHASES = {"v14-live", "v14-holdout", "v15-live"}
-PHASES = V14_PHASES | STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
+PHASES = {"v16-pair"} | V14_PHASES | STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
           "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm", "s2-archival"}
 CORE_PHASES = {"candidate", "grounded", "s2-compare", "s2-live", "s2-confirm"}
 
@@ -234,6 +234,7 @@ def read_dispatch(event, current_ref, current_sha, added, root=ROOT):
             or not (0 if p["phase"] in STAGE3_FREE else 1) <= p["reserve_micro_cny"] <=
                 (2_000_000 if p["phase"].startswith("s2-") else
                  600_000 if p["phase"] == "s3-compare" else
+                 900_000 if p["phase"] == "v16-pair" else
                  300_000 if p["phase"] == "v15-live" else MAX_RUN_RESERVATION)
             or (p["phase"] in STAGE3_FREE and p["reserve_micro_cny"] != 0)
             for p in plans)
@@ -276,6 +277,9 @@ def workflow(output):
     ).splitlines()
     identifier, plan = read_dispatch(event, os.environ["GITHUB_REF"], os.environ["GITHUB_SHA"], added)
     phase = plan["phase"]
+    if phase == "v16-pair":
+        from experiments.v16.compare import run
+        return run(identifier, plan, output)
     if phase in V14_PHASES:
         from experiments.v14.pipeline import run
         return run(identifier, plan, output)

@@ -42,13 +42,16 @@ jobs:
         run: python -m experiments.run "$RUNNER_TEMP/experiment.json"
       - name: Render two preview messages
         run: |
-          if python -c 'import json, sys; sys.exit(json.load(open(sys.argv[1]))["phase"].startswith(("s2-", "s3-", "v14-", "v15-")))' "$RUNNER_TEMP/experiment.json"; then
+          if python -c 'import json, sys; sys.exit(json.load(open(sys.argv[1]))["phase"].startswith(("s2-", "s3-", "v14-", "v15-", "v16-")))' "$RUNNER_TEMP/experiment.json"; then
             python -m experiments.preview "$RUNNER_TEMP/experiment.json" experiments/fixtures/2026-11-26.json "$RUNNER_TEMP/news-preview"
           fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: normalized-experiment
           path: |
             ${{ runner.temp }}/experiment.json
             ${{ runner.temp }}/news-preview/*.md
+            ${{ runner.temp }}/professional-*.md
+            ${{ runner.temp }}/extended-automatic.md
           retention-days: 7
