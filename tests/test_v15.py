@@ -5,7 +5,8 @@ from unittest.mock import patch, Mock
 
 from cache_manager import cleanup_daily_transients
 from experiments.delivery import Submission, deliver_once
-from experiments.v14.pipeline import prepare_preview
+from experiments.v14.pipeline import prepare_preview, repair_results
+from experiments.run import Flash
 from test_stage3 import article
 
 from experiments.v15.sources import NEWS, SearchFetch, academic, aossm_calendar, excerpt, on_site
@@ -70,3 +71,19 @@ class V15Tests(unittest.TestCase):
             self.assertEqual(report["next_meeting"], "2027-07-07")
             rows, _ = aossm_calendar("2027-05-01")
             self.assertEqual(rows[0]["date"], "2027-07-07")
+
+
+    def test_targeted_repair_can_only_change_failed_supported_result(self):
+        source = [{"id": "good", "type": "medical", "title": "Trial",
+                   "evidence": {"r": "The risk ratio was 0.80."}},
+                  {"id": "bad", "type": "medical", "title": "Trial",
+                   "evidence": {"r": "The risk ratio was 0.70."}}]
+        proposals = {"good": {"result": "相对风险为0.80。", "refs": {"result": ["r"]}},
+                     "bad": {"result": "相对风险为0.90。", "refs": {"result": ["r"]}}}
+        provider = Mock(return_value=[{"id": "good", "result": "相对风险为0.60。"},
+                                     {"id": "bad", "result": "相对风险为0.70。"}])
+        provider.remaining = 200_000
+        provider.reservation = Flash.reservation
+        self.assertEqual(repair_results(provider, source, proposals, []), ["bad"])
+        self.assertIn("0.80", proposals["good"]["result"])
+        self.assertIn("0.70", proposals["bad"]["result"])
