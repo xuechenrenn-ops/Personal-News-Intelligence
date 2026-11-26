@@ -19,7 +19,7 @@ from experiments.stage3.evidence import fragments, medical_digest
 TARGETS = Path(__file__).with_name("independent.json")
 SERIOUS = re.compile(r"政府|央行|国际|法院|议会|监管|医保|政策|科研|标准|发布|不确定性|"
                      r"government|trade|election|parliament|central bank|court|tariff|"
-                     r"international|minister|sanction|ceasefire|public health|supreme|nasa", re.I)
+                     r"international|minister|sanction|ceasefire|public health|supreme|nasa|death row|executions?|refugee policy|ruling|treaty", re.I)
 NATIONAL_FEEDS = {"BBC News", "Al Jazeera", "BBC World"}
 CURATE = """从给出的短摘录和原始日期中，只输出值得骨科医生跟踪的原始编号。
 临床结局、方法学外部验证、可能改变选题的发现优先。兼顾原创骨科研究与骨科AI。
@@ -108,7 +108,7 @@ def public_digest(cards):
             world.append((score, card["source"] in NATIONAL_FEEDS or "Al Jazeera" in card["source"], entry, event))
     world.sort(key=lambda row: -row[0])
     policy.sort(key=lambda row: row[:3] + (-(date.fromisoformat(row[3]).toordinal()),))
-    result = [policy[0][-1]] if policy else []
+    result = [policy[0][-1]] if policy and not policy[0][0] else []
     if world:
         result.append(world[0][2])
         distinct = [row for row in world[1:] if not row[3] or row[3] != world[0][3]]
