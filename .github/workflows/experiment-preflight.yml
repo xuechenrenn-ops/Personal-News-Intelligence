@@ -46,5 +46,31 @@ jobs:
                   print(f"DEEPSEEK_CNY_BALANCE_AT_LEAST_0_5={enough}")
               except Exception as error:
                   print(f"DEEPSEEK_BALANCE_UNVERIFIED={type(error).__name__}")
+          tavily = os.environ.get("TAVILY_KEY")
+          if tavily:
+              request = urllib.request.Request(
+                  "https://api.tavily.com/usage",
+                  headers={"Authorization": "Bearer " + tavily},
+                  method="GET",
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=15) as response:
+                      data = json.load(response)
+                  account, key = data["account"], data["key"]
+                  values = (account["plan_limit"], account["plan_usage"], key["usage"])
+                  if any(type(value) is not int or value < 0 for value in values):
+                      raise ValueError("Invalid quota data")
+                  limit, used, key_used = values
+                  key_limit = key.get("limit")
+                  if key_limit is not None and (type(key_limit) is not int or key_limit < 0):
+                      raise ValueError("Invalid key limit")
+                  remaining = min(limit - used, 700 - key_used)
+                  if key_limit is not None:
+                      remaining = min(remaining, key_limit - key_used)
+                  paygo_disabled = account.get("paygo_limit") == 0 and account.get("paygo_usage") == 0
+                  print(f"TAVILY_FREE_REMAINING_AT_LEAST_31={remaining >= 31}")
+                  print(f"TAVILY_PAYGO_DISABLED={paygo_disabled}")
+              except Exception as error:
+                  print(f"TAVILY_QUOTA_UNVERIFIED={type(error).__name__}")
           print("PAID_REQUESTS=0 TAVILY_CREDITS=0 WECHAT_REQUESTS=0")
           PY

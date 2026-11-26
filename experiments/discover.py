@@ -15,7 +15,9 @@ from news_push import (
 
 CST = timezone(timedelta(hours=8))
 POLICY_SOURCE = {
-    "label": "国家医保局", "url": "https://www.nhsa.gov.cn/col/col14/index.html",
+    "label": "国家医保局", "url": "https://www.nhsa.gov.cn/",
+    "path_pattern": r"^/art/20\d{2}/\d{1,2}/\d{1,2}/art_14_", "fresh_only": True,
+    "encoding": "utf-8",
     "keywords": ["医保", "用药", "药学", "医疗服务"], "max_items": 4,
 }
 ORTHO = re.compile(r"orthop[ae]edic|musculoskeletal|arthroplast|arthroscop|fracture|"

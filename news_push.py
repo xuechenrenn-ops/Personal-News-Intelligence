@@ -150,6 +150,8 @@ def fetch_official_page_candidates(sources):
             response = requests.get(url, headers=headers, timeout=20)
             response.raise_for_status()
             parser = _AnchorCollector()
+            if source.get("encoding"):
+                response.encoding = source["encoding"]
             parser.feed(response.text)
         except Exception as exc:
             status = getattr(getattr(exc, 'response', None), 'status_code', None)
@@ -165,6 +167,8 @@ def fetch_official_page_candidates(sources):
             parsed = urlparse(full_url)
             if parsed.scheme not in ('http', 'https') or parsed.netloc != host or full_url in seen:
                 continue
+            if source.get("path_pattern") and not re.search(source["path_pattern"], parsed.path):
+                continue
             if keywords and not any(word.lower() in title.lower() for word in keywords):
                 continue
             if any(word in title for word in ('首页', '下一页', '上一页', '更多', '网站地图', '联系我们')):
@@ -179,12 +183,19 @@ def fetch_official_page_candidates(sources):
                     published = datetime(int(date_match.group(1)), int(date_match.group(2)), int(date_match.group(3)), tzinfo=timezone.utc).isoformat()
                 except ValueError:
                     pass
+            if source.get("fresh_only") and (
+                published == "网页未提供"
+                or datetime.now(timezone.utc) - datetime.fromisoformat(published) > timedelta(days=2)
+            ):
+                continue
             excerpt, detail_status = "", "listing_only"
             try:
                 detail_response = requests.get(
                     full_url, headers=headers, timeout=15
                 )
                 detail_response.raise_for_status()
+                if source.get("encoding"):
+                    detail_response.encoding = source["encoding"]
                 excerpt = _extract_article_excerpt(detail_response.text)
                 published_meta = _meta_value(
                     detail_response.text,
