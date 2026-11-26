@@ -45,3 +45,21 @@ class StageTwoQualityTest(unittest.TestCase):
         row = {"url": "https://example.org/articles",
                "content": "DOI:10.2196/94936; PMID 43038553"}
         self.assertEqual(hints([row]), ({"43038553"}, {"10.2196/94936"}))
+
+class AutomatedEditorialTest(unittest.TestCase):
+    def test_rank_and_editor_share_bounded_identifiers_and_block_false_result(self):
+        from unittest.mock import Mock
+        from experiments.stage2.pipeline import run_editor
+        card = {"id": "x", "lane": "medical", "title": "Orthopaedic recovery", "date": "2026-11-26",
+                "evidence": "The cohort included 92 patients. No causal inference was possible."}
+        news = {**card, "id": "n", "lane": "world"}
+        provider = Mock(side_effect=[
+            [{"id": "x"}, {"id": "unknown"}],
+            [{"id": "x", "result": "纳入92例。", "refs": {"result": [0]}}],
+            [{"id": "x", "field": "result", "reason": "artificial veto"}],
+        ])
+        _, output, audit, veto = run_editor(provider, "B", [card, news], review=True, use_ranker=True)
+        self.assertEqual(output, [])
+        self.assertFalse(audit[0]["retained"])
+        self.assertEqual(veto, [("x", "result")])
+        self.assertEqual([row["id"] for row in provider.call_args_list[1].args[2]], ["x"])
