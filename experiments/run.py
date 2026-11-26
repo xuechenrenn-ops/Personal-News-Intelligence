@@ -95,12 +95,16 @@ class Flash:
             raise RuntimeError("Verified CNY balance insufficient")
         return balance
 
+    @staticmethod
+    def reservation(prompt, candidates, max_tokens):
+        content = json.dumps(candidates, ensure_ascii=False, separators=(",", ":"))
+        input_limit = len((prompt + content).encode("utf-8")) + 1024
+        return content, input_limit, input_limit * INPUT_RATE + max_tokens * OUTPUT_RATE
+
     def __call__(self, phase, prompt, candidates, *, thinking=False, max_tokens=MAX_TOKENS):
         if not candidates:
             return []
-        user = json.dumps(candidates, ensure_ascii=False, separators=(",", ":"))
-        input_limit = len((prompt + user).encode("utf-8")) + 1024
-        estimate = input_limit * INPUT_RATE + max_tokens * OUTPUT_RATE
+        user, input_limit, estimate = self.reservation(prompt, candidates, max_tokens)
         if len(self.calls) >= MAX_REQUESTS or estimate > self.remaining:
             raise RuntimeError("Run reservation exhausted")
         # Never recycle this request's estimate, even after a timeout or a smaller bill.

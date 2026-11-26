@@ -22,7 +22,7 @@ WEIGHTS = (25, 25, 20, 15, 10, 5)
 DIMENSIONS = ("relevance", "research", "clinical", "methods", "innovation", "recency")
 STORE = Path(".cache/v14-preview-index.json")
 HORIZON = 30
-LOW_PRIORITY = re.compile(r"bibliometric|evolution of research topics|trends in publications|narrative review|"
+LOW_PRIORITY = re.compile(r"bibliometric|evolution of research topics|trends in publications|narrative review|critical review|conceptual framework|"
                           r"question bank|in-training examination|计量学|发文趋势|题库", re.I)
 STRONG = re.compile(r"证实|治愈|应常规|必须使用|显著|翻倍|可加强.{0,6}监测|应调整.{0,10}治疗|leading to|caused", re.I)
 BAD_COPY = re.compile(r"https?://|[<>]|\[[^]]+\]\(|[{}]|忽略.{0,6}(?:指令|提示)")
@@ -250,6 +250,15 @@ def copy_packet(card):
             "source_note": card.get("verification_note")}
 
 
+def appraisal_fits(provider, selected, verification):
+    if not isinstance(provider, Flash):
+        return True
+    mandatory = provider.reservation(VERIFY, verification, 480)[2]
+    optional = provider.reservation(APPRAISE, [selected], 2800)[2]
+    # Keep slack for the verified appraisal text and fallback title translation.
+    return mandatory + optional + 12_000 <= provider.remaining
+
+
 def write_verified(provider, cards, *, supplementary=None):
     packet = []
     for card in cards:
@@ -271,7 +280,8 @@ def write_verified(provider, cards, *, supplementary=None):
     proposals = {row["id"]: row for row in rows if isinstance(row, dict) and isinstance(row.get("id"), str)}
     deep = next((row for row in packet if row["type"] == "medical" and row["id"] in proposals
                  and {"m", "r"} <= row["evidence"].keys()), None)
-    if deep:
+    verification = [{"record": row, "proposed": proposals[row["id"]]} for row in packet if row["id"] in proposals]
+    if deep and appraisal_fits(provider, deep, verification):
         try:
             extra = provider("v14-appraise", APPRAISE, [deep], thinking=True, max_tokens=2800)
             if isinstance(extra, list) and extra and isinstance(extra[0], dict) and extra[0].get("id") == deep["id"]:

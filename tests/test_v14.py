@@ -4,7 +4,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from experiments.v14.pipeline import active_cards, formatted_copy, identities, prepare_preview, read_index, score_rows, store_index, with_evidence
+from experiments.run import Flash
+from experiments.v14.pipeline import active_cards, appraisal_fits, formatted_copy, identities, prepare_preview, read_index, score_rows, store_index, with_evidence
 from test_stage3 import article
 
 
@@ -74,6 +75,15 @@ class V14Tests(unittest.TestCase):
                                  "RESULTS: Thirteen studies were included, comprising 436 patients: "
                                  "Overall growth disturbance occurred in 8 of 436 patients (1.8%).")
         self.assertIn("436", paper_card(study)[0]["design"])
+
+    def test_mandatory_verification_has_priority_over_appraisal(self):
+        provider = Flash("unused-in-unit-test", 60_000)
+        item = {"evidence": "word " * 200}
+        verification = [{"record": item, "proposed": {"result": "主要结果"}}] * 5
+        provider.remaining = 40_000
+        self.assertFalse(appraisal_fits(provider, item, verification))
+        provider.remaining = 90_000
+        self.assertTrue(appraisal_fits(provider, item, verification))
 
     def test_baichuan_leads_require_direct_evidence_and_no_self_citation(self):
         candidate = article()
