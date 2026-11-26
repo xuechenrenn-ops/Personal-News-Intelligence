@@ -105,28 +105,27 @@ def enrich_news(tools, cards):
 
 
 def alerts(tools, as_of, old):
-    # A notice must have an official URL and evidence of a recent posting or a dated upcoming meeting.
+    """Separate the two discovery queries to retain domestic and society coverage."""
     day = date.fromisoformat(as_of)
-    lower = day - timedelta(days=14)
-    rows = tools.search(f"医学科学部 项目指南 申报 骨科 OR orthopaedic annual meeting registration site:nsfc.gov.cn OR site:sportsmed.org OR site:aaos.org OR site:esska.org lang:zh,en")
+    lower = day - timedelta(days=21)
+    collections = (
+        ("国自然动态", FUNDING, tools.search(f"医学科学部 项目指南 申报 site:nsfc.gov.cn after:{lower}")),
+        ("会议公告", MEETINGS, tools.search("orthopaedic sports medicine annual meeting registration site:sportsmed.org")),
+    )
     matches = []
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        title, url = row.get("title"), row.get("url")
-        if not isinstance(title, str) or not NOTICE.search(title):
-            continue
-        stamp = str(row.get("date") or "")[:10]
-        try:
-            published = date.fromisoformat(stamp)
-        except ValueError:
-            continue
-        funding = on_site(url, FUNDING)
-        meeting = on_site(url, MEETINGS)
-        if ("url:" + str(url).casefold()) in old:
-            continue
-        if funding and lower <= published <= day and FUNDING_SCOPE.search(title):
-            matches.append({"title": title, "url": url, "date": stamp, "kind": "国自然动态"})
-        elif meeting and lower <= published <= day:
-            matches.append({"title": title, "url": url, "date": stamp, "kind": "会议公告"})
-    return matches[:2], len(rows)
+    for kind, sites, rows in collections:
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            title, url = row.get("title"), row.get("url")
+            if (not isinstance(title, str) or not NOTICE.search(title) or not on_site(url, sites)
+                    or "url:" + url.casefold() in old):
+                continue
+            stamp = str(row.get("date") or "")[:10]
+            try:
+                published = date.fromisoformat(stamp)
+            except ValueError:
+                continue
+            if lower <= published <= day and (kind != "国自然动态" or FUNDING_SCOPE.search(title)):
+                matches.append({"title": title, "url": url, "date": stamp, "kind": kind})
+    return matches[:2], sum(len(rows) for _, _, rows in collections)
