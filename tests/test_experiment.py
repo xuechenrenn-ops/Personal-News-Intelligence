@@ -73,5 +73,46 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual([r["id"] for r in output], ["n1"])
 
 
+class PreviewTest(unittest.TestCase):
+    def test_preview_uses_source_metadata_and_never_renders_unverified_items(self):
+        from experiments.preview import render_messages
+        items = [{"id": "m1", "date": "2099-01-01", "url": "https://example.org/fake"},
+                 {"id": "m6", "headline": "厂商广告"}, {"id": "n1", "summary": "已落地"}]
+        professional, extended = render_messages(items, FIXTURE["development"], FIXTURE["as_of"])
+        self.assertIn("43058301", professional)
+        self.assertIn("样本量与结果未核实", professional)
+        self.assertNotIn("2099", professional)
+        self.assertNotIn("厂商广告", professional)
+        self.assertIn("国家医保局", extended)
+        self.assertIn("本次候选", extended)
+
+
+class FreeDiscoveryTest(unittest.TestCase):
+    def test_academic_card_needs_primary_metadata_and_matching_scope(self):
+        from experiments.discover import medical_card
+        row = {"id": "a", "title": "Fracture prognosis by machine learning",
+               "pubmed_record": {"pmid": "100", "journal": "Journal",
+                                 "online_date": "2026-11-25", "publication_date": "2027 Jan",
+                                 "abstract": "Patient fracture data.",
+                                 "affiliations": ["Beijing, China", "Tokyo, Japan"]}}
+        card = medical_card(row)
+        self.assertEqual(card["date"], "2026-11-25")
+        self.assertIn("国际合作", card["region"])
+        self.assertIsNone(medical_card({**row, "title": "Machine learning for battery materials"}))
+        self.assertIsNone(medical_card({**row, "pubmed_record": {**row["pubmed_record"],
+                                                               "abstract": ""}}))
+
+    def test_old_and_unverified_policy_articles_are_excluded(self):
+        from datetime import datetime
+        from experiments.discover import CST, news_card
+        now = datetime(2026, 11, 26, 19, tzinfo=CST)
+        row = {"id": "n", "url": "https://www.nhsa.gov.cn/news", "title": "医保公告",
+               "source": "国家医保局", "published_at": "2026-11-25T12:00:00+08:00",
+               "evidence_status": "detail_fetched", "summary": "正文"}
+        self.assertIsNotNone(news_card(row, "policy", now))
+        self.assertIsNone(news_card({**row, "evidence_status": "listing_only"}, "policy", now))
+        self.assertIsNone(news_card({**row, "published_at": "2026-11-23"}, "policy", now))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,35 +1,146 @@
-"""Run the existing free collectors independently of model and delivery credentials."""
+"""Collect public-source candidates; this module never uses a service secret."""
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 import json
-from datetime import datetime, timezone
 from pathlib import Path
+import re
 import sys
+from urllib.parse import urlsplit
 
-from news_push import (GENERAL_FEEDS, fetch_candidates, fetch_pubmed_candidates,
-                       balance_medical_candidates, filter_general_news_candidates)
+from news_push import (
+    GENERAL_FEEDS, _medical_candidate_lane, _normalized_title, _strip_html,
+    balance_medical_candidates, fetch_candidates, fetch_official_page_candidates,
+    fetch_pubmed_candidates,
+)
+
+CST = timezone(timedelta(hours=8))
+POLICY_SOURCE = {
+    "label": "国家医保局", "url": "https://www.nhsa.gov.cn/col/col14/index.html",
+    "keywords": ["医保", "用药", "药学", "医疗服务"], "max_items": 4,
+}
+ORTHO = re.compile(r"orthop[ae]edic|musculoskeletal|arthroplast|arthroscop|fracture|"
+                   r"ligament|menisc|laminoplast|osteopor|spine|gait|rotator cuff", re.I)
+CLINICAL_AI = re.compile(
+    r"machine learning|deep learning|artificial intelligence|large language model|"
+    r"electronic health record|clinical decision support|wearable", re.I
+)
+MEDICINE = re.compile(r"clinical|patient|hospital|medic|health|disease|surg|rehab", re.I)
+EXCLUDED = re.compile(r"orthodont|dental|maxillofacial|battery|cathode|marketing", re.I)
+NON_ORIGINAL = {"Editorial", "News", "Comment", "Published Erratum",
+                "Retracted Publication", "Retraction of Publication"}
+COUNTRIES = {"中国": r"\bChina\b", "日本": r"\bJapan\b", "韩国": r"\b(?:South Korea|Republic of Korea)\b",
+             "美国": r"\b(?:USA|United States)\b", "英国": r"\b(?:UK|United Kingdom)\b",
+             "荷兰": r"\bNetherlands\b", "澳大利亚": r"\bAustralia\b",
+             "德国": r"\bGermany\b", "加拿大": r"\bCanada\b", "法国": r"\bFrance\b"}
+
+
+def full_date(raw):
+    """Accept an explicit complete date and preserve the source's calendar day."""
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00")).date().isoformat()
+    except ValueError:
+        for style in ("%Y %b %d", "%Y %B %d"):
+            try:
+                return datetime.strptime(raw, style).date().isoformat()
+            except ValueError:
+                continue
+    return ""
+
+
+def region_for(affiliations):
+    names = [group for group, pattern in COUNTRIES.items()
+             if any(re.search(pattern, text, re.I) for text in affiliations)]
+    return "、".join(names) if len(names) <= 1 and names else (
+        "国际合作（" + "、".join(names) + "）" if names else "研究机构地域未核实"
+    )
+
+
+def medical_card(item):
+    title = _strip_html(item["title"])
+    rec = item.get("pubmed_record") or {}
+    abstract = _strip_html(rec.get("abstract", ""))
+    pmid, journal = rec.get("pmid"), rec.get("journal")
+    types = set(rec.get("publication_types", []))
+    if (not pmid or not journal or not abstract or EXCLUDED.search(title)
+            or types & NON_ORIGINAL
+            or not (ORTHO.search(title) or CLINICAL_AI.search(title) and MEDICINE.search(title))):
+        return None
+    published = full_date(rec.get("online_date") or rec.get("publication_date") or "")
+    if not published:
+        return None
+    card = {"id": item["id"], "lane": "medical", "title": title, "source": journal,
+            "date": published, "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+            "pmid": pmid, "region": region_for(rec.get("affiliations", [])),
+            "primary": True, "evidence": abstract[:2000]}
+    if rec.get("doi"):
+        card["doi"] = rec["doi"]
+    return card
+
+
+def news_card(item, lane, now):
+    stamp = item["published_at"]
+    full = full_date(stamp)
+    if not full:
+        return None
+    parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=CST)
+    if not timedelta(0) <= now - parsed <= timedelta(hours=48):
+        return None
+    url = item["url"]
+    if urlsplit(url).scheme != "https":
+        return None
+    if lane == "policy" and item.get("evidence_status") != "detail_fetched":
+        return None
+    return {"id": ("policy-" if lane == "policy" else "") + item["id"],
+            "lane": lane, "title": _strip_html(item["title"]), "source": item["source"],
+            "date": parsed.astimezone(CST).date().isoformat(), "url": url,
+            "primary": True, "evidence": _strip_html(item.get("summary", ""))[:720]}
+
+
+def collect_live_cards():
+    now = datetime.now(CST)
+    print(f"RUN_STARTED={now.isoformat()}", flush=True)
+    feeds = [feed for feed in GENERAL_FEEDS if feed[0] in {"中国新闻网-即时", "BBC-World", "Al Jazeera"}]
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        academic = pool.submit(fetch_pubmed_candidates)
+        policy = pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])
+        news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 48)
+                for idx, feed in enumerate(feeds)]
+    academic_raw = [item for item in academic.result() if medical_card(item)]
+    academic_ranked = balance_medical_candidates(academic_raw, max_per_lane=4, max_total=12)
+    # Keep both clinical and AI lanes while using fresh publications first within each.
+    shortlisted = []
+    lane_counts = {}
+    for item in academic_ranked:
+        lane = _medical_candidate_lane(item)
+        if lane_counts.get(lane, 0) < 2:
+            shortlisted.append(medical_card(item))
+            lane_counts[lane] = lane_counts.get(lane, 0) + 1
+    policy_rows = [card for item in policy.result() if (card := news_card(item, "policy", now))]
+    world = []
+    seen = set()
+    for future in news:
+        for item in future.result()[:3]:
+            card = news_card(item, "world", now)
+            if card:
+                key = _normalized_title(card["title"])
+                if key and key not in seen:
+                    world.append(card)
+                    seen.add(key)
+    cards = shortlisted + policy_rows + world
+    print(f"FREE_DISCOVERY academic_verified={len(academic_raw)} "
+          f"academic_shortlist={len(shortlisted)} policy={len(policy_rows)} world={len(world)}",
+          flush=True)
+    return cards, now.date().isoformat()
 
 
 def main(output):
-    print(f"RUN_STARTED={datetime.now(timezone.utc).isoformat()}", flush=True)
-    feeds = [feed for feed in GENERAL_FEEDS if feed[0] in {"中国新闻网-即时", "BBC-World", "Al Jazeera"}]
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        academic = pool.submit(fetch_pubmed_candidates)
-        news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 48)
-                for idx, feed in enumerate(feeds)]
-    medical_raw = academic.result()
-    news_raw = [item for future in news for item in future.result()]
-    medical = balance_medical_candidates(
-        [item for item in medical_raw if (item.get("pubmed_record") or {}).get("abstract")],
-        max_per_lane=4, max_total=12,
-    )
-    general = filter_general_news_candidates(news_raw, max_candidates=12)
-    data = {"academic_total": len(medical_raw), "news_total": len(news_raw), "candidates": [{
-        "title": item["title"], "source": item["source"], "url": item["url"],
-        "published_at": item["published_at"]
-    } for item in medical + general]}
+    cards, as_of = collect_live_cards()
+    data = {"as_of": as_of, "candidates": [
+        {key: value for key, value in card.items() if key != "evidence"} for card in cards
+    ]}
     output.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"FREE_DISCOVERY academic={len(medical_raw)} news={len(news_raw)} "
-          f"academic_shortlist={len(medical)} news_shortlist={len(general)}", flush=True)
     print("PAID_REQUESTS=0 TAVILY_CREDITS=0 WECHAT_REQUESTS=0", flush=True)
 
 

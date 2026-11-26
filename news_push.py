@@ -5,7 +5,7 @@ import sys
 import time
 import difflib
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import feedparser
 import requests
@@ -171,6 +171,8 @@ def fetch_official_page_candidates(sources):
                 continue
             seen.add(full_url)
             date_match = re.search(r'(20\d{2})[-年/.](\d{1,2})[-月/.](\d{1,2})日?', title)
+            if not date_match:
+                date_match = re.search(r"/(20\d{2})/(\d{1,2})/(\d{1,2})/", parsed.path)
             published = '网页未提供'
             if date_match:
                 try:
@@ -587,9 +589,22 @@ def _pubmed_records(pmids):
                 break
         journal = (node.findtext(".//Journal/Title") or "").strip()
         pubdate = " ".join((x.text or "").strip() for x in node.findall(".//JournalIssue/PubDate/*") if x.text)
+        online = node.find("./MedlineCitation/Article/ArticleDate[@DateType='Electronic']")
+        if online is None:
+            online = node.find("./PubmedData/History/PubMedPubDate[@PubStatus='epublish']")
+        online_date = ""
+        if online is not None:
+            try:
+                online_date = date(*(int(online.findtext(key)) for key in ("Year", "Month", "Day"))).isoformat()
+            except (TypeError, ValueError):
+                pass
         records.append({
             "pmid": pmid, "title": title, "abstract": "\n".join(abstract_parts)[:6500],
-            "doi": doi, "journal": journal, "publication_date": pubdate
+            "doi": doi, "journal": journal, "publication_date": pubdate, "online_date": online_date,
+            "affiliations": [a.text for a in node.findall(".//Author/AffiliationInfo/Affiliation")
+                             if a.text],
+            "publication_types": [a.text for a in node.findall(".//PublicationTypeList/PublicationType")
+                                  if a.text],
         })
     return records
 
