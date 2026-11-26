@@ -23,7 +23,7 @@ MAX_RUN_RESERVATION = 200_000
 LAYOUT = {"medical": 3, "policy": 1, "world": 2}
 STAGE3_PHASES = {"s3-benchmark", "s3-preview", "s3-model", "s3-model-benchmark", "s3-compare", "s3-coverage", "s3-localize"}
 STAGE3_FREE = {"s3-benchmark", "s3-preview", "s3-coverage"}
-V14_PHASES = {"v14-live", "v14-holdout"}
+V14_PHASES = {"v14-live", "v14-holdout", "v15-live"}
 PHASES = V14_PHASES | STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
           "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm", "s2-archival"}
 CORE_PHASES = {"candidate", "grounded", "s2-compare", "s2-live", "s2-confirm"}
@@ -233,7 +233,8 @@ def read_dispatch(event, current_ref, current_sha, added, root=ROOT):
     if (any(type(p.get("reserve_micro_cny")) is not int
             or not (0 if p["phase"] in STAGE3_FREE else 1) <= p["reserve_micro_cny"] <=
                 (2_000_000 if p["phase"].startswith("s2-") else
-                 600_000 if p["phase"] == "s3-compare" else MAX_RUN_RESERVATION)
+                 600_000 if p["phase"] == "s3-compare" else
+                 300_000 if p["phase"] == "v15-live" else MAX_RUN_RESERVATION)
             or (p["phase"] in STAGE3_FREE and p["reserve_micro_cny"] != 0)
             for p in plans)
             or sum(p["reserve_micro_cny"] for p in plans) > 20_000_000
