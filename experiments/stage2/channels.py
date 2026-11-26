@@ -10,6 +10,7 @@ import requests
 from experiments.discover import medical_card, region_for
 from experiments.run import api_json
 from news_push import _pubmed_records, _strip_html, fetch_candidates, fetch_pubmed_candidates
+from research_scope import research_lane
 
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 TAVILY = "https://api.tavily.com"
@@ -255,12 +256,15 @@ def ids_for_dois(dois, maximum=18):
 
 def crossref_card(doi):
     """Verify DOI-only candidates when a registered abstract and exact date exist."""
-    if DOI.fullmatch(doi) is None:
+    if not isinstance(doi, str) or DOI.fullmatch(doi) is None:
         return None
     response = requests.get("https://api.crossref.org/works/" + quote(doi, safe="/"),
                             timeout=8, headers={"User-Agent": "PersonalNewsIntelligence/2.0"})
     response.raise_for_status()
-    row = response.json()["message"]
+    return crossref_record(doi, response.json()["message"])
+
+
+def crossref_record(doi, row):
     if (row.get("type") != "journal-article" or row.get("DOI", "").casefold() != doi.casefold()
             or any("retract" in str(item.get("type", "")).casefold() for item in row.get("update-to", []))):
         return None
@@ -280,11 +284,36 @@ def crossref_card(doi):
             "doi": doi, "region": region_for(affiliations), "primary": True, "evidence": abstract[:6000]}
 
 
+CROSSREF_LANES = {
+    "crossref-ortho-rehab": "ACL reconstruction anterior knee pain recovery randomized trial",
+    "crossref-clinical": "orthopaedic hip fracture randomized rehabilitation prospective clinical trial",
+    "crossref-ai": "orthopaedic machine learning external validation fracture surgery prediction clinical study",
+}
+
+
+def crossref_discover(label, query, as_of, health):
+    if health.status(label):
+        return [], "cooldown"
+    params = {
+        "filter": f"type:journal-article,from-pub-date:{as_of - timedelta(days=15)},until-pub-date:{as_of}",
+        "query.title": query, "rows": 18, "sort": "score",
+        "select": "DOI,title,container-title,published,published-online,abstract,type,author,update-to",
+    }
+    try:
+        response = requests.get("https://api.crossref.org/works", params=params, timeout=10,
+                                headers={"User-Agent": "PersonalNewsIntelligence/2.0"})
+        response.raise_for_status()
+        return response.json()["message"]["items"], "ok"
+    except (requests.RequestException, ValueError, KeyError) as exc:
+        return [], type(exc).__name__
+
+
 def metadata(rows):
     return {key: value for key, value in rows.items() if key not in {"evidence", "segments"}}
 
 
-def collect(days, *, key=None, credit_limit=0, state=None, allow_possible=False):
+def collect(days, *, key=None, credit_limit=0, state=None, allow_possible=False,
+            crossref_search=False):
     health = SourceHealth(state, datetime.now(timezone.utc))
     account = {"attempted": 0, "credits": 0, "unverified": 0}
     web = search_web(key, days, credit_limit, health, account) if key and credit_limit else {}
@@ -300,6 +329,8 @@ def collect(days, *, key=None, credit_limit=0, state=None, allow_possible=False)
             pubmed = pool.submit(fetch_pubmed_candidates, as_of, 21, True)
             eur = {name: pool.submit(europe, query, as_of) for name, query in EU_QUERIES.items()
                    if not health.status("europe-v2:" + name)}
+            cr = {name: pool.submit(crossref_discover, name, query, as_of, health)
+                  for name, query in CROSSREF_LANES.items()} if crossref_search else {}
         pm_rows = pubmed.result()
         records = {row["pubmed_record"]["pmid"]: row["pubmed_record"] for row in pm_rows}
         groups = {"pubmed": {"rows": len(pm_rows), "ids": sorted(records)}}
@@ -358,6 +389,32 @@ def collect(days, *, key=None, credit_limit=0, state=None, allow_possible=False)
                     cards[doi] = card
             except (requests.RequestException, ValueError, KeyError):
                 continue
+        indexed = {row.get("doi", "").casefold(): identifier for identifier, row in cards.items()}
+        for channel, future in cr.items():
+            rows, status = future.result()
+            found = set()
+            if status != "cooldown":
+                health.record(channel, status == "ok")
+            for row in rows:
+                doi = str(row.get("DOI", "")).casefold()
+                if doi in indexed and doi:
+                    identifier = indexed[doi]
+                    found.add(identifier)
+                    if channel not in cards[identifier]["channels"]:
+                        cards[identifier]["channels"].append(channel)
+                    continue
+                try:
+                    card = crossref_record(doi, row)
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if (not card or not as_of - timedelta(days=30) <= date.fromisoformat(card["date"]) <= as_of
+                        or not research_lane(card["title"])):
+                    continue
+                card["channels"] = [channel]
+                cards[doi] = card
+                indexed[doi] = doi
+                found.add(doi)
+            groups[channel] = {"rows": len(rows), "ids": sorted(found), "status": status}
         for name, group in groups.items():
             group["verified"] = sorted(set(group["ids"]) & set(cards)
                                        | web_dois.get(name, set()) & set(cards))

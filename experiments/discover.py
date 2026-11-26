@@ -113,10 +113,13 @@ def secondary_policy_cards(rows, now):
             yield card
 
 
-def collect_live_cards(skip_official=False, *, include_academic=True):
+def collect_live_cards(skip_official=False, *, include_academic=True, wider=False):
     now = datetime.now(CST)
     print(f"RUN_STARTED={now.isoformat()}", flush=True)
-    feeds = [feed for feed in GENERAL_FEEDS if feed[0] in {"中国新闻网-即时", "BBC-World", "Al Jazeera"}]
+    labels = {"中国新闻网-即时", "BBC-World", "Al Jazeera"}
+    if wider:
+        labels.update({"中国新闻网-国际", "中国新闻网-财经"})
+    feeds = [feed for feed in GENERAL_FEEDS if feed[0] in labels]
     with ThreadPoolExecutor(max_workers=5) as pool:
         academic = pool.submit(fetch_pubmed_candidates) if include_academic else None
         policy = None if skip_official else pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])
@@ -141,7 +144,7 @@ def collect_live_cards(skip_official=False, *, include_academic=True):
     world = []
     seen = set()
     for future in news:
-        for item in future.result()[:3]:
+        for item in future.result()[:7 if wider else 3]:
             card = news_card(item, "world", now)
             if card:
                 key = _normalized_title(card["title"])
