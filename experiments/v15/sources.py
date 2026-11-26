@@ -129,3 +129,42 @@ def alerts(tools, as_of, old):
             if lower <= published <= day and (kind != "国自然动态" or FUNDING_SCOPE.search(title)):
                 matches.append({"title": title, "url": url, "date": stamp, "kind": kind})
     return matches[:2], sum(len(rows) for _, _, rows in collections)
+
+
+AOSSM_CALENDAR = "https://events.sportsmed.org/am2023/about-the-meeting/future-meeting-dates"
+AOSSM_ENTRY = re.compile(
+    r"<h[23][^>]*>\s*Annual Meeting (20\d{2})\s*</h[23]>\s*"
+    r"<p[^>]*>\s*(?:<strong>)?([A-Z][a-z]+)\s+(\d{1,2})[-–]\d{1,2},\s*\1",
+    re.I,
+)
+
+
+def aossm_calendar(as_of, *, state=None):
+    """Read the society's official meeting dates. Announce only near-term events."""
+    from datetime import datetime
+    import requests
+
+    source = "calendar:aossm"
+    if state and state.status(source):
+        return [], {"status": "cooldown"}
+    try:
+        response = requests.get(AOSSM_CALENDAR, timeout=8, allow_redirects=False)
+        response.raise_for_status()
+        if response.status_code != 200:
+            raise ValueError("Unsupported response")
+        found = []
+        for year, month, day in AOSSM_ENTRY.findall(response.text):
+            stamp = datetime.strptime(f"{month} {day} {year}", "%B %d %Y").date()
+            found.append(stamp)
+        if state:
+            state.record(source, bool(found))
+        current = date.fromisoformat(as_of)
+        upcoming = [{"title": "AOSSM 年度会议", "url": AOSSM_CALENDAR, "date": d.isoformat(), "kind": "会议提醒"}
+                    for d in sorted(set(found)) if 0 <= (d - current).days <= 90]
+        return upcoming, {"status": "ok", "dated_entries": len(found),
+                          "next_meeting": min((d.isoformat() for d in found if d >= current), default=None)}
+    except (requests.RequestException, ValueError) as exc:
+        code = getattr(getattr(exc, "response", None), "status_code", None)
+        if state:
+            state.record(source, False, code in {401, 403, 429})
+        return [], {"status": code or type(exc).__name__}

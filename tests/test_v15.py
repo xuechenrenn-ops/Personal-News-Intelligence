@@ -8,7 +8,7 @@ from experiments.delivery import Submission, deliver_once
 from experiments.v14.pipeline import prepare_preview
 from test_stage3 import article
 
-from experiments.v15.sources import NEWS, SearchFetch, academic, excerpt, on_site
+from experiments.v15.sources import NEWS, SearchFetch, academic, aossm_calendar, excerpt, on_site
 
 
 class V15Tests(unittest.TestCase):
@@ -60,3 +60,13 @@ class V15Tests(unittest.TestCase):
             self.assertFalse(transient.exists())
             self.assertTrue(path.exists())
             self.assertEqual([c.args[0] for c in sender.call_args_list], ["professional", "extended", "extended"])
+
+    def test_verified_calendar_does_not_announce_too_early(self):
+        with patch("requests.get") as get:
+            get.return_value.status_code = 200
+            get.return_value.text = "<h2>Annual Meeting 2027</h2><p><strong>July 7-10, 2027</strong></p>"
+            rows, report = aossm_calendar("2026-11-26")
+            self.assertEqual(rows, [])
+            self.assertEqual(report["next_meeting"], "2027-07-07")
+            rows, _ = aossm_calendar("2027-05-01")
+            self.assertEqual(rows[0]["date"], "2027-07-07")

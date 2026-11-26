@@ -381,14 +381,21 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
     history = read_index(history_path, today) if history_path else []
     old = {key for row in history for key in row["keys"]}
     notices = []
+    dated_alerts = []
     if web:
-        from experiments.v15.sources import academic, alerts
+        from experiments.v15.sources import academic, alerts, aossm_calendar
         supplement, trace = academic(web, as_of, verify_citation)
         source_report["deepseek_search"] = {**trace, "new": [c["id"] for c in supplement
                                             if not any(identities(c) & identities(row) for row in cards)]}
         cards = cards + supplement
         notices, notice_count = alerts(web, as_of, old)
         source_report["notice_search"] = {"results": notice_count, "candidates": len(notices)}
+        if evaluation is None:
+            source_health = SourceHealth(state_path, now)
+            meetings, calendar = aossm_calendar(as_of, state=source_health)
+            source_health.save()
+            source_report["official_calendar"] = calendar
+            dated_alerts = [notice for notice in meetings if not identities(notice) & old]
     cards = active_cards([c for c in cards if not identities(c) & old], as_of)
     headlines = [c for c in headlines if not identities(c) & old]
     ranked, scores, world_ids = ranked_candidates(provider, cards, as_of, headlines)
@@ -487,13 +494,15 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
         evidence = web.fetch(notice["url"], FUNDING + MEETINGS)
         if evidence and any(part in evidence for part in (notice["date"], notice["date"].replace("-", "年", 1).replace("-", "月") + "日")):
             source_report["notice_search"]["included"] = 1
-            messages = (messages[0], messages[1] + f"\n## {notice['kind']}\n\n[{clean_text(notice['title'])}]({notice['url']}) ｜ {notice['date']}\n")
+            dated_alerts.append(notice)
+    for notice in dated_alerts:
+        messages = (messages[0], messages[1] + f"\n## {notice['kind']}\n\n[{clean_text(notice['title'])}]({notice['url']}) ｜ {notice['date']}\n")
     folder = output.parent / "news-preview"
     folder.mkdir(parents=True, exist_ok=True)
     for name, message in zip(("professional-automatic.md", "extended-automatic.md"), messages):
         (folder / name).write_text(message, encoding="utf-8")
     if history_path:
-        store_index(history_path, history, [table[r["id"]] for r in emitted], today)
+        store_index(history_path, history, [table[r["id"]] for r in emitted] + dated_alerts, today)
     return {"as_of": as_of, "ordered_ids": [row["id"] for row in ranked], "scores": scores,
             "scoring_priority_count": len(scores), "reference_holdout": compare_references(table, scores, professional),
             "discovery": source_report, "errors": errors, "gate": {k: v[1] for k, v in results.items()},
@@ -502,7 +511,8 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
             "selected": [metadata(table[r["id"]]) for r in emitted],
             "counts": {"medical": len(professional), "policy": sum(r["lane"] == "policy" for r in news),
                        "world": sum(r["lane"] == "world" for r in news)},
-            "history": {"restored": len(history), "written": len(emitted) if history_path else 0},
+            "history": {"restored": len(history), "written": len(emitted) + len(dated_alerts) if history_path else 0},
+            "alerts": dated_alerts,
             "enhancement": enhancement}
 
 
