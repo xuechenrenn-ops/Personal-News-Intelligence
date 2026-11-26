@@ -23,7 +23,7 @@ MAX_RUN_RESERVATION = 200_000
 LAYOUT = {"medical": 3, "policy": 1, "world": 2}
 STAGE3_PHASES = {"s3-benchmark", "s3-preview", "s3-model", "s3-model-benchmark", "s3-compare", "s3-coverage", "s3-localize"}
 STAGE3_FREE = {"s3-benchmark", "s3-preview", "s3-coverage"}
-V14_PHASES = {"v14-live"}
+V14_PHASES = {"v14-live", "v14-holdout"}
 PHASES = V14_PHASES | STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
           "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm", "s2-archival"}
 CORE_PHASES = {"candidate", "grounded", "s2-compare", "s2-live", "s2-confirm"}

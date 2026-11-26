@@ -186,6 +186,12 @@ def render(selected, cards, as_of):
                 if field == "question" and item.get("question") == original:
                     continue
                 lines.append(f"**{label}**　{item.get(field, MISSING if field != 'insight' else '本条暂无通过校核的启发。')}")
+            if item.get("supplement"):
+                lines.append(f"**外部补充证据**　{item['supplement']}")
+                citations = ["[" + clean_text(x["title"]) + "](" + x["url"] + ")" for x in item["supplement_links"]
+                             if urlsplit(x["url"]).scheme == "https"]
+                if citations:
+                    lines.append(" ｜ ".join(citations))
         else:
             lines.append(item["summary"])
         label = "报道来源" if src.get("verification_note") else "来源"
