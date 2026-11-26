@@ -15,6 +15,11 @@ class StageTwoQualityTest(unittest.TestCase):
         self.assertFalse(verify_fact("风险降低，OR=0.42", evidence))
         self.assertFalse(verify_fact("危险比（HR）为0.42", evidence))
 
+    def test_fractional_p_values_are_not_confused_with_counts(self):
+        self.assertTrue(verify_fact("结果 P＝0.003。", "The comparison had P=.003."))
+        self.assertFalse(verify_fact("结果纳入3例。", "The comparison had P=.003."))
+        self.assertTrue(verify_fact("结果为１２％。", "The result was 12%."))
+
     def test_drops_unsupported_result_and_strips_editor_urls(self):
         row = {"id": "paper", "lane": "medical", "evidence": "The study included 92 patients."}
         proposed = [{"id": "paper", "result": "纳入93例。", "refs": {"result": [0]}}]

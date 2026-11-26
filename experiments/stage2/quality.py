@@ -1,5 +1,7 @@
 """Validate factual fields before they can appear in an unattended digest."""
 import re
+import unicodedata
+from datetime import date
 from decimal import Decimal
 
 from experiments.discover import EXCLUDED
@@ -12,9 +14,9 @@ ORTHO_TERMS = re.compile(r"orthop[ae]edi|arthroplast|arthroscop|fracture|menisc|
 AI_TERMS = re.compile(r"artificial intelligence|machine learning|deep learning|large language model|"
                       r"neural network|clinical decision support|wearable|ehealth|digital health", re.I)
 ACCIDENT = re.compile(r"fuel tanker|hostage.tak|(?:crash|fire) (?:kills|killed)|FIFA|celebrity|"
-                      r"娱乐|网红|油罐车|交通事故|明星", re.I)
+                      r"娱乐|网红|油罐车|交通事故|火灾|起火|明星", re.I)
 EXCEPTION = re.compile(r"nationwide|one hundred|states of emergency|全国|百人|重大制度", re.I)
-NUMBER = re.compile(r"(?<![A-Za-z0-9])[-+−]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?")
+NUMBER = re.compile(r"(?<![A-Za-z0-9.])[-+−]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)%?")
 STATISTICS = (
     (r"优势比|比值比|\bOR\b", r"odds ratio|\ba?OR\b"),
     (r"风险比（HR）|危险比|\bHR\b", r"hazard ratio|\ba?HR\b"),
@@ -30,11 +32,14 @@ BAD_RATIO = re.compile(
     r"(?:风险降低|降低[^，。；]{0,9}风险)[^。；]{0,30}\bOR\s*(?:为|=|是)?\s*\d+")
 SOURCE_SENTENCES = re.compile(r"(?<=[。！？；])|(?<=[.!?])\s+(?=[A-Z\u4e00-\u9fff])|\n+")
 RELEVANCE_LANES = ("clinical", "ortho-ai", "medical-ai")
+STUDY_WEIGHT = re.compile(r"randomi[sz]ed|systematic review|meta.analysis|external validation|"
+                          r"guideline|multicent[er]{2}|prospective", re.I)
+NO_RESULTS_DESIGN = re.compile(r"trial protocol|protocol for|technical note|bibliometric", re.I)
 
 
 def classify(card):
     title = card["title"]
-    if EXCLUDED.search(title):
+    if EXCLUDED.search(title) or re.search(r"dentistr|periodont", title, re.I):
         return None
     if ORTHO_TERMS.search(title):
         return "ortho-ai" if AI_TERMS.search(title) else "clinical"
@@ -53,8 +58,16 @@ def choose_pool(cards, as_of, max_per=6, max_total=16):
             nonmedical.append(card)
             continue
         lane = classify(card)
-        if lane and len(buckets[lane]) < max_per:
+        if lane:
             buckets[lane].append(card)
+    today = date.fromisoformat(as_of)
+    for bucket in buckets.values():
+        bucket.sort(key=lambda row: (
+            bool(NO_RESULTS_DESIGN.search(row["title"])),
+            (today - date.fromisoformat(row["date"])).days > 7,
+            not bool(STUDY_WEIGHT.search(row["title"])),
+            (today - date.fromisoformat(row["date"])).days,
+        ))
     shortlist = [buckets[lane][idx] for idx in range(max_per) for lane in RELEVANCE_LANES
                  if idx < len(buckets[lane])]
     return shortlist[:max_total] + nonmedical[:10]
@@ -67,7 +80,7 @@ def segments(source):
 
 def number_set(text):
     return {str(Decimal(match.replace(",", "").replace("%", "").replace("−", "-")).normalize())
-            + ("%" if match.endswith("%") else "") for match in NUMBER.findall(text)}
+            + ("%" if match.endswith("%") else "") for match in NUMBER.findall(unicodedata.normalize("NFKC", text))}
 
 
 def verify_fact(value, source, *, question=False):
@@ -75,7 +88,7 @@ def verify_fact(value, source, *, question=False):
         return False
     if not number_set(value) <= number_set(source):
         return False
-    if BAD_RATIO.search(value) or (OBSERVATION.search(source) and CAUSAL.search(value)):
+    if BAD_RATIO.search(value) or (not question and OBSERVATION.search(source) and CAUSAL.search(value)):
         return False
     for label, source_label in STATISTICS:
         if re.search(label, value, re.I) and not re.search(source_label, source, re.I):

@@ -548,13 +548,18 @@ def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
         start = as_of - timedelta(days=lookback)
         date_query = f'("{start:%Y/%m/%d}"[Date - Publication] : "{as_of:%Y/%m/%d}"[Date - Publication])'
     headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
-    for label, query in queries:
+    for index, (label, query) in enumerate(queries):
+        query_date = date_query
+        broadened = expanded and index >= 3
+        if expanded and as_of is not None and not broadened:
+            lower = as_of - timedelta(days=14)
+            query_date = f'("{lower:%Y/%m/%d}"[Date - Publication] : "{as_of:%Y/%m/%d}"[Date - Publication])'
         try:
             time.sleep(0.36)
             response = requests.get(
                 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi',
-                params={'db':'pubmed','term':query + ' AND ' + date_query,
-                        'retmode':'json','retmax':28 if expanded else 20,'sort':'relevance' if expanded else 'date'},
+                params={'db':'pubmed','term':query + ' AND ' + query_date,
+                        'retmode':'json','retmax':28 if broadened else 20,'sort':'relevance' if broadened else 'date'},
                 headers=headers, timeout=20
             )
             response.raise_for_status()

@@ -22,7 +22,7 @@ MAX_REQUESTS = 5
 MAX_RUN_RESERVATION = 200_000
 LAYOUT = {"medical": 3, "policy": 1, "world": 2}
 PHASES = {"baseline", "candidate", "grounded", "holdout", "live",
-          "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm"}
+          "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm", "s2-archival"}
 CORE_PHASES = {"candidate", "grounded", "s2-compare", "s2-live", "s2-confirm"}
 
 FIELDS = ("headline", "summary", "evidence", "limitations", "sports_medicine_insight")

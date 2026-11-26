@@ -131,7 +131,8 @@ def search_web(key, days, credit_limit, health, account):
     results = {}
     try:
         before = tavily_quota(headers)
-    except (RuntimeError, KeyError, ValueError):
+    except (RuntimeError, KeyError, ValueError) as exc:
+        account["quota_failure"] = type(exc).__name__ + ":" + str(exc)[:55]
         account["quota_unavailable"] = True
         return results
     account["available_before"] = before["room"] >= credit_limit + 16
@@ -144,7 +145,8 @@ def search_web(key, days, credit_limit, health, account):
                 continue
             try:
                 previous = tavily_quota(headers)
-            except (RuntimeError, KeyError, ValueError):
+            except (RuntimeError, KeyError, ValueError) as exc:
+                account["quota_failure"] = type(exc).__name__ + ":" + str(exc)[:55]
                 account["quota_unavailable"] = True
                 break
             if previous["room"] < 16:
@@ -177,7 +179,8 @@ def search_web(key, days, credit_limit, health, account):
             break
     try:
         after = tavily_quota(headers)
-    except (RuntimeError, KeyError, ValueError):
+    except (RuntimeError, KeyError, ValueError) as exc:
+        account["quota_failure"] = type(exc).__name__ + ":" + str(exc)[:55]
         account["quota_unavailable"] = True
         return results
     account["observed_key_credit_change"] = after["key_used"] - before["key_used"]
@@ -258,7 +261,8 @@ def crossref_card(doi):
                             timeout=8, headers={"User-Agent": "PersonalNewsIntelligence/2.0"})
     response.raise_for_status()
     row = response.json()["message"]
-    if row.get("type") != "journal-article" or row.get("DOI", "").casefold() != doi.casefold():
+    if (row.get("type") != "journal-article" or row.get("DOI", "").casefold() != doi.casefold()
+            or any("retract" in str(item.get("type", "")).casefold() for item in row.get("update-to", []))):
         return None
     published = row.get("published-online") or row.get("published")
     dates = published.get("date-parts", [[]])[0] if published else []
