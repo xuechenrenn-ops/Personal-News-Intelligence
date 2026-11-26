@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from experiments.v14.pipeline import active_cards, formatted_copy, identities, read_index, score_rows, store_index, with_evidence
+from experiments.v14.pipeline import active_cards, formatted_copy, identities, prepare_preview, read_index, score_rows, store_index, with_evidence
 from test_stage3 import article
 
 
@@ -33,6 +33,31 @@ class V14Tests(unittest.TestCase):
             store_index(path, [], [card], today)
             self.assertEqual(set(read_index(path, today)[0]["keys"]), identities(card))
             self.assertEqual(read_index(path, date(2026, 12, 27)), [])
+
+    def test_provider_outage_preserves_raw_brief_and_restart_suppresses_duplicates(self):
+        def fail(*args, **kwargs):
+            raise RuntimeError("Injected provider outage")
+        row = article(source="Trial journal", title="ACL injury outcomes after reconstruction",
+                      region="中国", doi="10.1234/example")
+        with tempfile.TemporaryDirectory() as dirname:
+            base = Path(dirname)
+            index = base / ".cache" / "state.json"
+            source = ("2026-11-26", [row], [], {})
+            first = prepare_preview(base / "first" / "experiment.json", fail, history_path=index, evaluation=source)
+            second = prepare_preview(base / "second" / "experiment.json", fail, history_path=index, evaluation=source)
+            self.assertEqual(first["counts"]["medical"], 1)
+            self.assertEqual(second["counts"]["medical"], 0)
+            first_output = base / "first" / "news-preview" / "professional-automatic.md"
+            self.assertIn("RR 1.25", first_output.read_text())
+            self.assertEqual(second["history"], {"restored": 1, "written": 0})
+
+    def test_supplement_never_substitutes_for_primary_results(self):
+        source = {"r": "Absolute risk ratio 0.80.", "x1": "External trial risk ratio 0.60."}
+        proposal = {"result": "相对风险为0.60。", "supplement": "另有外部试验报告相对风险0.60。",
+                    "refs": {"result": ["r", "x1"], "supplement": ["x1"]}}
+        verified, _ = formatted_copy(article(), proposal, {"result", "supplement"}, source)
+        self.assertNotIn("result", verified)
+        self.assertIn("supplement", verified)
 
     def test_baichuan_leads_require_direct_evidence_and_no_self_citation(self):
         candidate = article()
