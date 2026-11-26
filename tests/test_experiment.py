@@ -114,5 +114,66 @@ class FreeDiscoveryTest(unittest.TestCase):
         self.assertIsNone(news_card({**row, "published_at": "2026-11-23"}, "policy", now))
 
 
+class DeliveryTest(unittest.TestCase):
+    def test_preview_never_sends_and_partial_delivery_survives_restart(self):
+        from experiments.delivery import deliver_once
+        messages = {"professional": "专业", "extended": "拓展"}
+        with tempfile.TemporaryDirectory() as directory:
+            state = Path(directory) / "delivery.json"
+            sender = Mock(side_effect=[True, TimeoutError()])
+            self.assertEqual(deliver_once(state, "2026-11-26", messages, sender),
+                             {"status": "preview"})
+            sender.assert_not_called()
+            outcome = deliver_once(state, "2026-11-26", messages, sender, approved=True)
+            self.assertEqual(outcome, {"professional": "accepted", "extended": "submission_unknown"})
+            sender.assert_called()
+            restarted = Mock()
+            self.assertEqual(deliver_once(state, "2026-11-26", messages, restarted, approved=True),
+                             outcome)
+            restarted.assert_not_called()
+
+    def test_changed_content_cannot_reuse_delivery_identifier(self):
+        from experiments.delivery import deliver_once
+        with tempfile.TemporaryDirectory() as directory:
+            state = Path(directory) / "delivery.json"
+            sender = Mock(return_value=True)
+            messages = {"professional": "专业", "extended": "拓展"}
+            deliver_once(state, "batch", messages, sender, approved=True)
+            with self.assertRaises(ValueError):
+                deliver_once(state, "batch", {**messages, "extended": "不同"}, sender, approved=True)
+            self.assertEqual(sender.call_count, 2)
+
+
+class FullReplayTest(unittest.TestCase):
+    def test_offline_normal_and_degraded_runs_render_two_messages(self):
+        from experiments.preview import render_messages
+        for name, ids in [
+            ("normal", ("m1", "m2", "n1", "n2")),
+            ("degraded", ()),
+        ]:
+            with self.subTest(mode=name):
+                cards = FIXTURE["development"] if ids else [FIXTURE["development"][5]]
+                ask = Mock(return_value=[{"id": key} for key in ids])
+                selected = compare("grounded", cards, FIXTURE["as_of"], ask)
+                professional, extended = render_messages(selected, cards, FIXTURE["as_of"])
+                self.assertTrue(professional.startswith("# 专业情报"))
+                self.assertTrue(extended.startswith("# 拓展阅读"))
+                if ids:
+                    self.assertIn("PMID 43058301", professional)
+                    self.assertIn("国家医保局", extended)
+                else:
+                    self.assertIn("暂无达到", professional)
+                    self.assertIn("暂无达到", extended)
+                    ask.assert_not_called()
+
+    def test_reviewed_live_previews_are_reproducible(self):
+        from experiments.preview import render_messages
+        directory = Path("experiments/results")
+        data = json.loads((directory / "2026-11-26-reviewed.json").read_text())
+        rendered = render_messages(data["items"], data["sources"], data["as_of"])
+        for file, body in zip(("professional-preview.md", "extended-preview.md"), rendered):
+            self.assertEqual((directory / file).read_text(), body)
+
+
 if __name__ == "__main__":
     unittest.main()

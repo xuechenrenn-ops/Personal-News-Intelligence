@@ -28,8 +28,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: python -m experiments.run "$RUNNER_TEMP/experiment.json"
+      - name: Render two preview messages
+        run: >-
+          python -m experiments.preview "$RUNNER_TEMP/experiment.json"
+          experiments/fixtures/2026-11-26.json "$RUNNER_TEMP/news-preview"
       - uses: actions/upload-artifact@v4
         with:
           name: normalized-experiment
-          path: ${{ runner.temp }}/experiment.json
+          path: |
+            ${{ runner.temp }}/experiment.json
+            ${{ runner.temp }}/news-preview/*.md
           retention-days: 3

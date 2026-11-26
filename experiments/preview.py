@@ -60,8 +60,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     result = json.loads(args.reviewed.read_text(encoding="utf-8"))
     fixture = json.loads(args.fixture.read_text(encoding="utf-8"))
-    split = "holdout" if result["phase"] == "holdout" else "development"
-    messages = render_messages(result["items"], fixture[split], fixture["as_of"])
+    if result["phase"] == "live":
+        cards, as_of = result["sources"], result["as_of"]
+    else:
+        split = "holdout" if result["phase"] == "holdout" else "development"
+        cards, as_of = fixture[split], fixture["as_of"]
+    messages = render_messages(result["items"], cards, as_of)
     args.output_directory.mkdir(parents=True, exist_ok=True)
     for name, message in zip(("professional-preview.md", "extended-preview.md"), messages):
         (args.output_directory / name).write_text(message, encoding="utf-8")
