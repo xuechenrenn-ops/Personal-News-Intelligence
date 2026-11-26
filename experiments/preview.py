@@ -33,7 +33,11 @@ def render_messages(items, cards, as_of):
                 block.append(f"**{label}**　{editorial.get(field) or fallback}")
         elif editorial.get("summary"):
             block.append(editorial["summary"])
-        source = f"[原始来源]({card['url']})"
+        note = card.get("verification_note")
+        if note:
+            block.append(clean_text(note))
+        link_label = "报道来源" if note else "原始来源"
+        source = f"[{link_label}]({card['url']})"
         if card.get("pmid"):
             source += f" ｜ PMID {card['pmid']}"
         if card.get("doi"):

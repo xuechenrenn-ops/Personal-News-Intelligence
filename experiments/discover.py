@@ -14,6 +14,9 @@ from news_push import (
 )
 
 CST = timezone(timedelta(hours=8))
+HEALTH_RSS = ("中国新闻网-健康", "https://www.chinanews.com.cn/rss/health.xml")
+POLICY_MEDIA_LABEL = "媒体援引主管部门，官方原文未核验"
+POLICY_AUTHORITY = re.compile(r"国家(?:医疗保障局|医保局|卫生健康委|药监局)|国家卫生健康委员会")
 POLICY_SOURCE = {
     "label": "国家医保局", "url": "https://www.nhsa.gov.cn/",
     "path_pattern": r"^/art/20\d{2}/\d{1,2}/\d{1,2}/art_14_", "fresh_only": True,
@@ -79,7 +82,7 @@ def medical_card(item):
     return card
 
 
-def news_card(item, lane, now):
+def news_card(item, lane, now, *, secondary=False):
     stamp = item["published_at"]
     full = full_date(stamp)
     if not full:
@@ -92,7 +95,7 @@ def news_card(item, lane, now):
     url = item["url"]
     if urlsplit(url).scheme != "https":
         return None
-    if lane == "policy" and item.get("evidence_status") != "detail_fetched":
+    if lane == "policy" and not secondary and item.get("evidence_status") != "detail_fetched":
         return None
     return {"id": ("policy-" if lane == "policy" else "") + item["id"],
             "lane": lane, "title": _strip_html(item["title"]), "source": item["source"],
@@ -100,13 +103,23 @@ def news_card(item, lane, now):
             "primary": True, "evidence": _strip_html(item.get("summary", ""))[:720]}
 
 
-def collect_live_cards():
+def secondary_policy_cards(rows, now):
+    for item in rows:
+        summary = _strip_html(item.get("summary", ""))
+        if not POLICY_AUTHORITY.search(item["title"] + " " + summary):
+            continue
+        if summary and (card := news_card(item, "policy", now, secondary=True)):
+            card["verification_note"] = POLICY_MEDIA_LABEL
+            yield card
+
+
+def collect_live_cards(skip_official=False):
     now = datetime.now(CST)
     print(f"RUN_STARTED={now.isoformat()}", flush=True)
     feeds = [feed for feed in GENERAL_FEEDS if feed[0] in {"中国新闻网-即时", "BBC-World", "Al Jazeera"}]
     with ThreadPoolExecutor(max_workers=5) as pool:
         academic = pool.submit(fetch_pubmed_candidates)
-        policy = pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])
+        policy = None if skip_official else pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])
         news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 48)
                 for idx, feed in enumerate(feeds)]
     academic_raw = [item for item in academic.result() if medical_card(item)]
@@ -119,7 +132,12 @@ def collect_live_cards():
         if lane_counts.get(lane, 0) < 2:
             shortlisted.append(medical_card(item))
             lane_counts[lane] = lane_counts.get(lane, 0) + 1
-    policy_rows = [card for item in policy.result() if (card := news_card(item, "policy", now))]
+    policy_raw = policy.result() if policy else []
+    policy_rows = [card for item in policy_raw if (card := news_card(item, "policy", now))]
+    if not policy_rows:
+        fallback = fetch_candidates([HEALTH_RSS], "NH", 48)
+        policy_rows = list(secondary_policy_cards(fallback, now))[:3]
+        print(f"POLICY_FALLBACK candidates={len(policy_rows)}", flush=True)
     world = []
     seen = set()
     for future in news:
@@ -137,8 +155,8 @@ def collect_live_cards():
     return cards, now.date().isoformat()
 
 
-def main(output):
-    cards, as_of = collect_live_cards()
+def main(output, skip_official=False):
+    cards, as_of = collect_live_cards(skip_official)
     data = {"as_of": as_of, "candidates": [
         {key: value for key, value in card.items() if key != "evidence"} for card in cards
     ]}
@@ -147,4 +165,4 @@ def main(output):
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]))
+    main(Path(sys.argv[1]), "--fallback-only" in sys.argv[2:])

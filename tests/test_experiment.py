@@ -114,6 +114,22 @@ class FreeDiscoveryTest(unittest.TestCase):
         self.assertIsNone(news_card({**row, "published_at": "2026-11-23"}, "policy", now))
 
 
+    def test_fallback_requires_explicit_authority_and_marks_secondary_source(self):
+        from datetime import datetime
+        from experiments.discover import CST, secondary_policy_cards
+        from experiments.preview import render_messages
+        now = datetime(2026, 11, 26, 19, tzinfo=CST)
+        row = {"id": "n", "url": "https://www.chinanews.com.cn/jk/example",
+               "title": "连续用药管理功能上线", "source": "中新网健康",
+               "published_at": "2026-11-26T08:00:00+08:00",
+               "summary": "据国家医保局微信公众号消息，新功能上线。"}
+        cards = list(secondary_policy_cards([row, {**row, "summary": "网上传闻"}], now))
+        self.assertEqual(len(cards), 1)
+        _, extended = render_messages([{"id": cards[0]["id"]}], cards, "2026-11-26")
+        self.assertIn("官方原文未核验", extended)
+        self.assertIn("报道来源", extended)
+
+
 class DeliveryTest(unittest.TestCase):
     def test_preview_never_sends_and_partial_delivery_survives_restart(self):
         from experiments.delivery import deliver_once

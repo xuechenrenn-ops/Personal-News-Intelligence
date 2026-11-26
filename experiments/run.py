@@ -142,7 +142,7 @@ def eligible(cards, as_of):
 def payload(cards, legacy=False):
     if legacy:
         return cards
-    return [{key: row[key] for key in ("id", "lane", "title", "date", "region", "evidence")
+    return [{key: row[key] for key in ("id", "lane", "title", "date", "region", "evidence", "verification_note")
              if key in row} for row in cards]
 
 
@@ -176,6 +176,8 @@ def compare(phase, cards, as_of, ask):
     if phase != "baseline":
         checked = list(eligible(cards, as_of))
         prompt = PROMPT if phase == "candidate" else GROUNDED_PROMPT
+        if any(row.get("verification_note") for row in checked):
+            prompt += "\n来自媒体转述的政策按该报道表述，不能称已查到官方原文。"
         return normalize(ask(phase, prompt, payload(checked)), checked) if checked else []
 
     academic = [r for r in cards if r["lane"] == "medical"]
