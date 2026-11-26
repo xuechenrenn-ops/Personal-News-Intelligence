@@ -1,46 +1,49 @@
 name: Daily News Push
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/pni-acceptance.json']
   workflow_dispatch:
-    inputs:
-      push_enabled:
-        description: "是否发送真实微信推送（首次测试请保持 false）"
-        required: true
-        type: boolean
-        default: false
 
 permissions:
-  contents: read
+  contents: write
+  actions: write
+
+concurrency:
+  group: pni-production
+  cancel-in-progress: false
 
 jobs:
   news:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
-      - name: Restore cross-run news state
-        uses: actions/cache@v4
-        with:
-          path: .cache
-          key: news-state-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            news-state-${{ github.ref_name }}-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Validate code and configuration
-        run: |
-          python -m py_compile news_push.py cache_manager.py tavily_search.py source_check.py
-          python -m json.tool sources.json > /dev/null
-      - name: Run news pipeline
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Validate V1.6-B production configuration
+        run: python -m unittest discover -s tests -q
+      - name: Run V1.6-B
         env:
-          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          TAVILY_KEY: ${{ secrets.TAVILY_KEY }}
-          PUSH_ENABLED: ${{ inputs.push_enabled }}
-        run: python news_push.py
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          PUSHPLUS_ACCESS_KEY: ${{ secrets.PUSHPLUS_ACCESS_KEY }}
+          PUSHPLUS_SECRET_KEY: ${{ secrets.PUSHPLUS_SECRET_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -m pni.production
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pni-daily-briefs
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/pni/news-preview/*.md
+            ${{ runner.temp }}/pni/run-summary.json

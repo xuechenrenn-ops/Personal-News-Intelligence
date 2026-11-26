@@ -1,0 +1,53 @@
+import unittest
+from unittest.mock import Mock
+
+from pni.production import DAILY, MONTHLY, PushPlus, claim, deliver, in_trial_window
+
+
+class Ledger:
+    def __init__(self):
+        self.data = {"version": 1}
+
+    def save(self):
+        pass
+
+
+class ProductionTests(unittest.TestCase):
+    def test_dedup_and_monthly_limit(self):
+        ledger = Ledger()
+        self.assertIsNotNone(claim(ledger, "2026-11-26", "acceptance", "11"))
+        self.assertIsNone(claim(ledger, "2026-11-26", "daily", "12"))
+        self.assertIsNone(claim(ledger, "2026-11-27", "acceptance", "13"))
+        self.assertEqual(ledger.data["budgets"]["2026-11"]["reserved"], DAILY)
+        ledger.data["budgets"]["2026-11"]["reserved"] = MONTHLY - DAILY + 1
+        with self.assertRaises(RuntimeError):
+            claim(ledger, "2026-11-27", "daily", "14")
+
+    def test_acceptance_does_not_retry_and_preserves_unknown(self):
+        ledger = Ledger()
+        batch = claim(ledger, "2026-11-26", "acceptance", "11")
+        sender = Mock()
+        sender.send.side_effect = [({"status":"accepted", "receipt":"xxxx…yyyy"}, "secretshortcode"),
+                                   ({"status":"submission_unknown"}, None)]
+        sender.lookup.return_value = {"status":"delivery_failed"}
+        deliver(ledger, batch, "2026-11-26", {"professional":"a", "extended":"b"}, [], [], sender)
+        self.assertEqual(sender.send.call_count, 2)
+        self.assertEqual(batch["state"], "needs_review")
+        self.assertNotIn("secretshortcode", str(ledger.data))
+
+    def test_provider_confirmation_and_masked_receipt(self):
+        http = Mock()
+        reply = http.post.return_value
+        reply.status_code = 200
+        reply.json.return_value = {"code":200, "data":"1234567890123456"}
+        api = PushPlus("not-a-key", "access", transport=http)
+        result, short = api.send("title", "message")
+        self.assertEqual(result["receipt"], "1234…3456")
+        http.get.return_value.ok = True
+        http.get.return_value.json.return_value = {"code":200, "data":{"status":2}}
+        self.assertEqual(api.lookup(short)["status"], "sent")
+
+    def test_no_trial_i_before_approval_and_window_ends(self):
+        self.assertFalse(in_trial_window("2026-11-27", None))
+        self.assertTrue(in_trial_window("2026-12-03", "2026-11-27"))
+        self.assertFalse(in_trial_window("2026-12-04", "2026-11-27"))

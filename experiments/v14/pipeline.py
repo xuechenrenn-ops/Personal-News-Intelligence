@@ -417,10 +417,10 @@ def verify_citation(lead):
 
 
 def prepare_preview(output, provider, *, history_path=None, evaluation=None, enhancer=None, web=None,
-                    final_edit=False, fixed_ids=None, verified_extra=None, frozen_scores=None, fixed_world=()):
+                    final_edit=False, fixed_ids=None, verified_extra=None, frozen_scores=None, fixed_world=(), source_state=None):
     now = datetime.now(CST)
     if evaluation is None:
-        state_path = Path(".cache/stage2-source-health.json")
+        state_path = source_state or Path(".cache/stage2-source-health.json")
         state = SourceHealth(state_path, now)
         paused = state.status("domestic-policy")
         headlines, as_of = collect_live_cards(skip_official=paused, include_academic=False, wider=True)

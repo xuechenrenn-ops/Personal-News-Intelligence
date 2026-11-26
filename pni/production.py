@@ -1,0 +1,304 @@
+"""The V1.6-B publishing entry point. GitHub state stores no article text or credentials."""
+from base64 import b64decode, b64encode
+from datetime import datetime, timedelta
+import json
+import os
+from pathlib import Path
+import re
+import time
+
+import requests
+
+from experiments.discover import CST
+from experiments.run import Flash
+from experiments.v14.pipeline import identities, prepare_preview
+from experiments.v15.sources import SearchFetch, TOOL_PRICE
+
+DAILY = 300_000
+MONTHLY = 10_000_000
+TOOLS = 5
+STATE_BRANCH = "pni-production-state"
+STATE_FILE = "pni-state.json"
+ACCEPTANCE_PATH = Path(".github/pni-acceptance.json")
+PUSHPLUS = "https://www.pushplus.plus"
+LANES = {"professional": "专业情报", "extended": "拓展阅读"}
+FILES = {key: key + "-automatic.md" for key in LANES}
+SHORTCODE = re.compile(r"[A-Za-z0-9_-]{8,100}")
+
+
+class GitHubState:
+    def __init__(self, repo, token, transport=requests):
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo):
+            raise ValueError("Invalid GitHub repository")
+        self.base = f"https://api.github.com/repos/{repo}"
+        self.url = f"{self.base}/contents/{STATE_FILE}"
+        self.headers = {"Authorization": "Bearer " + token, "Accept": "application/vnd.github+json"}
+        self.transport = transport
+        response = transport.get(self.url, headers=self.headers, params={"ref": STATE_BRANCH},
+                                 allow_redirects=False, timeout=15)
+        response.raise_for_status()
+        record = response.json()
+        self.sha = record["sha"]
+        self.data = json.loads(b64decode(record["content"]))
+        if self.data.get("version") != 1:
+            raise ValueError("Unrecognized production state")
+
+    def save(self):
+        content = b64encode(json.dumps(self.data, separators=(",", ":")).encode()).decode()
+        response = self.transport.put(
+            self.url, headers=self.headers, allow_redirects=False, timeout=20,
+            json={"branch": STATE_BRANCH, "sha": self.sha, "content": content,
+                  "message": "Update Personal News Intelligence delivery ledger"},
+        )
+        response.raise_for_status()
+        self.sha = response.json()["content"]["sha"]
+
+
+    def purge_logs(self, day):
+        cutoff = (datetime.fromisoformat(day).date() - timedelta(days=7)).isoformat()
+        for run_day, record in self.data.get("runs", {}).items():
+            run_id = str(record.get("run_id", ""))
+            if run_day > cutoff or record.get("logs_expired") is True or not re.fullmatch(r"\d+", run_id):
+                continue
+            try:
+                response = self.transport.delete(f"{self.base}/actions/runs/{run_id}/logs",
+                                                 headers=self.headers, timeout=12, allow_redirects=False)
+                if response.status_code in {204, 404, 410}:
+                    record["logs_expired"] = True
+                else:
+                    print(f"Production log expiry unavailable for {run_day}: HTTP {response.status_code}")
+            except requests.RequestException:
+                print(f"Production log expiry unavailable for {run_day}")
+        self.save()
+
+
+def claim(state, day, mode, run_id):
+    d = state.data
+    runs = d.setdefault("runs", {})
+    if day in runs or (mode == "acceptance" and d.get("acceptance")):
+        return None
+    month = day[:7]
+    budgets = d.setdefault("budgets", {})
+    ledger = budgets.setdefault(month, {"reserved": 0, "observed": 0})
+    if ledger["reserved"] + DAILY > MONTHLY:
+        raise RuntimeError("Monthly reservation would exceed CNY 10")
+    ledger["reserved"] += DAILY
+    batch = {"run_id": run_id, "mode": mode, "state": "reserved", "lanes": {}}
+    runs[day] = batch
+    if mode == "acceptance":
+        d["acceptance"] = {"day": day, "run_id": run_id}
+    cutoff = (datetime.fromisoformat(day).date() - timedelta(days=30)).isoformat()
+    d["runs"] = {key: entry for key, entry in runs.items() if key >= cutoff}
+    d["history"] = [row for row in d.get("history", []) if row["day"] >= cutoff]
+    d["budgets"] = {key: row for key, row in sorted(budgets.items())[-12:]}
+    state.save()
+    return batch
+
+
+class PushPlus:
+    def __init__(self, token, access="", secret="", transport=requests):
+        self.token, self.access, self.secret = token, access, secret
+        self.transport = transport
+        self.lookup_issue = ""
+
+    def authenticate(self):
+        if self.access or not self.secret:
+            return
+        try:
+            response = self.transport.post(f"{PUSHPLUS}/api/common/openApi/getAccessKey",
+                                           json={"token": self.token, "secretKey": self.secret},
+                                           timeout=12, allow_redirects=False)
+            record = response.json()
+            if response.ok and record.get("code") == 200:
+                self.access = record["data"]["accessKey"]
+            else:
+                self.lookup_issue = "access_key_unavailable"
+        except (requests.RequestException, ValueError, TypeError, KeyError):
+            self.lookup_issue = "access_key_unavailable"
+
+    def send(self, title, content):
+        try:
+            response = self.transport.post(
+                f"{PUSHPLUS}/send",
+                json={"token": self.token, "title": title, "content": content,
+                      "template": "markdown", "channel": "wechat"},
+                timeout=(8, 20), allow_redirects=False,
+            )
+            if response.status_code != 200:
+                return {"status": "submission_unknown", "http": response.status_code}, None
+            doc = response.json()
+            code = doc.get("code")
+            if code != 200:
+                return {"status": "rejected", "provider_code": code if type(code) is int else None}, None
+            value = doc.get("data")
+            receipt = value if isinstance(value, str) else value.get("shortCode") if isinstance(value, dict) else None
+            if not isinstance(receipt, str) or not SHORTCODE.fullmatch(receipt):
+                return {"status": "accepted", "verification": "receipt_unavailable"}, None
+            return {"status": "accepted", "receipt": receipt[:4] + "…" + receipt[-4:]}, receipt
+        except (requests.RequestException, ValueError, KeyError, TypeError):
+            return {"status": "submission_unknown"}, None
+
+    def lookup(self, receipt, pause=time.sleep):
+        if not self.access:
+            return {"verification": self.lookup_issue or "status_access_key_missing"}
+        last = None
+        for attempt in range(3):
+            try:
+                response = self.transport.get(
+                    f"{PUSHPLUS}/api/open/message/sendMessageResult",
+                    headers={"access-key": self.access}, params={"shortCode": receipt},
+                    timeout=12, allow_redirects=False,
+                )
+                doc = response.json()
+                if response.ok and doc.get("code") == 200 and isinstance(doc.get("data"), dict):
+                    last = doc["data"].get("status")
+                    if last == 2:
+                        return {"status": "sent", "verification": "provider_confirmed"}
+                    if last == 3:
+                        return {"status": "delivery_failed", "verification": "provider_confirmed"}
+            except (requests.RequestException, ValueError, TypeError, KeyError):
+                pass
+            if attempt < 2:
+                pause(3)
+        return {"verification": "status_unavailable", "provider_status": last if type(last) is int else None}
+
+
+def add_history(state, records, day):
+    remembered = {(row["day"], tuple(row["keys"])) for row in state.data.get("history", [])}
+    history = state.data.setdefault("history", [])
+    for item in records:
+        keys = sorted(identities(item))
+        if keys and (day, tuple(keys)) not in remembered:
+            history.append({"day": day, "keys": keys})
+            remembered.add((day, tuple(keys)))
+
+
+def deliver(state, batch, day, briefs, records, alerts, transport):
+    transport.authenticate()
+    for lane, title in LANES.items():
+        batch["lanes"][lane] = {"status": "submission_unknown"}
+        state.save()  # An interrupted POST is never automatically replayed.
+        prefix = "【试运行验收】" if batch["mode"] == "acceptance" else ""
+        response, code = transport.send(f"{prefix}{title}｜{day}", briefs[lane])
+        batch["lanes"][lane] = response
+        state.save()
+        if code:
+            response.update(transport.lookup(code))
+            state.save()
+        # Retry only when the provider explicitly confirms the first delivery failed.
+        # The authorized one-time acceptance test always submits at most two messages.
+        if response["status"] == "delivery_failed" and batch["mode"] == "daily":
+            batch["lanes"][lane] = {"status": "submission_unknown", "attempt": 2}
+            state.save()
+            retry, code = transport.send(f"{prefix}{title}｜{day}", briefs[lane])
+            retry["attempt"] = 2
+            batch["lanes"][lane] = response = retry
+            state.save()
+            if code:
+                response.update(transport.lookup(code))
+        if response["status"] in {"sent", "accepted"}:
+            add_history(state, [row for row in records if (row["lane"] == "medical") == (lane == "professional")]
+                        + (alerts if lane == "extended" else []), day)
+        state.save()
+    statuses = {x["status"] for x in batch["lanes"].values()}
+    batch["state"] = ("sent" if statuses == {"sent"} else "accepted_waiting_status"
+                      if statuses <= {"sent", "accepted"} else "needs_review")
+    state.save()
+
+
+def execute(mode, output):
+    now = datetime.now(CST)
+    day = now.date().isoformat()
+    key = os.environ["DEEPSEEK_API_KEY"]
+    sender = None
+    state = None
+    if mode != "preview":
+        sender = PushPlus(os.environ["PUSHPLUS_TOKEN"], os.environ.get("PUSHPLUS_ACCESS_KEY", ""),
+                          os.environ.get("PUSHPLUS_SECRET_KEY", ""))
+        if not sender.token:
+            raise RuntimeError("PushPlus token is missing")
+        state = GitHubState(os.environ["GITHUB_REPOSITORY"], os.environ["GH_TOKEN"])
+        batch = claim(state, day, mode, os.environ["GITHUB_RUN_ID"])
+        if batch is None:
+            print("Duplicate batch skipped before any paid request or send.", flush=True)
+            return
+    provider = Flash(key, DAILY - TOOLS * TOOL_PRICE, max_reservation=DAILY)
+    if provider.check_balance() < DAILY:
+        raise RuntimeError("DeepSeek balance below the complete daily reservation")
+    web = SearchFetch(provider.headers, TOOLS)
+    from tempfile import TemporaryDirectory
+
+    output.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(prefix="pni-acquisition-") as temp:
+        runtime = Path(temp)
+        history = runtime / "history.json"
+        source_health = runtime / "source-health.json"
+        data = state.data if state else {}
+        history.write_text(json.dumps(data.get("history", [])), encoding="utf-8")
+        source_health.write_text(json.dumps(data.get("source_health", {})), encoding="utf-8")
+        result = prepare_preview(output / "result.json", provider, history_path=history,
+                                 source_state=source_health, web=web, final_edit=True)
+        if result["as_of"] != day:
+            raise RuntimeError("Date crossed during the acquisition; the reservation is still recorded")
+        observed = sum(row.get("peak_estimate_micro_cny", row["reserved_micro_cny"]) for row in provider.calls)
+        observed += sum(row.get("observed_peak_micro_cny", row["max_micro_cny"]) for row in web.calls)
+        summary = {"mode": mode, "day": day, "counts": result["counts"],
+                   "estimate_micro_cny": observed, "model_calls": len(provider.calls),
+                   "web_calls": len(web.calls), "provider_errors": len(result["errors"])}
+        if state:
+            state.data["source_health"] = json.loads(source_health.read_text(encoding="utf-8"))
+            state.data["budgets"][day[:7]]["observed"] += observed
+            batch["estimate_micro_cny"] = observed
+            batch["state"] = "prepared"
+            state.save()
+            briefs = {lane: (output / "news-preview" / filename).read_text(encoding="utf-8")
+                      for lane, filename in FILES.items()}
+            deliver(state, batch, day, briefs, result["selected"], result["alerts"], sender)
+            summary["delivery"] = batch
+            state.purge_logs(day)
+        # Acquisition files are confined to this run's temporary directory.
+        (output / "run-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+                                                encoding="utf-8")
+        print(json.dumps(summary, ensure_ascii=False), flush=True)
+        if state and batch["state"] == "needs_review":
+            raise RuntimeError("Review partial or unknown delivery before any manual retry")
+
+
+def in_trial_window(day, start):
+    try:
+        return 0 <= (datetime.fromisoformat(day).date() - datetime.fromisoformat(start).date()).days < 7
+    except (ValueError, TypeError):
+        return False
+
+
+def archived_preview(output):
+    root = Path("experiments/v16/preview")
+    archive = output / "news-preview"
+    archive.mkdir(parents=True, exist_ok=True)
+    for source, lane in (("professional-B.md", "professional"), ("extended-automatic.md", "extended")):
+        (archive / FILES[lane]).write_bytes((root / source).read_bytes())
+    print("Archived V1.6-B preview. No paid requests or deliveries.")
+
+
+def main():
+    event = os.environ.get("GITHUB_EVENT_NAME", "")
+    if os.environ.get("GITHUB_REF") != "refs/heads/main":
+        raise RuntimeError("Production runs only on main")
+    if event == "push":
+        if json.loads(ACCEPTANCE_PATH.read_text(encoding="utf-8")) != {"id": "v16-initial-wechat-acceptance"}:
+            raise RuntimeError("Unrecognized acceptance trigger")
+        mode = "acceptance"
+    elif event == "schedule":
+        if not in_trial_window(datetime.now(CST).date().isoformat(), os.environ.get("PNI_TRIAL_START")):
+            print("Outside the approved seven-day trial window.")
+            return
+        mode = "daily"
+    elif event == "workflow_dispatch":
+        return archived_preview(Path(os.environ["RUNNER_TEMP"]) / "pni")
+    else:
+        raise RuntimeError("Unrecognized event")
+    execute(mode, Path(os.environ["RUNNER_TEMP"]) / "pni")
+
+
+if __name__ == "__main__":
+    main()
