@@ -538,8 +538,9 @@ def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
     if expanded:
         queries.extend([
             ("证据与运动肩膝", '(meniscus[Title] OR "anterior cruciate ligament"[Title] OR ACL[Title] OR ACLR[Title] OR osteotom*[Title] OR "rotator cuff"[Title] OR "adhesive capsulitis"[Title] OR "plantar fasciitis"[Title]) AND (randomized[Title/Abstract] OR trial[Title/Abstract] OR "systematic review"[Title/Abstract])'),
+            ("骨科循证与非影像AI", '((osteotom*[Title] OR "spine surgery"[Title] OR "vertebral fracture"[Title] OR arthroplast*[Title]) AND ("external validation"[Title/Abstract] OR "artificial intelligence"[Title/Abstract] OR "machine learning"[Title/Abstract] OR "target trial"[Title/Abstract] OR prognos*[Title] OR "prediction model"[Title]))'),
             ("关节置换预测与随访", '(arthroplasty[Title] OR "fracture liaison"[Title] OR "lower extremity orthopaedic"[Title]) AND (predict*[Title/Abstract] OR ehealth[Title/Abstract] OR "digital health"[Title/Abstract] OR "randomized controlled trial"[Publication Type])'),
-            ("中国研究团队骨科", '(China[Affiliation] OR Beijing[Affiliation] OR Shanghai[Affiliation]) AND (orthopaedic[Title/Abstract] OR "adhesive capsulitis"[Title/Abstract] OR arthroplasty[Title/Abstract] OR rehabilitation[Title/Abstract]) AND (randomized[Title/Abstract] OR validation[Title/Abstract] OR "systematic review"[Title/Abstract])'),
+            ("中国研究团队骨科", '(China[Affiliation] OR Beijing[Affiliation] OR Shanghai[Affiliation]) AND (orthopaedic[Title/Abstract] OR "adhesive capsulitis"[Title/Abstract] OR arthroplasty[Title/Abstract] OR rehabilitation[Title/Abstract] OR "anterior cruciate ligament"[Title/Abstract] OR osteotom*[Title] OR musculoskeletal[Title/Abstract]) AND (randomized[Title/Abstract] OR validation[Title/Abstract] OR "systematic review"[Title/Abstract])'),
         ])
     candidates, seen = [], set()
     if as_of is None:
@@ -548,6 +549,7 @@ def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
         start = as_of - timedelta(days=lookback)
         date_query = f'("{start:%Y/%m/%d}"[Date - Publication] : "{as_of:%Y/%m/%d}"[Date - Publication])'
     headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
+    matched = {}
     for index, (label, query) in enumerate(queries):
         query_date = date_query
         broadened = expanded and index >= 3
@@ -564,13 +566,22 @@ def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
             )
             response.raise_for_status()
             ids = response.json().get('esearchresult', {}).get('idlist', [])
-            records = _pubmed_records(ids)
+            for pmid in ids:
+                matched.setdefault(pmid, label)
+            print(f'PubMed发现：{label}｜匹配ID {len(ids)}条', flush=True)
         except Exception as exc:
             print(f'PubMed发现检索失败：{label}｜{type(exc).__name__}: {exc}', flush=True)
             continue
+    ids = list(matched)
+    for offset in range(0, len(ids), 50):
+        try:
+            records = _pubmed_records(ids[offset:offset + 50])
+        except (requests.RequestException, ET.ParseError, ValueError) as exc:
+            print(f'PubMed文献元数据读取失败｜{type(exc).__name__}', flush=True)
+            continue
         for record in records:
             pmid = record.get('pmid')
-            if not pmid or pmid in seen:
+            if not pmid or pmid in seen or pmid not in matched:
                 continue
             seen.add(pmid)
             candidates.append({
@@ -580,9 +591,8 @@ def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
                 'published_at': record.get('publication_date') or 'PubMed未提供',
                 'url': f'https://pubmed.ncbi.nlm.nih.gov/{pmid}/',
                 'summary': record.get('abstract') or 'PubMed记录未提供摘要。',
-                'pubmed_record': record, 'source_category': label
+                'pubmed_record': record, 'source_category': matched[pmid]
             })
-        print(f'PubMed发现：{label}｜返回记录{len(records)}条', flush=True)
     return candidates
 
 

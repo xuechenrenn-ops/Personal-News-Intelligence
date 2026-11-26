@@ -30,7 +30,12 @@ NON_ORIGINAL = {"Editorial", "News", "Comment", "Published Erratum",
 COUNTRIES = {"中国": r"\bChina\b", "日本": r"\bJapan\b", "韩国": r"\b(?:South Korea|Republic of Korea)\b",
              "美国": r"\b(?:USA|United States)\b", "英国": r"\b(?:UK|United Kingdom)\b",
              "荷兰": r"\bNetherlands\b", "澳大利亚": r"\bAustralia\b",
-             "德国": r"\bGermany\b", "加拿大": r"\bCanada\b", "法国": r"\bFrance\b"}
+             "德国": r"\bGermany\b", "加拿大": r"\bCanada\b", "法国": r"\bFrance\b",
+             "意大利": r"\bItaly\b", "瑞士": r"\bSwitzerland\b", "奥地利": r"\bAustria\b",
+             "西班牙": r"\bSpain\b", "丹麦": r"\bDenmark\b", "瑞典": r"\bSweden\b",
+             "挪威": r"\bNorway\b", "比利时": r"\bBelgium\b", "新加坡": r"\bSingapore\b",
+             "印度": r"\bIndia\b", "巴西": r"\bBrazil\b", "波兰": r"\bPoland\b",
+             "土耳其": r"\b(?:Turkey|Türkiye)\b", "新西兰": r"\bNew Zealand\b"}
 
 
 def full_date(raw):

@@ -23,10 +23,21 @@ DESIGNS = [
     (r"cross.sectional", "横断面研究"),
 ]
 NOUNS = r"patients?|participants?|adults?|subjects?|studies|trials|knees|shoulders|hips"
+VALIDATION_SAMPLE = re.compile(
+    r"\bexternal validation included ([\d,]+) patients\b|"
+    r"\b(?:independent|external) (?:[\w-]+ ){0,3}cohort \(n\s*=\s*([\d,]+)\)",
+    re.I,
+)
+BASELINE_ONLY = re.compile(r"^\s*(?:(?:the )?(?:average|mean|median) age|baseline characteristics|"
+                           r"(?:at baseline[, ]+)?[\d,.%]+ (?:patients|participants) were (?:male|female)|"
+                           r"(?:absolute|relative) risk reduction for )", re.I)
+PROGNOSTIC = re.compile(r"predict(?:ion|ive)|classification models?|external validation|"
+                        r"risk (?:calculator|model)|deep learning|machine learning", re.I)
+TEST_ONLY = re.compile(r"exam(?:ination)?s?\b|question.bank", re.I)
 SAMPLES = re.compile(
-    rf"\b(?:a total of |we (?:included|enrolled|identified) |trial included |included |enrolled )"
+    rf"\b(?:a total of |we (?:included|enrolled|identified) |trial included |included |enrolled |review of )"
     rf"([\d,]+)\s+({NOUNS})\b|"
-    rf"\b([\d,]+)\s+({NOUNS})\s+(?:were (?:enrolled|randomi[sz]ed|included))\b",
+    rf"\b([\d,]+)\s+({NOUNS})\s+(?:were (?:enrolled|randomi[sz]ed|included|randomly assigned))\b",
     re.I,
 )
 UNIT_LABEL = {"patients": "例患者", "patient": "例患者", "participants": "名受试者",
@@ -71,33 +82,44 @@ def fragments(text):
             lead = re.split(r", (?:interrater )?reliability (?:was|ranged) ", sentence, maxsplit=1, flags=re.I)[0]
             if len(lead.split()) >= 7 and re.search(r"\b(?:was|ranged from)\b", lead, re.I):
                 yield lead
-        # A semicolon separates clauses. Never cut at arbitrary character or word boundaries.
-        if ";" in sentence:
-            for clause in sentence.split(";"):
-                clause = clause.strip()
-                if clause and clause[-1] not in ".!?。":
-                    clause += "."
-                yield clause
+        stack = []
+        cut = 0
+        for index, char in enumerate(sentence):
+            if char in "([":
+                stack.append(char)
+            elif char in ")]" and stack:
+                stack.pop()
+            if char == ";" and not stack:
+                yield sentence[cut:index].strip()
+                cut = index + 1
+        if cut:
+            yield sentence[cut:].strip()
+        leading = re.match(r"^(.+?\)) and (?:partial|full)[- ]thickness retear", sentence, re.I)
+        if leading:
+            yield leading[1]
 
 
-def choose_result(text):
+def choose_result(text, primary=None):
     confirmed = []
     for value in fragments(text):
         word_count = len(value.split())
         if not 5 <= word_count <= 23 or len(value) > 240 or BAD_EXCERPT.search(value):
             continue
-        if (not OUTCOME.search(value) or value.count("(") != value.count(")")
-                or re.match(r"^(?:and\b|but\b|or\b|where\b|at a post.hoc)", value, re.I)):
+        if (not OUTCOME.search(value) or BASELINE_ONLY.search(value)
+                or any(value.count(left) != value.count(right) for left, right in ("()", "[]"))
+                or re.match(r"^(?:and\b|but\b|or\b|where\b|number needed|at a post.hoc)", value, re.I)):
             continue
         counts = number_set(value)
-        score = (bool(METRIC.search(value)), bool(counts), not value.lower().startswith(("it ", "this ", "these ")))
+        score = (bool(primary and primary in value.casefold()),
+                 bool(METRIC.search(value)), bool(counts),
+                 not value.lower().startswith(("it ", "this ", "these ")))
         confirmed.append((score, value))
     # These compact measurements carry their complete endpoint and validation context.
     for match in re.finditer(
         r"\bexternal (?:AUC(?:-ROC)?|AUROC)\s+0\.\d{2,4},?\s*95% CI\s+0\.\d{2,4}[-–]0\.\d{2,4}",
         text, re.I,
     ):
-        confirmed.append(((True, True, True), match[0]))
+        confirmed.append(((False, True, True, True), match[0]))
     return max(confirmed, key=lambda pair: pair[0])[1] if confirmed else ""
 
 
@@ -118,14 +140,15 @@ def paper_card(card):
     parts = sections(abstract)
     result_text = parts.get("results") or parts.get("result") or parts.get("findings") or ""
     # Journals with no structured labels can still report a numeric outcome explicitly.
-    outcome = choose_result(result_text) if result_text else ""
+    methods = " ".join(parts.get(k, "") for k in ("methods", "method", "materials and methods", "study design", "design", "participants"))
+    primary = re.search(r"primary (?:outcome|endpoint) (?:was|were) (?:a composite of )?([^.;(]{6,48})", methods, re.I)
+    outcome = choose_result(result_text, primary[1].strip().casefold() if primary else None) if result_text else ""
     if not outcome and not result_text and not parts:
         outcome = choose_result(abstract)
         if not (outcome and METRIC.search(outcome) and number_set(outcome)):
             outcome = ""
     if not outcome:
         return reject("no_complete_outcome_excerpt")
-    methods = " ".join(parts.get(k, "") for k in ("methods", "method", "materials and methods", "study design", "design", "participants"))
     types = " ".join(card.get("publication_types", ()))
     design = next((label for expr, label in DESIGNS if re.search(expr, title + " " + types + " " + methods, re.I)),
                   "摘要未明确标示研究设计")
@@ -135,6 +158,17 @@ def paper_card(card):
         if unit.lower() in UNIT_LABEL and int(count.replace(",", "")) > 0:
             sample = (int(count.replace(",", "")), UNIT_LABEL[unit.lower()])
             break
+    validation_sample = VALIDATION_SAMPLE.search(methods)
+    if validation_sample:
+        sample = (int((validation_sample[1] or validation_sample[2]).replace(",", "")), "例（外部验证队列）")
+    if not sample and "荟萃分析" in design:
+        pooled = re.search(r"\b([\d,]+) (patients|participants|knees|shoulders|hips)[;)]", result_text, re.I)
+        if pooled and re.search(r"^[^.]{0,150}studies.* were included\.", result_text, re.I):
+            sample = (int(pooled[1].replace(",", "")), UNIT_LABEL[pooled[2].lower()] + "（合并分析）")
+    if not sample:
+        responder = re.search(r"^Of ([\d,]+) pain responders, ", result_text)
+        if responder:
+            sample = (int(responder[1].replace(",", "")), "名疼痛缓解者（条件分析人群）")
     objectives = parts.get("purpose") or parts.get("objective") or parts.get("objectives") or parts.get("aim")
     question = next((value for value in reversed(list(fragments(objectives or "")))
                      if 6 <= len(value.split()) <= 23 and not BAD_EXCERPT.search(value)
@@ -143,7 +177,10 @@ def paper_card(card):
     provenance = "结果段原文短引" if result_text else "非结构化摘要原文短引"
     quality = {
         "id": identifier, "status": "eligible", "lane": lane, "sample_confirmed": bool(sample),
-        "structured_results": bool(result_text), "metric": bool(METRIC.search(outcome))
+        "structured_results": bool(result_text), "metric": bool(METRIC.search(outcome)),
+        "test_only": bool(TEST_ONLY.search(title)),
+        "validation": bool(PROGNOSTIC.search(title) or lane != "clinical"),
+        "external_validation": bool(re.search(r"external(?:ly)? validat", title, re.I))
     }
     limitation = "摘要未能核实具体局限。仍需结合全文的偏倚、适用人群和终点判读。"
     if "观察性" in design or "回顾性" in design or "横断面" in design:
@@ -156,12 +193,21 @@ def paper_card(card):
                         if 5 <= len(value.split()) <= 23 and not BAD_EXCERPT.search(value)), "")
     if short_limit:
         limitation = f"原文局限短引　“{short_limit}”"
+    insight = INSIGHTS["ortho-ai" if quality["validation"] and lane == "clinical" else lane]
+    if re.search(r"rotator[- ]cuff", title, re.I):
+        insight = "可按撕裂大小预先分层，同时比较影像再撕裂与患者报告功能是否一致。"
+    elif re.search(r"vertebroplasty", title, re.I):
+        insight = "可将疼痛下降与功能改善设为不同结局，检验两者不一致的患者亚群。"
+    elif re.search(r"prophylaxis|antibiotic", title, re.I):
+        insight = "可在前瞻设计中并列记录感染、翻修及药物不良事件。"
+    elif re.search(r"acetabul", title, re.I):
+        insight = "可在独立队列验证骨折移位与加做内固定的关联，并预设不同骨折类型的分层。"
     row = {
         "id": identifier, "lane": "medical",
         "question": f"原文目的短引　“{question}”" if question else clean_text(title),
-        "design": design + (f"；摘要明确报告 {sample[0]:,} {sample[1]}。" if sample else "；总样本量未从摘要明确提取。"),
+        "design": design + (f"；摘要报告 {sample[0]:,} {sample[1]}。" if sample else "；总样本量未从摘要明确提取。"),
         "result": f'{provenance}　“{outcome}”',
-        "limits": limitation, "insight": INSIGHTS[lane],
+        "limits": limitation, "insight": insight,
     }
     return row, quality
 
@@ -182,10 +228,10 @@ def medical_digest(cards, as_of, priority=()):
             eligible.append((age, card, row, quality))
     by_priority = {key: order for order, key in enumerate(priority)}
     eligible.sort(key=lambda x: (
-        x[0] > 14, x[3]["lane"] == "medical-ai",
+        x[0] > 14, x[3]["test_only"], x[3]["lane"] == "medical-ai",
         x[1]["id"] not in by_priority, by_priority.get(x[1]["id"], 999),
         x[1]["title"].startswith("["), not x[3]["structured_results"],
-        not x[3]["sample_confirmed"], x[0], not x[3]["metric"],
+        x[0] > 7, x[0] > 2, not x[3]["metric"], not x[3]["sample_confirmed"], x[0],
     ))
     used = set()
     unique = []
@@ -197,8 +243,23 @@ def medical_digest(cards, as_of, priority=()):
         used |= aliases
         unique.append(entry)
     finalists = unique[:3]
-    if finalists and {row[3]["lane"] for row in finalists} == {"clinical"}:
-        alternative = next((x for x in unique if x[3]["lane"] == "ortho-ai" and x[0] <= 14 and x[3]["structured_results"]), None)
-        if alternative and len(finalists) > 1:
+    def strong_ai(entry):
+        q = entry[3]
+        return entry[0] <= 14 and q["lane"] == "ortho-ai" and not q["test_only"] and q["structured_results"]
+
+    if len(finalists) > 1 and not any(strong_ai(x) for x in finalists):
+        alternative = next((x for x in unique if strong_ai(x)), None)
+        if alternative:
             finalists[-1] = alternative
+
+    def domestic(entry):
+        return "中国" in (entry[1].get("region") or "")
+
+    if len(finalists) == 3 and not any(domestic(x) for x in finalists):
+        local = next((x for x in unique if domestic(x) and x[0] <= 7 and not x[3]["test_only"]
+                      and x[3]["structured_results"] and x[3]["metric"]), None)
+        for index in range(len(finalists) - 1, -1, -1):
+            if local and not strong_ai(finalists[index]):
+                finalists[index] = local
+                break
     return [x[2] for x in finalists], audit

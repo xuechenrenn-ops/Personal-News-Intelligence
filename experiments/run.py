@@ -21,7 +21,7 @@ MAX_TOKENS = 1600
 MAX_REQUESTS = 5
 MAX_RUN_RESERVATION = 200_000
 LAYOUT = {"medical": 3, "policy": 1, "world": 2}
-STAGE3_PHASES = {"s3-benchmark", "s3-preview", "s3-model", "s3-model-benchmark", "s3-compare", "s3-coverage"}
+STAGE3_PHASES = {"s3-benchmark", "s3-preview", "s3-model", "s3-model-benchmark", "s3-compare", "s3-coverage", "s3-localize"}
 STAGE3_FREE = {"s3-benchmark", "s3-preview", "s3-coverage"}
 PHASES = STAGE3_PHASES | {"baseline", "candidate", "grounded", "holdout", "live",
           "s2-search", "s2-compare", "s2-holdout", "s2-live", "s2-confirm", "s2-archival"}

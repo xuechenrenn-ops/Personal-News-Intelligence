@@ -167,14 +167,20 @@ def render(selected, cards, as_of):
         src = by_id[item["id"]]
         if urlsplit(src["url"]).scheme != "https":
             continue
-        lines = [f"### {clean_text(src['title'])}", f"{src['source']} ｜ {src['date']}"]
+        title = clean_text(item.get("localized_title") or src["title"])
+        lines = [f"### {title}", f"{src['source']} ｜ {src['date']}"]
         if src.get("region"):
             lines[-1] += f" ｜ {src['region']}"
         if item["lane"] == "medical":
+            original = clean_text(src["title"])
             age = (date.fromisoformat(as_of) - date.fromisoformat(src["date"])).days
             if age > 7:
                 lines[-1] += " ｜ 近30天回顾"
+            if item.get("localized_title"):
+                lines.append(f"原始题名　{original}")
             for field, label in FIELD_LABELS.items():
+                if field == "question" and item.get("question") == original:
+                    continue
                 lines.append(f"**{label}**　{item.get(field, MISSING if field != 'insight' else '本条暂无通过校核的启发。')}")
         else:
             lines.append(item["summary"])
