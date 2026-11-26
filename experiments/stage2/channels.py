@@ -3,13 +3,13 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta, datetime, timezone
 import json
 import re
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 import requests
 
-from experiments.discover import medical_card
+from experiments.discover import medical_card, region_for
 from experiments.run import api_json
-from news_push import _pubmed_records, fetch_pubmed_candidates
+from news_push import _pubmed_records, _strip_html, fetch_pubmed_candidates
 
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 TAVILY = "https://api.tavily.com"
@@ -38,12 +38,6 @@ ACCESS = {
     "foreign-journal": "https://www.jmir.org/2026/1/e94936/",
 }
 SEARCH_CREDIT_MICRO_CNY = 100_000  # USD 0.008/credit, rounded up with exchange headroom
-
-
-def key_for(row):
-    if row.get("doi"):
-        return row["doi"].casefold()
-    return row.get("pmid") or row["url"]
 
 
 class SourceHealth:
@@ -204,6 +198,30 @@ def ids_for_dois(dois, maximum=18):
     return {str(x["pmid"]) for x in response.json()["resultList"]["result"] if x.get("pmid")}
 
 
+def crossref_card(doi):
+    """Verify DOI-only candidates when a registered abstract and exact date exist."""
+    if DOI.fullmatch(doi) is None:
+        return None
+    response = requests.get("https://api.crossref.org/works/" + quote(doi, safe="/"),
+                            timeout=8, headers={"User-Agent": "PersonalNewsIntelligence/2.0"})
+    response.raise_for_status()
+    row = response.json()["message"]
+    if row.get("type") != "journal-article" or row.get("DOI", "").casefold() != doi.casefold():
+        return None
+    published = row.get("published-online") or row.get("published")
+    dates = published.get("date-parts", [[]])[0] if published else []
+    title = _strip_html((row.get("title") or [""])[0])
+    abstract = _strip_html(row.get("abstract") or "")
+    journal = (row.get("container-title") or [""])[0]
+    if len(dates) != 3 or not title or not abstract or not journal:
+        return None
+    affiliations = [entry["name"] for author in row.get("author", [])
+                    for entry in author.get("affiliation", []) if entry.get("name")]
+    return {"id": doi, "lane": "medical", "title": title, "source": journal,
+            "date": date(*dates).isoformat(), "url": "https://doi.org/" + doi,
+            "doi": doi, "region": region_for(affiliations), "primary": True, "evidence": abstract[:6000]}
+
+
 def metadata(rows):
     return {key: value for key, value in rows.items() if key not in {"evidence", "segments"}}
 
@@ -236,8 +254,10 @@ def collect(days, *, key=None, credit_limit=0, state=None):
             except (requests.RequestException, KeyError, ValueError) as exc:
                 groups[channel] = {"rows": 0, "ids": [], "status": type(exc).__name__}
                 health.record(channel, False)
+        web_dois = {}
         for name, rows in web.get(str(as_of), {}).items():
             pmids, dois = hints(rows)
+            web_dois[name] = dois
             pmids |= {pmid for pmid, record in records.items() if record.get("doi", "").casefold() in dois}
             try:
                 pmids |= ids_for_dois(dois)
@@ -264,8 +284,21 @@ def collect(days, *, key=None, credit_limit=0, state=None):
             card["evidence"] = row["abstract"]
             card["channels"] = [name for name, group in groups.items() if pmid in group["ids"]]
             cards[pmid] = card
-        for group in groups.values():
-            group["verified"] = sorted(set(group["ids"]) & set(cards))
+        known_dois = {c.get("doi", "").casefold() for c in cards.values()}
+        unindexed = sorted(set.union(set(), *web_dois.values()) - known_dois)[:8]
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            crossref = {doi: pool.submit(crossref_card, doi) for doi in unindexed}
+        for doi, future in crossref.items():
+            try:
+                card = future.result()
+                if card and as_of - timedelta(days=30) <= date.fromisoformat(card["date"]) <= as_of:
+                    card["channels"] = [name for name, dois in web_dois.items() if doi in dois]
+                    cards[doi] = card
+            except (requests.RequestException, ValueError, KeyError):
+                continue
+        for name, group in groups.items():
+            group["verified"] = sorted(set(group["ids"]) & set(cards)
+                                       | web_dois.get(name, set()) & set(cards))
         stats[str(as_of)] = groups
         ranked[str(as_of)] = list(cards.values())
     health.save()

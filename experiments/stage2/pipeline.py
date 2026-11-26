@@ -84,11 +84,18 @@ def fetch_reference(splits):
     ids = sorted({pmid for day in splits.values() for label in ("priority", "distractors")
                   for pmid in day[label]})
     mapping = {}
-    for record in _pubmed_records(ids):
+    for record in _pubmed_records([i for i in ids if i.isdigit()]):
         row = medical_card({"id": record["pmid"], "title": record["title"], "pubmed_record": record})
         if row:
             row["evidence"] = record["abstract"]
             mapping[record["pmid"]] = row
+    for doi in [i for i in ids if not i.isdigit()]:
+        try:
+            row = channels.crossref_card(doi)
+        except (OSError, ValueError, KeyError):
+            row = None
+        if row:
+            mapping[doi] = row
     return mapping
 
 
@@ -166,8 +173,7 @@ def run_stage2(identifier, plan, output):
         raise RuntimeError("Cost plan cannot cover both services")
     provider = None if phase == "s2-search" else Flash(
         os.environ["DEEPSEEK_API_KEY"], model_reserve, max_reservation=750_000)
-    if provider:
-        provider.check_balance()
+    initial_balance = provider.check_balance() if provider else None
     claim_dispatch(identifier, os.environ["GH_TOKEN"], os.environ["GITHUB_REPOSITORY"],
                    os.environ["GITHUB_RUN_ID"])
 
@@ -221,6 +227,12 @@ def run_stage2(identifier, plan, output):
         (folder / "professional-automatic.md").write_text(professional, encoding="utf-8")
         (folder / "extended-automatic.md").write_text(extended, encoding="utf-8")
 
+    if provider:
+        try:
+            delta = initial_balance - provider.balance_micro_cny()
+            result["account_balance_delta_micro_cny"] = delta if delta >= 0 else None
+        except (RuntimeError, ValueError, KeyError):
+            result["account_balance_delta_micro_cny"] = None
     result["elapsed_seconds"] = round(time.monotonic() - started, 3)
     result["wechat_requests"] = 0
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

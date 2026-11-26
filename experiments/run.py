@@ -76,16 +76,21 @@ class Flash:
         if not 0 < reserved <= max_reservation:
             raise RuntimeError("Invalid run reservation")
 
-    def check_balance(self):
+    def balance_micro_cny(self):
         from decimal import Decimal
         data = api_json("https://api.deepseek.com/user/balance", self.headers)
-        enough = any(
-            row.get("currency") == "CNY"
-            and Decimal(row["total_balance"]) * 1_000_000 >= self.reserved
-            for row in data.get("balance_infos", [])
-        )
-        if data.get("is_available") is not True or not enough:
+        if data.get("is_available") is not True:
             raise RuntimeError("Verified CNY balance insufficient")
+        for row in data.get("balance_infos", []):
+            if row.get("currency") == "CNY":
+                return int(Decimal(row["total_balance"]) * 1_000_000)
+        raise RuntimeError("Verified CNY balance unavailable")
+
+    def check_balance(self):
+        balance = self.balance_micro_cny()
+        if balance < self.reserved:
+            raise RuntimeError("Verified CNY balance insufficient")
+        return balance
 
     def __call__(self, phase, prompt, candidates, *, thinking=False, max_tokens=MAX_TOKENS):
         if not candidates:
