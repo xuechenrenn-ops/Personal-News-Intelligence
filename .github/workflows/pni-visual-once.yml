@@ -1,0 +1,44 @@
+name: PNI one-time WeChat layout check
+on:
+  push:
+    branches: ['ops/pni-visual-45813332802']
+    paths: ['.github/pni-visual-45813332802.json']
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: pni-visual-45813332802
+  cancel-in-progress: false
+jobs:
+  visual:
+    if: github.run_attempt == 1 && github.ref == 'refs/heads/ops/pni-visual-45813332802'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pni-daily-briefs
+          github-token: ${{ github.token }}
+          run-id: '45813332802'
+          path: ${{ runner.temp }}/pni-visual-source
+      - run: pip install -r requirements.txt
+      - name: Verify original bytes and send exactly one pair
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          PUSHPLUS_ACCESS_KEY: ${{ secrets.PUSHPLUS_ACCESS_KEY }}
+          PUSHPLUS_SECRET_KEY: ${{ secrets.PUSHPLUS_SECRET_KEY }}
+        run: python .github/pni-visual-send.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pni-visual-receipts
+          retention-days: 7
+          if-no-files-found: ignore
+          path: ${{ runner.temp }}/pni-visual-receipts.json
