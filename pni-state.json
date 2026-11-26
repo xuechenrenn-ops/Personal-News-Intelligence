@@ -1,1 +1,1 @@
-{"version":1,"runs":{},"budgets":{},"history":[],"source_health":{}}
+{"version":1,"runs":{"2026-11-26":{"run_id":"45813332802","mode":"acceptance","state":"reserved","lanes":{}}},"budgets":{"2026-11":{"reserved":300000,"observed":0}},"history":[],"source_health":{},"acceptance":{"day":"2026-11-26","run_id":"45813332802"}}
