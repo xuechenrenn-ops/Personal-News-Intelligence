@@ -537,6 +537,7 @@ def fetch_pubmed_candidates(as_of=None, lookback=30, expanded=False):
     ]
     if expanded:
         queries.extend([
+            ("骨科实践指南", '(orthopaedic[Title/Abstract] OR orthopedic[Title/Abstract] OR musculoskeletal[Title/Abstract] OR fracture[Title/Abstract] OR arthroplasty[Title/Abstract] OR shoulder[Title/Abstract]) AND ("Practice Guideline"[Publication Type] OR "clinical practice guideline"[Title] OR "consensus statement"[Title])'),
             ("证据与运动肩膝", '(meniscus[Title] OR "anterior cruciate ligament"[Title] OR ACL[Title] OR ACLR[Title] OR osteotom*[Title] OR "rotator cuff"[Title] OR "adhesive capsulitis"[Title] OR "plantar fasciitis"[Title]) AND (randomized[Title/Abstract] OR trial[Title/Abstract] OR "systematic review"[Title/Abstract])'),
             ("骨科循证与非影像AI", '((osteotom*[Title] OR "spine surgery"[Title] OR "vertebral fracture"[Title] OR arthroplast*[Title]) AND ("external validation"[Title/Abstract] OR "artificial intelligence"[Title/Abstract] OR "machine learning"[Title/Abstract] OR "target trial"[Title/Abstract] OR prognos*[Title] OR "prediction model"[Title]))'),
             ("关节置换预测与随访", '(arthroplasty[Title] OR "fracture liaison"[Title] OR "lower extremity orthopaedic"[Title]) AND (predict*[Title/Abstract] OR ehealth[Title/Abstract] OR "digital health"[Title/Abstract] OR "randomized controlled trial"[Publication Type])'),

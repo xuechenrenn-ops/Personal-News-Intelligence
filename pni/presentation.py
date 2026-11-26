@@ -23,8 +23,7 @@ LANES = {"professional": "专业情报", "extended": "拓展阅读"}
 INTRO = "每天五分钟，读懂值得关注的世界。"
 LINK = re.compile(r"\[([^\]\n]+)\]\(([^\s)]+)\)")
 FIELD = re.compile(r"^\*\*([^*]+)\*\*\s*(.*)", re.S)
-LOCAL_TOPIC = re.compile(r"回应(?:食品)?保质期标注|社区活动|普通研讨会")
-WORLD_IMPACT = re.compile(r"正式生效|全国实施|发布新规|全国性召回|上调.*利率|下调.*利率")
+
 
 
 @dataclass(frozen=True)
@@ -75,10 +74,7 @@ def parse_brief(markdown, lane, start=0):
 
     def flush():
         if title:
-            label = section
-            if label == "国内外重大事件" and LOCAL_TOPIC.search(title) and not WORLD_IMPACT.search(title):
-                label = "民生关注"
-            result.append(Article(lane, label, start + len(result) + 1, title, tuple(body)))
+            result.append(Article(lane, section, start + len(result) + 1, title, tuple(body)))
 
     for line in markdown.splitlines():
         if line.startswith(("## ", "### ")):
@@ -108,6 +104,10 @@ def focus(article):
             if finding.startswith("结果段原文短引"):
                 return "摘要未提取到可直接概述的主要结局数据，正文保留原文及来源。"
             return re.split(r"(?<=。)(?=[^（])", finding, maxsplit=1)[0]
+    for row in article.text:
+        field = FIELD.match(row)
+        if field and field[1] == "发生了什么":
+            return field[2].split("。", 1)[0] + "。"
     for row in article.text:
         if len(row) > 35 and row.endswith(("。", "”")) and not row.startswith(("原始题名", "[")):
             return row.split("。", 1)[0].rstrip("”") + "。"

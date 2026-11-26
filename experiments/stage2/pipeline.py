@@ -175,7 +175,7 @@ def render(selected, cards, as_of):
             original = clean_text(src["title"])
             age = (date.fromisoformat(as_of) - date.fromisoformat(src["date"])).days
             if age > 7:
-                lines[-1] += " ｜ 近30天回顾"
+                lines[-1] += " ｜ 近期研究解读"
             if item.get("localized_title"):
                 lines.append(f"原始题名　{original}")
             if item.get("scope"):
@@ -193,7 +193,12 @@ def render(selected, cards, as_of):
                 if citations:
                     lines.append(" ｜ ".join(citations))
         else:
-            lines.append(item["summary"])
+            if item.get("why") or item.get("impact"):
+                for key, label in (("summary", "发生了什么"), ("why", "为什么值得关注"), ("impact", "对我们有什么影响")):
+                    if item.get(key):
+                        lines.append(f"**{label}**　{item[key]}")
+            else:
+                lines.append(item["summary"])
         label = "报道来源" if src.get("verification_note") else "来源"
         if src.get("verification_note"):
             lines.append(src["verification_note"])

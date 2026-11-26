@@ -2,6 +2,8 @@ from datetime import date
 from unittest import TestCase
 from unittest.mock import Mock
 
+from pni import curation
+from pni.acceptance_v17 import check_month
 from pni.editorial import clean_repeated_terms, shoulder_trial_result
 from pni.presentation import document, measure, plan
 from pni.production import deliver_html
@@ -40,11 +42,32 @@ class V17Tests(TestCase):
         rows = plan(pro, ext, DAY, limit=one + 500)
         self.assertEqual(len(rows), 2)
 
-    def test_low_impact_relabel_preserves_text(self):
-        ext = "## 国内外重大事件\n### 市场监管总局回应食品保质期标注问题\n完整报道正文。"
-        item = plan("", ext, DAY)[0]
-        self.assertEqual(item.articles[0].section, "民生关注")
-        self.assertIn("完整报道正文", item.html)
+    def test_consumer_story_fails_major_event_admission(self):
+        self.assertFalse(curation.world_allowed("市场监管总局回应食品保质期标注问题",
+                                                "个别瓶身标签提前调整，部门作例行回应。"))
+        self.assertTrue(curation.world_allowed("食品标签", "新政策全国实施。"))
+
+    def test_research_buckets_and_shoulder_variety(self):
+        titles = {"rct": "Rotator cuff repair randomized trial",
+                  "review": "Rotator cuff meta-analysis",
+                  "robot": "Robot-assisted knee arthroplasty",
+                  "model": "A prediction model for spinal surgery outcomes",
+                  "other": "Multimodal large language model for clinical cancer diagnosis",
+                  "guide": "Clinical practice guideline for hip fracture care",
+                  "mobile": "Digital health after knee arthroplasty"}
+        rows = {key: {"id": key, "title": title, "date": DAY.isoformat(),
+                      "evidence": "The hospital study used XGBoost." if key == "model" else ""}
+                for key, title in titles.items()}
+        self.assertEqual(curation.field(rows["guide"]), "guideline")
+        self.assertEqual(curation.field(rows["mobile"]), "clinical")
+        self.assertEqual(curation.field(rows["model"]), "ortho-ai")
+        ranked = curation.candidates(list(rows.values()), {}, DAY.isoformat(), limit=3, reserve=False)
+        self.assertEqual([row["id"] for row in ranked], ["robot", "other", "model"])
+
+    def test_month_ceiling_projects_remaining_production(self):
+        self.assertLessEqual(check_month({}, DAY)["projected_month_max"], 10_000_000)
+        with self.assertRaises(RuntimeError):
+            check_month({"budgets": {"2026-11": {"reserved": 9_000_000}}}, DAY)
 
     def test_original_numbers_required(self):
         evidence = ("At 3 months, the CBPT group had lower activity-related VAS scores than the control group "

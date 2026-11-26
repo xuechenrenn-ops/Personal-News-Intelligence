@@ -76,7 +76,7 @@ def excerpt(content, title):
 
 def academic(tools, as_of, verify):
     lower = date.fromisoformat(as_of) - timedelta(days=21)
-    rows = tools.search(f"骨科 运动医学 ACL 截骨 术后康复 外部验证 randomized clinical trial lang:zh,en after:{lower}")
+    rows = tools.search(f"骨科 骨折 脊柱 手术规划 智能康复 machine learning prediction OR multimodal OR 外部验证 lang:zh,en after:{lower}")
     pmids, dois = hints([{"url": row.get("url"), "title": row.get("title"),
                          "content": row.get("snippet")} for row in rows if isinstance(row, dict)])
     cards = []

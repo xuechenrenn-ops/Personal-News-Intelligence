@@ -278,7 +278,7 @@ def execute(mode, output):
         history.write_text(json.dumps(data.get("history", [])), encoding="utf-8")
         source_health.write_text(json.dumps(data.get("source_health", {})), encoding="utf-8")
         result = prepare_preview(output / "result.json", provider, history_path=history,
-                                 source_state=source_health, web=web, final_edit=True)
+                                 source_state=source_health, web=web, final_edit=True, v17=True)
         if result["as_of"] != day:
             raise RuntimeError("Date crossed during the acquisition; the reservation is still recorded")
         observed = sum(row.get("peak_estimate_micro_cny", row["reserved_micro_cny"]) for row in provider.calls)
