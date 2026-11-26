@@ -529,20 +529,25 @@ def annotate_policy_source(items):
     return items
 
 
-def fetch_pubmed_candidates():
+def fetch_pubmed_candidates(as_of=None, lookback=30):
     queries = [
         ('骨科临床研究全领域', '("Orthopedics"[MeSH Terms] OR "Sports Medicine"[MeSH Terms] OR arthroscopy[Title/Abstract] OR meniscus[Title/Abstract] OR ligament[Title/Abstract] OR "rotator cuff"[Title/Abstract] OR "anterior cruciate ligament"[Title/Abstract] OR fracture[Title/Abstract] OR spine[Title/Abstract] OR arthroplasty[Title/Abstract] OR osteoporosis[Title/Abstract] OR rehabilitation[Title/Abstract] OR "bone tumor"[Title/Abstract])'),
         ('骨科AI研究', '(("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "deep learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR robotics[Title/Abstract] OR wearable[Title/Abstract]) AND (orthopedic[Title/Abstract] OR orthopaedic[Title/Abstract] OR musculoskeletal[Title/Abstract] OR "sports medicine"[Title/Abstract] OR rehabilitation[Title/Abstract]))'),
         ('医疗AI交叉研究', '("Artificial Intelligence"[MeSH Terms] OR "machine learning"[Title/Abstract] OR "large language model"[Title/Abstract] OR "clinical decision support"[Title/Abstract] OR multimodal[Title/Abstract] OR agent[Title/Abstract]) AND (clinical[Title/Abstract] OR medicine[Title/Abstract] OR healthcare[Title/Abstract])')
     ]
     candidates, seen = [], set()
+    if as_of is None:
+        date_query = f'("last {lookback} days"[Date - Publication])'
+    else:
+        start = as_of - timedelta(days=lookback)
+        date_query = f'("{start:%Y/%m/%d}"[Date - Publication] : "{as_of:%Y/%m/%d}"[Date - Publication])'
     headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
     for label, query in queries:
         try:
             time.sleep(0.36)
             response = requests.get(
                 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi',
-                params={'db':'pubmed','term':query + ' AND ("last 30 days"[Date - Publication])',
+                params={'db':'pubmed','term':query + ' AND ' + date_query,
                         'retmode':'json','retmax':20,'sort':'date'},
                 headers=headers, timeout=20
             )

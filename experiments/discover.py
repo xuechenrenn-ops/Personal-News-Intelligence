@@ -24,7 +24,8 @@ POLICY_SOURCE = {
     "keywords": ["医保", "用药", "药学", "医疗服务"], "max_items": 4,
 }
 ORTHO = re.compile(r"orthop[ae]edic|musculoskeletal|arthroplast|arthroscop|fracture|"
-                   r"ligament|menisc|laminoplast|osteopor|spine|gait|rotator cuff", re.I)
+                   r"ligament|menisc|laminoplast|osteopor|spine|gait|rotator cuff|"
+                   r"adhesive capsulitis|frozen shoulder|plantar fasciitis|anterior cruciate", re.I)
 CLINICAL_AI = re.compile(
     r"machine learning|deep learning|artificial intelligence|large language model|"
     r"electronic health record|clinical decision support|wearable", re.I
