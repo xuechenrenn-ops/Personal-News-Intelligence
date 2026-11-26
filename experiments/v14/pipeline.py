@@ -49,7 +49,7 @@ valid 只填写实际审查且足以支持的字段。"""
 
 APPRAISE = """只解读给出的这一篇已核实研究摘要。你只写 clinical 和 insight，区分观察、预测与干预效果。
 给出适合该研究问题的可检验设计或外部验证方向，不重复既有结论，不声称临床获益。
-禁止新的数字，只使用提供资料。输出 JSON {"items":[{"id":"原编号","clinical":"一句","insight":"一句",
+禁止新的数字，只使用提供资料。输出 JSON {"items":[{"id":"原编号","clinical":"中文一句","insight":"中文一句",
 "refs":{"clinical":["r","c"],"insight":["m","r"]}}]}。如无把握可省略。"""
 RANK_HINT = re.compile(r"randomi[sz]ed|systematic review|clinical trial|multicent(?:er|re)|external(?:ly)? validat|target trial|meta.analysis", re.I)
 
@@ -221,6 +221,11 @@ def formatted_copy(card, proposal, accepted, evidence):
     refs = proposal.get("refs")
     if not isinstance(refs, dict):
         refs = {}
+    if set(evidence) == {"u"}:
+        # Numeric and semantic checks still use the full registered abstract.
+        refs = {field: ["u"] if isinstance(keys, list) and keys and
+                all(isinstance(k, str) and k in {"p", "m", "r", "c", "u"} for k in keys)
+                else keys for field, keys in refs.items()}
     kept = {}
     trace = {}
     for field in fields:
@@ -281,9 +286,16 @@ def write_verified(provider, cards, *, supplementary=None):
         except (RuntimeError, ValueError, KeyError, TypeError) as error:
             failures.append({"type": "optional_appraisal", "reason": str(error)[:90]})
     to_check = [{"record": row, "proposed": proposals[row["id"]]} for row in packet if row["id"] in proposals]
+    for block in to_check:
+        proposal = block["proposed"]
+        references = proposal.get("refs")
+        if set(block["record"]["evidence"]) == {"u"} and isinstance(references, dict):
+            for field, keys in references.items():
+                if isinstance(keys, list) and keys and all(isinstance(k, str) and k in {"p", "m", "r", "c", "u"} for k in keys):
+                    references[field] = ["u"]
     if to_check:
         try:
-            checks = provider("v14-verify", VERIFY, to_check, max_tokens=945)
+            checks = provider("v14-verify", VERIFY, to_check, max_tokens=480)
             for row in checks:
                 if isinstance(row, dict) and isinstance(row.get("id"), str) and isinstance(row.get("valid"), list):
                     validation[row["id"]] = {v for v in row["valid"] if isinstance(v, str)}

@@ -59,6 +59,22 @@ class V14Tests(unittest.TestCase):
         self.assertNotIn("result", verified)
         self.assertIn("supplement", verified)
 
+    def test_unlabelled_rct_draft_maps_to_original_abstract_without_waiving_accuracy(self):
+        proposal = {"result": "主要结局差异为1.69分。", "methods": "随机分组纳入380人。",
+                    "refs": {"result": ["r"], "methods": ["m"]}}
+        cohort = {"u": "A randomized trial included 380 participants. Primary effect difference was 1.69 points."}
+        checked, _ = formatted_copy(article(), proposal, {"result", "methods"}, cohort)
+        self.assertEqual(checked["result"], "主要结局差异为1.69分。")
+        self.assertIn("380", checked["methods"])
+
+    def test_meta_analysis_sample_uses_reported_pooled_denominator(self):
+        from experiments.stage3.evidence import paper_card
+        study = article(title="ACL reconstruction in children: a meta-analysis",
+                        evidence="METHODS: A systematic search was conducted. "
+                                 "RESULTS: Thirteen studies were included, comprising 436 patients: "
+                                 "Overall growth disturbance occurred in 8 of 436 patients (1.8%).")
+        self.assertIn("436", paper_card(study)[0]["design"])
+
     def test_baichuan_leads_require_direct_evidence_and_no_self_citation(self):
         candidate = article()
         other = article(id="10000002", pmid="10000002", title="Other ACL paper",

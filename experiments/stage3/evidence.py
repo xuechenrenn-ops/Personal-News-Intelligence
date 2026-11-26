@@ -162,8 +162,8 @@ def paper_card(card):
     if validation_sample:
         sample = (int((validation_sample[1] or validation_sample[2]).replace(",", "")), "例（外部验证队列）")
     if not sample and "荟萃分析" in design:
-        pooled = re.search(r"\b([\d,]+) (patients|participants|knees|shoulders|hips)[;)]", result_text, re.I)
-        if pooled and re.search(r"^[^.]{0,150}studies.* were included\.", result_text, re.I):
+        pooled = re.search(r"\b([\d,]+) (patients|participants|knees|shoulders|hips)[;):]", result_text, re.I)
+        if pooled and re.search(r"^[^.]{0,140}studies.* were included\b", result_text, re.I):
             sample = (int(pooled[1].replace(",", "")), UNIT_LABEL[pooled[2].lower()] + "（合并分析）")
     if not sample:
         responder = re.search(r"^Of ([\d,]+) pain responders, ", result_text)
