@@ -646,7 +646,8 @@ def run(identifier, plan, output):
                                           "PriorityPublished": sorted(selected & set(source["priority"])),
                                           "DistractorsPublished": sorted(selected & set(source["distractors"]))}
     else:
-        result = prepare_preview(output, provider, history_path=STORE if plan.get("use_history") is True else None, web=web)
+        result = prepare_preview(output, provider, history_path=STORE if plan.get("use_history") is True else None,
+                                 web=web, final_edit=plan["phase"] == "v15-live")
     try:
         result["account_balance_delta_micro_cny"] = balance - provider.balance_micro_cny()
     except (RuntimeError, ValueError, KeyError):

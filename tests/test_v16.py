@@ -43,3 +43,12 @@ class FinalEditorialTests(unittest.TestCase):
         self.assertEqual(len(admitted), 1)
         self.assertEqual([row["status"] for row in trace],
                          ["duplicate_or_target", "verified_and_relevant", "unverified"])
+
+    def test_weekly_schedule_and_randomized_denominator(self):
+        item = {"lane": "medical", "design": "术前1次、出院前1次、出院后每周4次。"}
+        paper = {"title": "Randomized clinical trial", "evidence":
+                 "METHODS: The program had one preoperative, one predischarge, and four weekly postdischarge sessions. "
+                 "RESULTS: Sixty-eight participants were randomized, and 55 completed follow-up."}
+        consistency(item, paper)
+        self.assertIn("出院后每周1次，共4次", item["design"])
+        self.assertIn("随机分组共 68 人，55 人完成随访", item["design"])

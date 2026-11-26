@@ -11,6 +11,8 @@ TERMS = {
     "ACLR": "前交叉韧带重建", "ACL": "前交叉韧带", "TKA": "全膝关节置换术",
     "MCID": "最小临床重要差异", "PROBAST": "预测模型偏倚风险评估工具",
     "DRG": "按疾病诊断相关分组", "DIP": "按病种分值付费",
+    "VAS": "视觉模拟评分", "CMS": "Constant–Murley肩关节评分",
+    "CBPT": "认知行为物理治疗", "ARCR": "关节镜下肩袖修复",
 }
 JOURNALS = {
     "Skeletal radiology": "《骨骼放射学》（Skeletal Radiology）",
@@ -69,6 +71,27 @@ def expand_abbreviations(item):
         item[field] = TOKEN.sub(replace, prefix) + original
 
 
+TENS = dict(zip("twenty thirty forty fifty sixty seventy eighty ninety".split(), range(20, 100, 10)))
+ONES = dict(zip("one two three four five six seven eight nine".split(), range(1, 10)))
+
+
+def source_number(text):
+    if text.isdigit():
+        return int(text)
+    tens, _, ones = text.lower().partition("-")
+    if tens in TENS and (not ones or ones in ONES):
+        return TENS[tens] + ONES.get(ones, 0)
+    return None
+
+
+def normalize_schedule(text, source):
+    if not isinstance(text, str):
+        return text
+    if re.search(r"\bfour weekly postdischarge sessions\b", source, re.I):
+        return re.sub(r"(?<=出院后)每周\s*4\s*次", "每周1次，共4次", text)
+    return text
+
+
 def consistency(item, paper):
     if item["lane"] != "medical":
         return
@@ -77,7 +100,17 @@ def consistency(item, paper):
     part = sections(abstract)
     result = part.get("results") or part.get("result") or ""
     original = paper["title"]
-    design = item.get("design", "")
+    design = normalize_schedule(item.get("design", ""), abstract)
+    if design:
+        item["design"] = design
+    randomized = re.search(r"\b([a-z]+(?:-[a-z]+)?|\d+) participants were randomized, and (\d+) completed follow-up", result, re.I)
+    if randomized:
+        total = source_number(randomized[1])
+        complete = int(randomized[2])
+        if total and 0 < complete <= total and not re.search(r"\b" + str(total) + r"\s*[人例名]", design):
+            addition = f"随机分组共 {total} 人，{complete} 人完成随访。"
+            item["design"] = (design + ("。" if design and not design.endswith("。") else "") + addition).strip()
+            return
     if not design or "总样本量未" in design or "暂不报告" in design:
         included = re.search(r"(?:included|comprising|involving|included a total of)\s+([\d,]+)\s+(patients|participants|studies)", result, re.I)
         reviewed = re.search(r"([\d,]+)\s+(studies|trials)\s+(?:met (?:the )?(?:inclusion|eligibility)|were included)", result, re.I)
