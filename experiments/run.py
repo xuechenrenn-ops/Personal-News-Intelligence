@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import time
 import urllib.error
 import urllib.request
@@ -179,12 +180,11 @@ def compare(phase, cards, as_of, ask):
     return normalize(review + news, verified + general)
 
 
-def read_dispatch(event, current_ref, current_sha, root=ROOT):
+def read_dispatch(event, current_ref, current_sha, added, root=ROOT):
     if current_ref != "refs/heads/upgrade/news-pipeline-v1" or event.get("forced"):
         raise RuntimeError("Unexpected ref or forced update")
     if event.get("after") != current_sha or event.get("deleted"):
         raise RuntimeError("Unexpected dispatch SHA")
-    added = (event.get("head_commit") or {}).get("added") or []
     manifests = [path for path in added
                  if re.fullmatch(r"experiments/dispatch/[a-z0-9-]+\.json", path)]
     if len(manifests) != 1:
@@ -227,7 +227,13 @@ def workflow(output):
     if os.environ.get("GITHUB_RUN_ATTEMPT") != "1":
         raise RuntimeError("A rerun cannot spend")
     event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
-    identifier, plan = read_dispatch(event, os.environ["GITHUB_REF"], os.environ["GITHUB_SHA"])
+    parent = subprocess.check_output(["git", "rev-parse", "HEAD^"], text=True).strip()
+    if event.get("before") != parent:
+        raise RuntimeError("Dispatch must be a single-commit ref update")
+    added = subprocess.check_output(
+        ["git", "diff", "--name-only", "--diff-filter=A", parent, "HEAD"], text=True
+    ).splitlines()
+    identifier, plan = read_dispatch(event, os.environ["GITHUB_REF"], os.environ["GITHUB_SHA"], added)
     phase = plan["phase"]
     fixture = json.loads((ROOT / "fixtures/2026-11-26.json").read_text(encoding="utf-8"))
     cards = fixture["holdout" if phase == "holdout" else "development"]

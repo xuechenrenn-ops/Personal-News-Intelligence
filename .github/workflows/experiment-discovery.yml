@@ -1,0 +1,25 @@
+name: News free discovery
+on:
+  push:
+    branches: [upgrade/news-pipeline-v1]
+    paths: [experiments/discover.py, .github/workflows/experiment-discovery.yml]
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python -m experiments.discover "$RUNNER_TEMP/discovery.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: free-discovery
+          path: ${{ runner.temp }}/discovery.json
+          retention-days: 3

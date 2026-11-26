@@ -56,15 +56,16 @@ class ExperimentTest(unittest.TestCase):
             directory.mkdir(parents=True)
             file = directory / "trial.json"
             file.write_text('{"phase":"candidate","reserve_micro_cny":200000}')
-            event = {"after": "test", "head_commit": {"added": ["experiments/dispatch/trial.json"]}}
-            self.assertEqual(read_dispatch(event, REF, "test", root)[0], "trial")
-            self.assertEqual(read_dispatch(event, REF, "test", root)[1]["reserve_micro_cny"], 200000)
+            event = {"after": "test"}
+            added = ["experiments/dispatch/trial.json"]
+            self.assertEqual(read_dispatch(event, REF, "test", added, root)[0], "trial")
+            self.assertEqual(read_dispatch(event, REF, "test", added, root)[1]["reserve_micro_cny"], 200000)
             for bad_ref, bad_event in [(REF, {**event, "forced": True}), ("refs/heads/main", event)]:
                 with self.assertRaises(RuntimeError):
-                    read_dispatch(bad_event, bad_ref, "test", root)
+                    read_dispatch(bad_event, bad_ref, "test", added, root)
             file.write_text('{"phase":"candidate","reserve_micro_cny":200001}')
             with self.assertRaises(RuntimeError):
-                read_dispatch(event, REF, "test", root)
+                read_dispatch(event, REF, "test", added, root)
 
     def test_normalizer_rejects_unknown_ids_and_caps_policy(self):
         cards = FIXTURE["development"]
