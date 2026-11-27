@@ -141,12 +141,15 @@ def collect_live_cards(skip_official=False, *, include_academic=True, wider=Fals
         labels.update({"中国新闻网-国际", "中国新闻网-财经"})
     feeds = [feed for feed in GENERAL_FEEDS if feed[0] in labels]
     reporting = {"trace": discovery} if discovery is not None else {}
+    # health applies to the RSS reader only: fetch_official_page_candidates does
+    # not accept it, so keep the two kwargs sets separate.
+    rss_kwargs = dict(reporting)
     if health is not None:
-        reporting["health"] = health
+        rss_kwargs["health"] = health
     with ThreadPoolExecutor(max_workers=5) as pool:
         academic = pool.submit(fetch_pubmed_candidates) if include_academic else None
         policy = None if skip_official else pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])
-        news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 72 if major_official else 48, **reporting)
+        news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 72 if major_official else 48, **rss_kwargs)
                 for idx, feed in enumerate(feeds)]
         official = [pool.submit(fetch_official_page_candidates, [source], **reporting)
                     for source in ([WORLD_SOURCE] if major_official else []) +
