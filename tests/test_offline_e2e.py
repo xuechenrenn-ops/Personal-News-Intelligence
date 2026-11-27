@@ -268,8 +268,14 @@ class EveningEndToEnd(TestCase):
     """Full retrieval -> HTML run through the real production entry."""
 
     def test_scheduled_production_delivers_once_with_persistent_state(self):
+        self.check_scheduled_delivery(status_key="offline-access")
+
+    def test_scheduled_token_only_submission_is_held_without_retry(self):
+        self.check_scheduled_delivery(status_key="")
+
+    def check_scheduled_delivery(self, *, status_key):
         from pni.editions import EDITIONS
-        from pni.production import main
+        from pni.production import exclusion_history, main
 
         ledger = {"version": 1}
         deliveries = []
@@ -287,16 +293,20 @@ class EveningEndToEnd(TestCase):
                 deliveries.append(kwargs["json"])
                 return FakeHTTPResponse('{"code":200,"data":"receipt-test-only"}')
             if url.endswith("/sendMessageResult"):
+                self.assertTrue(status_key, "Token-only delivery must skip the open API")
                 return FakeHTTPResponse('{"code":200,"data":{"status":2}}')
+            self.assertNotIn("www.pushplus.plus", url, "Unexpected PushPlus request")
             return requests_router(url, **kwargs)
 
         with TemporaryDirectory() as tmp:
             env = {"GITHUB_EVENT_NAME": "schedule", "GITHUB_REF": "refs/heads/main",
                    "GITHUB_REPOSITORY": "owner/repo", "GITHUB_RUN_ID": "123",
                    "DEEPSEEK_API_KEY": "offline-key", "PUSHPLUS_TOKEN": "offline-token",
-                   "PUSHPLUS_ACCESS_KEY": "offline-access", "GH_TOKEN": "offline-github",
+                   "GH_TOKEN": "offline-github",
                    "RUNNER_TEMP": tmp, "PNI_TRIAL_START": "2000-01-01",
                    "PNI_SCHEDULE_CRON": EDITIONS["evening"]["cron"]}
+            if status_key:
+                env["PUSHPLUS_ACCESS_KEY"] = status_key
             with patch.dict("os.environ", env, clear=True), \
                     patch("requests.sessions.Session.request", side_effect=http), \
                     patch("urllib.request.urlopen",
@@ -309,11 +319,18 @@ class EveningEndToEnd(TestCase):
             summary = json.loads((Path(tmp) / "pni/run-summary.json").read_text(encoding="utf-8"))
             self.assertEqual(summary["edition"], "evening")
             self.assertEqual(summary["reserved_micro_cny"], 120_000)
-            self.assertEqual(summary["delivery"]["state"], "sent")
+            self.assertEqual(summary["delivery"]["state"],
+                             "sent" if status_key else "accepted_waiting_status")
             self.assertEqual(len(deliveries), 1)
             self.assertEqual(deliveries[0]["template"], "html")
             self.assertIn(summary["day"] + ":evening", ledger["runs"])
-            self.assertTrue(ledger["history"])
+            self.assertEqual(bool(ledger.get("history")), bool(status_key))
+            self.assertTrue(exclusion_history(ledger))
+            if not status_key:
+                part = summary["delivery"]["lanes"]["part-1"]
+                self.assertEqual(part["status"], "accepted")
+                self.assertEqual(part["verification"], "status_access_key_missing")
+                self.assertTrue(part["pending_keys"])
 
     def test_evening_production_entry_completes_offline(self):
         with TemporaryDirectory() as tmp:

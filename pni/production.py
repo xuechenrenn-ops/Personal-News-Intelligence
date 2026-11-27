@@ -301,8 +301,6 @@ def execute(mode, output, edition=None):
                           os.environ.get("PUSHPLUS_SECRET_KEY", "").strip())
         if not sender.token:
             raise RuntimeError("PushPlus token is missing")
-        if mode == "daily" and edition and not (sender.access or sender.secret):
-            raise RuntimeError("PushPlus delivery status credentials are missing")
         state = GitHubState(os.environ["GITHUB_REPOSITORY"], os.environ["GH_TOKEN"])
         batch = claim(state, day, mode, os.environ["GITHUB_RUN_ID"], edition)
         if batch is None:

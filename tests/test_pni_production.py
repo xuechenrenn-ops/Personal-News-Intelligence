@@ -15,10 +15,10 @@ class Ledger:
 
 
 class ProductionTests(unittest.TestCase):
-    def test_schedule_requires_delivery_status_credentials_before_claim(self):
-        with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "code", "PUSHPLUS_TOKEN": "token"}, clear=True), \
+    def test_schedule_requires_send_token_before_claim(self):
+        with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "code", "PUSHPLUS_TOKEN": ""}, clear=True), \
                 patch("pni.production.GitHubState") as state:
-            with self.assertRaisesRegex(RuntimeError, "status credentials are missing"):
+            with self.assertRaisesRegex(RuntimeError, "PushPlus token is missing"):
                 execute("daily", Path("."), "evening")
             state.assert_not_called()
 
