@@ -88,7 +88,7 @@
 |---|---|---|---|
 | 42 | 晨刊 06:30（UTC `30 22 * * *`） | `pni/editions.py` | cron 一致 |
 | 43 | 晚刊 19:30（UTC `30 11 * * *`） | `pni/editions.py` | cron 一致 |
-| 44 | 生产 workflow 注入 DEEPSEEK/PUSHPLUS/GH_TOKEN | `news-push.yml` | 生产运行需额外注入 `TAVILY_KEY`（**尚未注入，见待办**） |
+| 44 | 生产密钥接线和 Tavily 免费额度守卫 | `news-push.yml` / `channels.search_web` | Tavily 显式启用才注入。读不到可信免费额度或检测到超额用量时跳过 |
 | 45 | 研发 workflow 分支含 `upgrade/news-pni-v1.7` | experiment*/source-check/validate | 该分支 push 时触发 |
 | 46 | 月度 ¥10 预算保护 | `pni.production.MONTHLY` + `check_month` | 超限拒绝 |
 | 47 | 研发 preview 预算晨 ¥1/晚 ¥1 | `PREVIEW_RESERVATION` | 合计 ¥2 |
@@ -113,11 +113,9 @@
 
 ## 七、当前待办（交接时必须处理）
 
-1. **生产 workflow 注入 `TAVILY_KEY`**：`news-push.yml` 的 env 尚未包含该变量，故生产环境 Tavily 不会触发。属生产变更，需单独授权。
-2. **晚刊事件评分 `news_value` 实测**：round2 中 35 条事件全部未达 4 分，需用 `run_audit.raw_scores` 的模型原始返回诊断是门槛过高还是模型给分不足。
-3. **`policy[:2]` 与 `[*policy[:1], *events]` 两处政策短名单**并存，需确认哪处在晚间生效，必要时统一。
-4. **微信真实送达与生产调度**未启动，须用户批准后单独验证。
-5. **跨自然日长期观察**未完成（PROJECT.md 验收门槛 5）。
+1. 本地双时段工作流待授权部署。通过最终提交的 Ubuntu 测试后，再验证 Secrets 权限、微信实收和七天审计。Tavily 默认关闭，免费配置确认后可单独启用。
+2. 晚刊 round5 实测产出 1 篇医疗民生、2 篇重大事件、1 篇科技产业。两处事实状态偏差的原始工件已用于离线回归。
+3. 政策候选最多两篇参与取证与核验，成刊最多保留一篇，分别用于候补和版面配额。
 
 ---
 

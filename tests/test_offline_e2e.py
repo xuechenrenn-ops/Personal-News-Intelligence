@@ -16,6 +16,7 @@ breakage like the `health` kwarg that unit tests missed.
 The fixtures are shaped like the real round4-evening traffic (RSS XML,
 official HTML, DeepSeek chat/tools JSON).
 """
+from base64 import b64decode, b64encode
 import io
 import json
 import urllib.error
@@ -191,6 +192,7 @@ class FakeHTTPResponse:
     def __init__(self, body, status=200):
         self._body = body.encode("utf-8") if isinstance(body, str) else body
         self.status_code = status
+        self.ok = status < 400
         self.headers = {"content-type": "text/html"}
         self.text = self._body.decode("utf-8", "replace")
         self.content = self._body
@@ -264,6 +266,54 @@ def urllib_router(url, data=None, timeout=None, **kwargs):
 
 class EveningEndToEnd(TestCase):
     """Full retrieval -> HTML run through the real production entry."""
+
+    def test_scheduled_production_delivers_once_with_persistent_state(self):
+        from pni.editions import EDITIONS
+        from pni.production import main
+
+        ledger = {"version": 1}
+        deliveries = []
+
+        def http(method, url, **kwargs):
+            if "api.github.com/" in url:
+                if method == "get":
+                    return FakeHTTPResponse(json.dumps({
+                        "sha": "mock-sha", "content": b64encode(json.dumps(ledger).encode()).decode()}))
+                if method == "put":
+                    self.assertEqual(kwargs["json"]["branch"], "pni-production-state")
+                    ledger.update(json.loads(b64decode(kwargs["json"]["content"])))
+                    return FakeHTTPResponse('{"content":{"sha":"mock-sha"}}')
+            if url.endswith("/send"):
+                deliveries.append(kwargs["json"])
+                return FakeHTTPResponse('{"code":200,"data":"receipt-test-only"}')
+            if url.endswith("/sendMessageResult"):
+                return FakeHTTPResponse('{"code":200,"data":{"status":2}}')
+            return requests_router(url, **kwargs)
+
+        with TemporaryDirectory() as tmp:
+            env = {"GITHUB_EVENT_NAME": "schedule", "GITHUB_REF": "refs/heads/main",
+                   "GITHUB_REPOSITORY": "owner/repo", "GITHUB_RUN_ID": "123",
+                   "DEEPSEEK_API_KEY": "offline-key", "PUSHPLUS_TOKEN": "offline-token",
+                   "PUSHPLUS_ACCESS_KEY": "offline-access", "GH_TOKEN": "offline-github",
+                   "RUNNER_TEMP": tmp, "PNI_TRIAL_START": "2000-01-01",
+                   "PNI_SCHEDULE_CRON": EDITIONS["evening"]["cron"]}
+            with patch.dict("os.environ", env, clear=True), \
+                    patch("requests.sessions.Session.request", side_effect=http), \
+                    patch("urllib.request.urlopen",
+                          side_effect=lambda req, timeout=0: urllib_router(req.full_url, data=req.data)) as deepseek:
+                main()
+                paid_boundary_count = deepseek.call_count
+                main()
+                self.assertEqual(deepseek.call_count, paid_boundary_count)
+
+            summary = json.loads((Path(tmp) / "pni/run-summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["edition"], "evening")
+            self.assertEqual(summary["reserved_micro_cny"], 120_000)
+            self.assertEqual(summary["delivery"]["state"], "sent")
+            self.assertEqual(len(deliveries), 1)
+            self.assertEqual(deliveries[0]["template"], "html")
+            self.assertIn(summary["day"] + ":evening", ledger["runs"])
+            self.assertTrue(ledger["history"])
 
     def test_evening_production_entry_completes_offline(self):
         with TemporaryDirectory() as tmp:

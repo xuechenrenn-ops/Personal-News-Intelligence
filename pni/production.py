@@ -1,4 +1,4 @@
-"""The V1.6-B publishing entry point. GitHub state stores no article text or credentials."""
+"""Publishing entry point. GitHub state stores no article text or credentials."""
 from base64 import b64decode, b64encode
 from datetime import date, datetime, timedelta
 from hashlib import sha256
@@ -291,14 +291,18 @@ def execute(mode, output, edition=None):
     else:
         reservation = settings.get("reservation", DAILY)
     tools = settings.get("tools", TOOLS)
-    key = os.environ["DEEPSEEK_API_KEY"]
+    key = os.environ["DEEPSEEK_API_KEY"].strip()
+    if not key:
+        raise RuntimeError("DeepSeek key is missing")
     sender = None
     state = None
     if mode != "preview":
-        sender = PushPlus(os.environ["PUSHPLUS_TOKEN"], os.environ.get("PUSHPLUS_ACCESS_KEY", ""),
-                          os.environ.get("PUSHPLUS_SECRET_KEY", ""))
+        sender = PushPlus(os.environ["PUSHPLUS_TOKEN"].strip(), os.environ.get("PUSHPLUS_ACCESS_KEY", "").strip(),
+                          os.environ.get("PUSHPLUS_SECRET_KEY", "").strip())
         if not sender.token:
             raise RuntimeError("PushPlus token is missing")
+        if mode == "daily" and edition and not (sender.access or sender.secret):
+            raise RuntimeError("PushPlus delivery status credentials are missing")
         state = GitHubState(os.environ["GITHUB_REPOSITORY"], os.environ["GH_TOKEN"])
         batch = claim(state, day, mode, os.environ["GITHUB_RUN_ID"], edition)
         if batch is None:
@@ -326,7 +330,8 @@ def execute(mode, output, edition=None):
         observed += sum(row.get("observed_peak_micro_cny", 0) for row in web.calls)
         summary = {"mode": mode, "day": day, "counts": result["counts"],
                    "estimate_micro_cny": observed, "model_calls": len(provider.calls),
-                   "web_calls": len(web.calls), "provider_errors": len(result["errors"])}
+                   "web_calls": len(web.calls), "provider_errors": len(result["errors"]),
+                   "provider_failures": result["errors"]}
         if edition:
             summary["reserved_micro_cny"] = reservation
             summary["model_tokens"] = {field: sum(row.get(field, 0) for row in provider.calls)
@@ -381,7 +386,8 @@ def execute(mode, output, edition=None):
         (output / "run-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
                                                 encoding="utf-8")
         print(json.dumps({key: value for key, value in summary.items()
-                          if key not in {"candidate_audit", "field_gate"}}, ensure_ascii=False), flush=True)
+                          if key not in {"candidate_audit", "field_gate", "run_audit"}},
+                         ensure_ascii=False), flush=True)
         if render_error:
             raise render_error
         if state and batch["state"] == "needs_review":
@@ -426,8 +432,7 @@ def main():
         return archived_preview(Path(os.environ["RUNNER_TEMP"]) / "pni")
     else:
         raise RuntimeError("Unrecognized event")
-    cron = os.environ.get("PNI_SCHEDULE_CRON") if mode == "daily" else None
-    edition = edition_for_cron(cron) if cron else None
+    edition = edition_for_cron(os.environ.get("PNI_SCHEDULE_CRON")) if mode == "daily" else None
     execute(mode, Path(os.environ["RUNNER_TEMP"]) / "pni", edition)
 
 

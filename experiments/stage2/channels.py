@@ -118,14 +118,15 @@ def tavily_quota(headers):
     data = api_json(TAVILY + "/usage", headers)
     key, acct = data["key"], data["account"]
     counters = [key["usage"], acct["plan_limit"], acct["plan_usage"]]
-    if any(type(n) is not int or n < 0 for n in counters):
+    paygo = acct.get("paygo_usage")
+    if any(type(n) is not int or n < 0 for n in [*counters, paygo]):
         raise RuntimeError("Unverified Tavily quota")
     used, allowance, consumed = counters
     room = min(allowance - consumed, 700 - used)
     if type(key.get("limit")) is int:
         room = min(room, key["limit"] - used)
     return {"key_used": used, "plan_used": consumed, "room": room,
-            "paygo": acct.get("paygo_usage")}
+            "paygo": paygo}
 
 
 def search_web(key, days, credit_limit, health, account):
@@ -133,13 +134,13 @@ def search_web(key, days, credit_limit, health, account):
     results = {}
     try:
         before = tavily_quota(headers)
-    except (RuntimeError, KeyError, ValueError) as exc:
+    except (RuntimeError, KeyError, TypeError, ValueError) as exc:
         account["quota_failure"] = type(exc).__name__ + ":" + str(exc)[:55]
         account["quota_unavailable"] = True
         return results
     account["available_before"] = before["room"] >= credit_limit + 16
     account["paygo_counter_available"] = type(before["paygo"]) is int
-    if type(before["paygo"]) is int and before["paygo"] > 0:
+    if before["paygo"] > 0:
         account["quota_failure"] = "paygo_active_free_quota_exhausted"
         account["quota_unavailable"] = True
         return results
@@ -151,10 +152,14 @@ def search_web(key, days, credit_limit, health, account):
                 continue
             try:
                 previous = tavily_quota(headers)
-            except (RuntimeError, KeyError, ValueError) as exc:
+            except (RuntimeError, KeyError, TypeError, ValueError) as exc:
                 account["quota_failure"] = type(exc).__name__ + ":" + str(exc)[:55]
                 account["quota_unavailable"] = True
                 break
+            if previous["paygo"] > 0:
+                account["quota_failure"] = "paygo_active_free_quota_exhausted"
+                account["quota_unavailable"] = True
+                return results
             if previous["room"] < 16:
                 return results
             account["attempted"] += 1
@@ -173,11 +178,13 @@ def search_web(key, days, credit_limit, health, account):
                 account["credits"] += actual
                 print(f"TAVILY_USAGE credits={actual}", flush=True)
                 rows = doc.get("results", [])
+                if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+                    raise ValueError("Malformed Tavily results")
                 if name == "tavily-wechat":
                     rows = [x for x in rows if urlsplit(x.get("url", "")).hostname == "mp.weixin.qq.com"]
                 health.record(name, bool(rows))
                 results.setdefault(str(as_of), {})[name] = rows
-            except (RuntimeError, KeyError, ValueError):
+            except (RuntimeError, KeyError, TypeError, ValueError, AttributeError):
                 health.record(name, False)
                 account["unverified"] += 1
                 break
@@ -185,7 +192,7 @@ def search_web(key, days, credit_limit, health, account):
             break
     try:
         after = tavily_quota(headers)
-    except (RuntimeError, KeyError, ValueError) as exc:
+    except (RuntimeError, KeyError, TypeError, ValueError) as exc:
         account["quota_failure"] = type(exc).__name__ + ":" + str(exc)[:55]
         account["quota_unavailable"] = True
         return results

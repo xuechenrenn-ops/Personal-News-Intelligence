@@ -1,7 +1,9 @@
+import os
 import unittest
-from unittest.mock import Mock
+from pathlib import Path
+from unittest.mock import Mock, patch
 
-from pni.production import DAILY, MONTHLY, PushPlus, claim, daily_enabled, deliver, trial_age
+from pni.production import DAILY, MONTHLY, GitHubState, PushPlus, claim, daily_enabled, deliver, execute, trial_age
 
 
 class Ledger:
@@ -13,6 +15,27 @@ class Ledger:
 
 
 class ProductionTests(unittest.TestCase):
+    def test_schedule_requires_delivery_status_credentials_before_claim(self):
+        with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "code", "PUSHPLUS_TOKEN": "token"}, clear=True), \
+                patch("pni.production.GitHubState") as state:
+            with self.assertRaisesRegex(RuntimeError, "status credentials are missing"):
+                execute("daily", Path("."), "evening")
+            state.assert_not_called()
+
+    def test_log_expiry_keeps_audit_window_for_both_editions(self):
+        state = Mock(spec=GitHubState)
+        state.base = "https://api.github.com/repos/owner/repo"
+        state.headers = {}
+        state.data = {"runs": {f"2026-11-{day}:{edition}": {"run_id": str(day * 10 + index)}
+                               for day in (19, 20, 21) for index, edition in enumerate(("morning", "evening"))}}
+        state.transport = Mock()
+        state.transport.delete.return_value.status_code = 204
+        GitHubState.purge_logs(state, "2026-11-27")
+        self.assertEqual(state.transport.delete.call_count, 4)
+        self.assertTrue(state.data["runs"]["2026-11-20:morning"]["logs_expired"])
+        self.assertNotIn("logs_expired", state.data["runs"]["2026-11-21:evening"])
+        state.save.assert_called_once()
+
     def test_dedup_and_monthly_limit(self):
         ledger = Ledger()
         self.assertIsNotNone(claim(ledger, "2026-11-26", "acceptance", "11"))

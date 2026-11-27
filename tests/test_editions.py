@@ -132,8 +132,9 @@ class EditionTests(TestCase):
         environment = {"GITHUB_EVENT_NAME": "schedule", "GITHUB_REF": "refs/heads/main",
                        "RUNNER_TEMP": str(self.root), "PNI_TRIAL_START": "2000-01-01"}
         with patch.dict(os.environ, environment, clear=True), patch("pni.production.execute") as run:
-            main()
-            self.assertIsNone(run.call_args.args[-1])
+            with self.assertRaisesRegex(ValueError, "Unrecognized PNI schedule"):
+                main()
+            run.assert_not_called()
             for name, config in EDITIONS.items():
                 with patch.dict(os.environ, {"PNI_SCHEDULE_CRON": config["cron"]}):
                     main()

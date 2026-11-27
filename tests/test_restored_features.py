@@ -77,6 +77,29 @@ def _run_prepare(tools, edition, *, headlines=None, cards=None, env=None):
 
 
 class TavilyFreeQuotaGuard(TestCase):
+    def test_unavailable_or_unverifiable_quota_never_calls_search(self):
+        no_paygo = {"key": {"usage": 0}, "account": {"plan_limit": 700, "plan_usage": 0}}
+        for reply in (RuntimeError("HTTP_401"), no_paygo, None):
+            with self.subTest(reply=reply), patch("experiments.stage2.channels.api_json",
+                                                 side_effect=[reply]) as request:
+                account = {"attempted": 0}
+                self.assertEqual(channels.search_web("key", [], 4, channels.SourceHealth(None, datetime.now()),
+                                                     account), {})
+                self.assertTrue(account["quota_unavailable"])
+                self.assertEqual(account["attempted"], 0)
+                self.assertEqual(request.call_count, 1)
+
+    def test_paygo_change_between_quota_checks_prevents_search(self):
+        key = {"usage": 0, "limit": 700}
+        plan = {"plan_limit": 700, "plan_usage": 0}
+        responses = [{"key": key, "account": {**plan, "paygo_usage": paygo}} for paygo in (0, 1)]
+        with patch("experiments.stage2.channels.api_json", side_effect=responses) as request:
+            account = {"attempted": 0}
+            self.assertEqual(channels.search_web("key", ["2026-11-27"], 4,
+                                                 channels.SourceHealth(None, datetime.now()), account), {})
+        self.assertEqual(account["attempted"], 0)
+        self.assertTrue(all(call.args[0].endswith("/usage") for call in request.call_args_list))
+
     def test_paygo_active_blocks_all_search(self):
         """Paid territory must not be touched: paygo>0 => zero search attempts."""
         account = {}
