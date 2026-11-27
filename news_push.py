@@ -66,11 +66,15 @@ MORNING_LINES = [
 "不因一时的停顿，就低估长期坚持的价值。","愿每一份认真都有回响，每一步前行都有意义。"
 ]
 
-def fetch_candidates(feeds, prefix, age_hours, *, trace=None):
+def fetch_candidates(feeds, prefix, age_hours, *, trace=None, health=None):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=age_hours)
     items, seen = [], set()
     headers = {"User-Agent": "PersonalNewsIntelligence/1.0"}
     for feed_label, url in feeds:
+        if health is not None and health.status("rss:" + feed_label):
+            if trace is not None:
+                trace.append({"source": feed_label, "outcome": "cooldown"})
+            continue
         print("读取RSS：" + feed_label + "｜" + url, flush=True)
         try:
             response = requests.get(url, headers=headers, timeout=20)
@@ -81,6 +85,8 @@ def fetch_candidates(feeds, prefix, age_hours, *, trace=None):
             if trace is not None:
                 trace.append({"source": feed_label, "outcome": "fetch_error",
                               "error": type(exc).__name__, "http": status})
+            if health is not None:
+                health.record("rss:" + feed_label, False, status in {401, 403, 429})
             retry_after = getattr(getattr(exc, "response", None), "headers", {}).get("Retry-After")
             print(
                 f"警告：RSS读取失败：{feed_label}｜HTTP={status or 'unknown'}｜"
@@ -96,6 +102,8 @@ def fetch_candidates(feeds, prefix, age_hours, *, trace=None):
             print(f"提示：RSS没有返回新闻条目：{feed_label}｜HTTP {response.status_code}", flush=True)
             continue
         source_fallback = str(feed.feed.get("title") or feed_label).strip()
+        if health is not None:
+            health.record("rss:" + feed_label, True)
         accepted = 0
         for entry in feed.entries[:8]:
             title = (entry.get("title") or "").strip()

@@ -44,13 +44,21 @@ class SearchFetch:
         try:
             result = self.transport("https://api.deepseek.com/v1/tools/" + name, self.headers, payload)
         except RuntimeError as exc:
+            # Official pricing: "Search/Fetch API 每 1,000 次成功请求 5元".
+            # A failed request (HTTP error / transport error) is not a successful
+            # request and is therefore not billed.
             entry["status"] = str(exc) if re.fullmatch(r"HTTP_\d+", str(exc)) else "transport_error"
+            entry["observed_peak_micro_cny"] = 0
             return {}
         if not isinstance(result, dict):
+            entry["status"] = "malformed_response"
+            entry["observed_peak_micro_cny"] = 0
             return {}
         useful = result.get("results") if name == "search" else result.get("content")
         entry["status"] = "billable" if useful else "empty"
-        entry["observed_peak_micro_cny"] = TOOL_PRICE if useful else 0
+        # A 200 response is a successful request and is billed per the official
+        # per-successful-request rule, whether or not the body carries content.
+        entry["observed_peak_micro_cny"] = TOOL_PRICE
         return result
 
     def search(self, query):

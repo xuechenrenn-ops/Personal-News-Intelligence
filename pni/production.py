@@ -323,7 +323,7 @@ def execute(mode, output, edition=None):
         if result["as_of"] != day:
             raise RuntimeError("Date crossed during the acquisition; the reservation is still recorded")
         observed = sum(row.get("peak_estimate_micro_cny", row["reserved_micro_cny"]) for row in provider.calls)
-        observed += sum(row.get("observed_peak_micro_cny", row["max_micro_cny"]) for row in web.calls)
+        observed += sum(row.get("observed_peak_micro_cny", 0) for row in web.calls)
         summary = {"mode": mode, "day": day, "counts": result["counts"],
                    "estimate_micro_cny": observed, "model_calls": len(provider.calls),
                    "web_calls": len(web.calls), "provider_errors": len(result["errors"])}

@@ -132,7 +132,8 @@ def secondary_policy_cards(rows, now):
 
 
 def collect_live_cards(skip_official=False, *, include_academic=True, wider=False,
-                       major_official=False, technology_official=False, discovery=None):
+                       major_official=False, technology_official=False, discovery=None,
+                       health=None):
     now = datetime.now(CST)
     print(f"RUN_STARTED={now.isoformat()}", flush=True)
     labels = {"中国新闻网-即时", "BBC-World", "Al Jazeera"}
@@ -140,6 +141,8 @@ def collect_live_cards(skip_official=False, *, include_academic=True, wider=Fals
         labels.update({"中国新闻网-国际", "中国新闻网-财经"})
     feeds = [feed for feed in GENERAL_FEEDS if feed[0] in labels]
     reporting = {"trace": discovery} if discovery is not None else {}
+    if health is not None:
+        reporting["health"] = health
     with ThreadPoolExecutor(max_workers=5) as pool:
         academic = pool.submit(fetch_pubmed_candidates) if include_academic else None
         policy = None if skip_official else pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])

@@ -156,8 +156,12 @@ class ScriptedEditor:
         self.reject = set(reject)
         self.weak = set(weak)
         self.raise_first_rank = raise_first_rank
+        self.calls = []
 
     def __call__(self, phase, prompt, items, **kwargs):
+        self.calls.append({"phase": phase, "finish_reason": "stop",
+                           "raw_content": json.dumps({"scripted": phase}),
+                           "parse_error": ""})
         if "score" in phase:
             if phase == "v14-score" and self.raise_first_rank:
                 raise RuntimeError("offline rank failure")
