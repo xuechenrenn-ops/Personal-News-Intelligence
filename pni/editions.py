@@ -9,6 +9,8 @@ EDITIONS = {
 }
 
 TECH = re.compile(r"半导体|芯片|人工智能|大模型|算力|先进制造|商业航天|科技|新能源|产业|通信网|工业互联网|"
+                  r"卫星互联网|万兆光网|6G|5G-A|量子|脑机接口|具身智能|人形机器人|光刻|晶圆|"
+                  r"智能网联|自动驾驶|低空经济|信息无障碍|"
                   r"semiconductor|\bchips?\b|artificial intelligence|\bAI\b|quantum|technology|"
                   r"renewable energ|industrial|space technolog", re.I)
 

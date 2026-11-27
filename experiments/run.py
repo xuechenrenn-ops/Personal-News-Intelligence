@@ -148,7 +148,25 @@ class Flash:
         if choice["finish_reason"] != "stop":
             raise RuntimeError("Incomplete model output")
         try:
-            return json.loads(raw)["items"]
+            data = json.loads(raw)
+            items = data["items"]
+            if "world" not in data:
+                # Non-ranking response (generate/verify/appraise/repair): the
+                # historical single-array behaviour must stay untouched.
+                return items
+            # Ranking response: the model returns paper rows under "items" and
+            # event rows under "world". Merge both, rejecting malformed rows and
+            # duplicate ids so nothing invalid reaches later filtering.
+            merged, seen = [], set()
+            for row in list(items) + list(data.get("world") or []):
+                if not isinstance(row, dict):
+                    continue
+                rid = row.get("id")
+                if not isinstance(rid, str) or not rid or rid in seen:
+                    continue
+                seen.add(rid)
+                merged.append(row)
+            return merged
         except (ValueError, KeyError, TypeError) as error:
             entry["parse_error"] = f"{type(error).__name__}: {error}"
             raise
