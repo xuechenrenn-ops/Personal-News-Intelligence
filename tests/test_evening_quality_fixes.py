@@ -19,10 +19,8 @@ from unittest.mock import patch
 from experiments.v14.pipeline import is_input_echo
 from experiments.v15.sources import SearchFetch, TOOL_PRICE
 
-RUN4 = json.loads(
-    Path(__file__).resolve().parents[2].joinpath(
-        "references/live-run/round4-evening/evening/run-summary.json").read_text(encoding="utf-8"))
-DRAFTS = RUN4["run_audit"]["drafts"]
+DRAFTS = json.loads(Path(__file__).with_name("fixtures").joinpath(
+    "cloud_regressions.json").read_text(encoding="utf-8"))["round4_drafts"]
 
 # Real round4 rows: input echoes vs real drafts.
 ECHO_W1O1 = DRAFTS["W-1-O1"]

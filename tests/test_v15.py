@@ -83,7 +83,8 @@ class V15Tests(unittest.TestCase):
                      "bad": {"result": "相对风险为0.90。", "refs": {"result": ["r"]}}}
         provider = Mock(return_value=[{"id": "good", "result": "相对风险为0.60。"},
                                      {"id": "bad", "result": "相对风险为0.70。"}])
-        provider.remaining = 200_000
+        provider.reserved = 200_000
+        provider.observed_spent = 0
         provider.reservation = Flash.reservation
         self.assertEqual(repair_results(provider, source, proposals, []), ["bad"])
         self.assertIn("0.80", proposals["good"]["result"])

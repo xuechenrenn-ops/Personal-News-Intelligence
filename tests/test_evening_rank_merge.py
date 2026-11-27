@@ -18,12 +18,8 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import patch
 
-FIXTURES = json.loads(
-    Path(__file__).resolve().parents[2].joinpath(
-        "references/live-run/round3/evening/run-summary.json").read_text(encoding="utf-8"))
-RAW = FIXTURES["run_audit"]["raw_scores"]
-ROUND3_RAW_0 = RAW[0]["raw_content"]
-ROUND3_RAW_1 = RAW[1]["raw_content"]
+ROUND3_RAW_0, ROUND3_RAW_1 = json.loads(Path(__file__).with_name("fixtures").joinpath(
+    "cloud_regressions.json").read_text(encoding="utf-8"))["round3_rank"]
 
 # The 8 events the model actually scored 4-5 in round3.
 EXPECTED_SCORED_IDS = {"W-1-O1", "G3-2", "G4-2", "G0-4",

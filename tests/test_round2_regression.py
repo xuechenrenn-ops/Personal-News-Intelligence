@@ -1,6 +1,6 @@
 """Regression tests from the second real run (round2, 2026-11-27).
 
-Uses real evidence and drafts that failed in production:
+Uses drafts from production and condensed source facts:
 - policy-O1: refs=["s"] incompatibility, date in summary, DRG/DIP2.0 version number
 - 43097168: cross-language number words ("three" vs "3", "October" vs "10月")
 - 35 events: scores/news_value empty after ranking
@@ -15,9 +15,8 @@ from pathlib import Path
 from decimal import Decimal
 from unittest import TestCase
 
-FIXTURES = json.loads(
-    Path(__file__).resolve().parents[2].joinpath(
-        "references/live-run/round2_fixtures.json").read_text(encoding="utf-8"))
+FIXTURES = json.loads(Path(__file__).with_name("fixtures").joinpath(
+    "cloud_regressions.json").read_text(encoding="utf-8"))["round2"]
 
 
 class OldLogicReproduction(TestCase):

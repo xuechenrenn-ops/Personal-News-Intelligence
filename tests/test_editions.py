@@ -405,12 +405,11 @@ class EditionTests(TestCase):
         # Frozen from the second real run: policy-O1 draft fields were rejected even
         # though every number came from the official evidence.
         from experiments.v14.pipeline import abstract_packet, usable_field
-        summary = json.loads(Path(__file__).resolve().parents[2].joinpath(
-            "references/live-run/round2/evening/run-summary.json").read_text(encoding="utf-8"))
-        draft = summary["run_audit"]["drafts"]["policy-O1"]
-        evidence = summary["run_audit"]["news_evidence"]["policy-O1"]
-        card = {"id": "policy-O1", "lane": "policy", "title": evidence["title"],
-                "date": evidence["date"], "evidence": evidence["evidence"],
+        fixture = json.loads(Path(__file__).with_name("fixtures").joinpath(
+            "cloud_regressions.json").read_text(encoding="utf-8"))["round2"]
+        draft = fixture["policy_o1_draft"]
+        card = {"id": "policy-O1", "lane": "policy", "title": fixture["policy_o1_title"],
+                "date": fixture["policy_o1_date"], "evidence": fixture["policy_o1_evidence"],
                 "source_scope": "官方原文节选"}
         packet = abstract_packet(card)
         for field in ("title", "methods", "result", "summary", "lead"):
