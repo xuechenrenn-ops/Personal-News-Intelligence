@@ -1,0 +1,42 @@
+name: V1.7 one-time budget acceptance
+
+on:
+  push:
+    branches: ["ops/pni-v17-budget-evening-20261127"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pni-production
+  cancel-in-progress: false
+
+jobs:
+  evening:
+    if: github.run_attempt == 1 && github.ref == 'refs/heads/ops/pni-v17-budget-evening-20261127'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - name: Run and settle the evening edition once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python -m ops_acceptance.budget_evening
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pni-v17-evening-budget-acceptance
+          path: |
+            ${{ runner.temp }}/pni-budget-evening/run-summary.json
+            ${{ runner.temp }}/pni-budget-evening/news-preview/part-*.html
+          retention-days: 7
+          if-no-files-found: ignore
