@@ -318,7 +318,7 @@ class EveningEndToEnd(TestCase):
 
             summary = json.loads((Path(tmp) / "pni/run-summary.json").read_text(encoding="utf-8"))
             self.assertEqual(summary["edition"], "evening")
-            self.assertEqual(summary["reserved_micro_cny"], 120_000)
+            self.assertEqual(summary["reserved_micro_cny"], 1_000_000)
             self.assertEqual(summary["delivery"]["state"],
                              "sent" if status_key else "accepted_waiting_status")
             self.assertEqual(len(deliveries), 1)

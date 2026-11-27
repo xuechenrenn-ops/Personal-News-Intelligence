@@ -3,7 +3,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from pni.production import DAILY, MONTHLY, GitHubState, PushPlus, claim, daily_enabled, deliver, execute, trial_age
+from pni.production import (DAILY, MONTHLY, GitHubState, PushPlus, claim, daily_enabled, deliver,
+                            execute, metered_usage, monthly_exposure, settle_usage, trial_age)
 
 
 class Ledger:
@@ -42,9 +43,48 @@ class ProductionTests(unittest.TestCase):
         self.assertIsNone(claim(ledger, "2026-11-26", "daily", "12"))
         self.assertIsNone(claim(ledger, "2026-11-27", "acceptance", "13"))
         self.assertEqual(ledger.data["budgets"]["2026-11"]["reserved"], DAILY)
-        ledger.data["budgets"]["2026-11"]["reserved"] = MONTHLY - DAILY + 1
+        ledger.data["budgets"]["2026-11"]["observed"] = MONTHLY - DAILY + 1
         with self.assertRaises(RuntimeError):
             claim(ledger, "2026-11-27", "daily", "14")
+
+    def test_monthly_cap_releases_settled_reservations_and_carries_uncertainty(self):
+        state = Ledger()
+        month = "2026-11"
+        for slot in range(12):
+            day = f"{month}-{slot // 2 + 1:02}"
+            edition = ("morning", "evening")[slot % 2]
+            batch = claim(state, day, "daily", str(slot), edition)
+            ledger = state.data["budgets"][month]
+            settle_usage(ledger, batch, 50_000, 10_000)
+            settle_usage(ledger, batch, 50_000, 10_000)
+        self.assertEqual(ledger["reserved"], 12_000_000)
+        self.assertEqual(ledger["observed"], 600_000)
+        self.assertEqual(monthly_exposure(state.data, month), 720_000)
+        pending = claim(state, f"{month}-07", "daily", "12", "morning")
+        self.assertEqual(monthly_exposure(state.data, month), 1_720_000)
+        ledger["observed"] += MONTHLY - 1_720_000 - 1_000_000 + 1
+        with self.assertRaisesRegex(RuntimeError, "exceed CNY 10"):
+            claim(state, f"{month}-07", "daily", "13", "evening")
+        settle_usage(ledger, pending, 60_000, 0)
+        self.assertIsNotNone(claim(state, f"{month}-07", "daily", "13", "evening"))
+
+    def test_legacy_settled_runs_and_isolated_acceptance_exposure(self):
+        ledger = {"reserved": 300_000, "observed": 95_542, "acceptance_runs": {
+            "live-evening": {"reservation_micro_cny": 1_000_000}}}
+        data = {"budgets": {"2026-11": ledger}, "runs": {
+            "2026-11-26": {"estimate_micro_cny": 95_542},
+            "2026-11-27:morning": {"reservation_micro_cny": 200_000}}}
+        self.assertEqual(monthly_exposure(data, "2026-11"), 1_295_542)
+        settle_usage(ledger, ledger["acceptance_runs"]["live-evening"], 60_000, 5_000)
+        self.assertEqual(monthly_exposure(data, "2026-11"), 360_542)
+        self.assertEqual(monthly_exposure(data, "2026-12"), 0)
+
+    def test_api_estimate_excludes_unmetered_requests_and_empty_fetch(self):
+        model = [{"peak_estimate_micro_cny": 20_000, "reserved_micro_cny": 60_000},
+                 {"reserved_micro_cny": 40_000}]
+        tools = [{"status": status, "max_micro_cny": 5_000}
+                 for status in ("billable", "empty", "HTTP_404", "transport_error")]
+        self.assertEqual(metered_usage(model, tools), (25_000, 45_000))
 
     def test_acceptance_does_not_retry_and_preserves_unknown(self):
         ledger = Ledger()

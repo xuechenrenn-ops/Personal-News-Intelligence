@@ -77,6 +77,35 @@ class GitHubState:
         self.save()
 
 
+def monthly_exposure(data, month):
+    ledger = data.get("budgets", {}).get(month, {})
+    runs = [row for day, row in data.get("runs", {}).items() if day[:7] == month]
+    runs.extend(ledger.get("acceptance_runs", {}).values())
+    pending = sum(row.get("uncertain_micro_cny", 0) if "estimate_micro_cny" in row
+                  else row.get("reservation_micro_cny", DAILY) for row in runs)
+    return ledger.get("observed", 0) + pending
+
+
+def settle_usage(ledger, batch, observed, uncertain):
+    if observed + uncertain > batch.get("reservation_micro_cny", DAILY):
+        raise RuntimeError("Recorded API exposure exceeded the run reservation")
+    if "estimate_micro_cny" in batch:
+        return
+    ledger["observed"] += observed
+    batch.update(estimate_micro_cny=observed, uncertain_micro_cny=uncertain)
+
+
+def metered_usage(model_calls, tool_calls):
+    # Use the existing peak rate for measured model usage. Unmeasured requests
+    # keep their individual allowance in the exposure, outside observed spend.
+    observed = sum(row.get("peak_estimate_micro_cny", 0) for row in model_calls)
+    observed += sum(row["max_micro_cny"] for row in tool_calls if row["status"] == "billable")
+    uncertain = sum(row["reserved_micro_cny"] for row in model_calls if "peak_estimate_micro_cny" not in row)
+    uncertain += sum(row["max_micro_cny"] for row in tool_calls
+                     if row["status"] in {"uncertain", "transport_error", "malformed_response"})
+    return observed, uncertain
+
+
 def claim(state, day, mode, run_id, edition=None):
     d = state.data
     runs = d.setdefault("runs", {})
@@ -88,8 +117,9 @@ def claim(state, day, mode, run_id, edition=None):
     budgets = d.setdefault("budgets", {})
     ledger = budgets.setdefault(month, {"reserved": 0, "observed": 0})
     reservation = EDITIONS[edition]["reservation"] if edition else DAILY
-    if ledger["reserved"] + reservation > MONTHLY:
+    if monthly_exposure(d, month) + reservation > MONTHLY:
         raise RuntimeError("Monthly reservation would exceed CNY 10")
+    # Retain the historical cumulative column for rollback. It is not spend.
     ledger["reserved"] += reservation
     batch = {"run_id": run_id, "mode": mode, "state": "reserved", "lanes": {}}
     if edition:
@@ -324,10 +354,10 @@ def execute(mode, output, edition=None):
                                  source_state=source_health, web=web, final_edit=True, v17=True, edition=edition)
         if result["as_of"] != day:
             raise RuntimeError("Date crossed during the acquisition; the reservation is still recorded")
-        observed = sum(row.get("peak_estimate_micro_cny", row["reserved_micro_cny"]) for row in provider.calls)
-        observed += sum(row.get("observed_peak_micro_cny", 0) for row in web.calls)
+        observed, uncertain = metered_usage(provider.calls, web.calls)
         summary = {"mode": mode, "day": day, "counts": result["counts"],
-                   "estimate_micro_cny": observed, "model_calls": len(provider.calls),
+                   "estimate_micro_cny": observed, "uncertain_micro_cny": uncertain,
+                   "model_calls": len(provider.calls),
                    "web_calls": len(web.calls), "provider_errors": len(result["errors"]),
                    "provider_failures": result["errors"]}
         if edition:
@@ -350,8 +380,7 @@ def execute(mode, output, edition=None):
         if state or edition:
             if state:
                 state.data["source_health"] = json.loads(source_health.read_text(encoding="utf-8"))
-                state.data["budgets"][day[:7]]["observed"] += observed
-                batch["estimate_micro_cny"] = observed
+                settle_usage(state.data["budgets"][day[:7]], batch, observed, uncertain)
                 batch["state"] = "prepared"
                 state.save()
             briefs = {lane: (output / "news-preview" / filename).read_text(encoding="utf-8")

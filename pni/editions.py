@@ -2,9 +2,9 @@
 import re
 
 EDITIONS = {
-    "morning": {"title": "晨间科研情报", "cron": "30 22 * * *", "reservation": 200_000,
+    "morning": {"title": "晨间科研情报", "cron": "30 22 * * *", "reservation": 1_000_000,
                 "tools": 3, "tavily_credits": 4},
-    "evening": {"title": "晚间实时新闻", "cron": "30 11 * * *", "reservation": 120_000,
+    "evening": {"title": "晚间实时新闻", "cron": "30 11 * * *", "reservation": 1_000_000,
                 "tools": 5, "tavily_credits": 4},
 }
 

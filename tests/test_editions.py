@@ -116,10 +116,9 @@ class EditionTests(TestCase):
         self.assertIsNotNone(claim(ledger, DAY, "daily", "2", "evening"))
         self.assertIsNone(claim(ledger, DAY, "daily", "3", "morning"))
         self.assertIsNone(claim(ledger, DAY, "daily", "3"))
-        self.assertEqual(morning["reservation_micro_cny"], 200_000)
-        self.assertEqual(ledger.data["budgets"][DAY[:7]]["reserved"], 320_000)
-        self.assertLessEqual(320_000 * 31, MONTHLY)
-        ledger.data["budgets"][DAY[:7]]["reserved"] = MONTHLY - 100
+        self.assertEqual(morning["reservation_micro_cny"], 1_000_000)
+        self.assertEqual(ledger.data["budgets"][DAY[:7]]["reserved"], 2_000_000)
+        ledger.data["budgets"][DAY[:7]]["observed"] = MONTHLY - 100
         with self.assertRaises(RuntimeError):
             claim(ledger, "2026-11-27", "daily", "4", "evening")
         self.assertNotIn("2026-11-27:evening", ledger.data["runs"])
