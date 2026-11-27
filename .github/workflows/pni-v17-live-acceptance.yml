@@ -1,0 +1,56 @@
+name: V1.7 live cloud acceptance
+
+on:
+  push:
+    branches: ["ops/pni-v17-live-acceptance-20261127"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pni-v17-live-acceptance-20261127
+  cancel-in-progress: false
+
+jobs:
+  live:
+    if: github.run_attempt == 1 && github.ref == 'refs/heads/ops/pni-v17-live-acceptance-20261127'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - name: Initialize the isolated, single-use ledger
+        id: initialize
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m ops_acceptance.live initialize
+      - name: Run the live morning edition once
+        if: steps.initialize.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          TAVILY_KEY: ${{ vars.PNI_ENABLE_TAVILY == 'true' && secrets.TAVILY_KEY || '' }}
+        run: python -m ops_acceptance.live morning
+      - name: Run the live evening edition once
+        if: always() && steps.initialize.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python -m ops_acceptance.live evening
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pni-v17-live-acceptance-20261127
+          path: |
+            ${{ runner.temp }}/pni-live-acceptance/*/run-summary.json
+            ${{ runner.temp }}/pni-live-acceptance/*/news-preview/part-*.html
+          retention-days: 7
+          if-no-files-found: ignore
