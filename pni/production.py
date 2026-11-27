@@ -1,6 +1,6 @@
 """Publishing entry point. GitHub state stores no article text or credentials."""
 from base64 import b64decode, b64encode
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
 import json
 import os
@@ -29,6 +29,7 @@ PUSHPLUS = "https://www.pushplus.plus"
 LANES = {"professional": "专业情报", "extended": "拓展阅读"}
 FILES = {key: key + "-automatic.md" for key in LANES}
 SHORTCODE = re.compile(r"[A-Za-z0-9_-]{8,100}")
+SCHEDULE_WINDOW = timedelta(hours=2)
 
 
 class GitHubState:
@@ -442,25 +443,54 @@ def archived_preview(output):
     print("Archived V1.6-B preview. No paid requests or deliveries.")
 
 
+def scheduled_time(now, cron):
+    minute, hour = map(int, cron.split()[:2])
+    nominal = now.astimezone(timezone.utc).replace(hour=hour, minute=minute, second=0, microsecond=0)
+    local = nominal.astimezone(CST)
+    return local + (now.date() - local.date())
+
+
 def main():
     event = os.environ.get("GITHUB_EVENT_NAME", "")
     if os.environ.get("GITHUB_REF") != "refs/heads/main":
         raise RuntimeError("Production runs only on main")
+    edition = None
+    output = Path(os.environ["RUNNER_TEMP"]) / "pni"
     if event == "push":
         if json.loads(ACCEPTANCE_PATH.read_text(encoding="utf-8")) != {"id": "v16-initial-wechat-acceptance"}:
             raise RuntimeError("Unrecognized acceptance trigger")
         mode = "acceptance"
     elif event == "schedule":
-        if not daily_enabled(datetime.now(CST).date().isoformat(), os.environ.get("PNI_TRIAL_START")):
-            print("The approved production start date has not been reached.")
+        now = datetime.now(CST)
+        cron = os.environ.get("PNI_SCHEDULE_CRON")
+        print(f"Schedule event: cron={cron!r}, beijing_now={now.isoformat()}", flush=True)
+        edition = edition_for_cron(cron)
+        nominal = scheduled_time(now, cron)
+        if nominal > now:
+            nominal -= timedelta(days=1)
+        print(f"Schedule slot: edition={edition}, planned_beijing={nominal.isoformat()}", flush=True)
+        if nominal.date() != now.date() or now - nominal >= SCHEDULE_WINDOW:
+            print("Scheduled slot is on another Beijing date or outside its two-hour window.", flush=True)
             return
         mode = "daily"
     elif event == "workflow_dispatch":
-        return archived_preview(Path(os.environ["RUNNER_TEMP"]) / "pni")
+        requested_day = os.environ.get("PNI_MORNING_CATCH_UP_DATE", "").strip()
+        if not requested_day:
+            return archived_preview(output)
+        now = datetime.now(CST)
+        morning = scheduled_time(now, EDITIONS["morning"]["cron"])
+        evening = scheduled_time(now, EDITIONS["evening"]["cron"])
+        print(f"Morning catch-up: requested={requested_day!r}, beijing_now={now.isoformat()}", flush=True)
+        if requested_day != now.date().isoformat() or not morning <= now < evening:
+            raise RuntimeError("Morning catch-up requires today's Beijing date, between 06:30 and 19:30")
+        edition = "morning"
+        mode = "daily"
     else:
         raise RuntimeError("Unrecognized event")
-    edition = edition_for_cron(os.environ.get("PNI_SCHEDULE_CRON")) if mode == "daily" else None
-    execute(mode, Path(os.environ["RUNNER_TEMP"]) / "pni", edition)
+    if mode == "daily" and not daily_enabled(now.date().isoformat(), os.environ.get("PNI_TRIAL_START")):
+        print("The approved production start date has not been reached.", flush=True)
+        return
+    execute(mode, output, edition)
 
 
 if __name__ == "__main__":

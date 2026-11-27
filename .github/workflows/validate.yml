@@ -5,6 +5,9 @@ on:
     branches:
       - upgrade/news-pipeline-v1
       - upgrade/news-pni-v1.7
+      - 'release/**'
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

@@ -17,6 +17,7 @@ The fixtures are shaped like the real round4-evening traffic (RSS XML,
 official HTML, DeepSeek chat/tools JSON).
 """
 from base64 import b64decode, b64encode
+from datetime import datetime
 import io
 import json
 import urllib.error
@@ -275,7 +276,7 @@ class EveningEndToEnd(TestCase):
 
     def check_scheduled_delivery(self, *, status_key):
         from pni.editions import EDITIONS
-        from pni.production import exclusion_history, main
+        from pni.production import CST, exclusion_history, main
 
         ledger = {"version": 1}
         deliveries = []
@@ -309,8 +310,10 @@ class EveningEndToEnd(TestCase):
                 env["PUSHPLUS_ACCESS_KEY"] = status_key
             with patch.dict("os.environ", env, clear=True), \
                     patch("requests.sessions.Session.request", side_effect=http), \
+                    patch("pni.production.datetime", wraps=datetime) as clock, \
                     patch("urllib.request.urlopen",
                           side_effect=lambda req, timeout=0: urllib_router(req.full_url, data=req.data)) as deepseek:
+                clock.now.return_value = datetime.now(CST).replace(hour=19, minute=30, second=0, microsecond=0)
                 main()
                 paid_boundary_count = deepseek.call_count
                 main()

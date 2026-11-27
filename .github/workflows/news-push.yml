@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths: ['.github/pni-acceptance.json']
   workflow_dispatch:
+    inputs:
+      morning_catch_up_date:
+        description: 'Beijing date (YYYY-MM-DD) for an approved morning catch-up. Leave blank for archived preview.'
+        type: string
+        required: false
   schedule:
     - cron: '30 22 * * *'
     - cron: '30 11 * * *'
@@ -31,8 +36,6 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Validate V1.7 production configuration
-        run: python -m unittest discover -s tests -q
       - name: Run V1.7
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -42,6 +45,7 @@ jobs:
           TAVILY_KEY: ${{ vars.PNI_ENABLE_TAVILY == 'true' && secrets.TAVILY_KEY || '' }}
           PNI_TRIAL_START: ${{ vars.PNI_TRIAL_START }}
           PNI_SCHEDULE_CRON: ${{ github.event.schedule }}
+          PNI_MORNING_CATCH_UP_DATE: ${{ inputs.morning_catch_up_date }}
           GH_TOKEN: ${{ github.token }}
         run: python -m pni.production
       - uses: actions/upload-artifact@v4

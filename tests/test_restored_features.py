@@ -10,6 +10,7 @@ Covers the functions restored after the completeness audit:
 Tests use realistic inputs and assert real logic (guards, triggers, dedupe).
 No unconditional pass/full-score substitutes.
 """
+from contextlib import ExitStack
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -139,36 +140,23 @@ class TavilyFreeQuotaGuard(TestCase):
 class AcademicGapFill(TestCase):
     def test_morning_edition_runs_academic_search(self):
         """academic() must run for the morning edition (was gated to edition is None)."""
-        from experiments.v14.pipeline import prepare_preview
-        tools = FakeTools(rows=[])
-        captured = {}
+        from experiments.v14 import pipeline
 
-        def fake_academic(web, as_of, verify):
-            captured["called"] = True
-            return [], {}
-
-        patches = [
-            patch("experiments.v14.pipeline.collect",
-                  return_value=({"2026-11-27": []}, {})),
-            patch("experiments.v14.pipeline.SourceHealth"),
-            patch("experiments.v14.pipeline.collect_live_cards",
-                  return_value=([], "2026-11-27")),
-            patch("pni.curation.widen", return_value=([], {})),
-            patch("experiments.v15.sources.academic", side_effect=fake_academic),
-            patch("experiments.v15.sources.alerts", return_value=([], 0)),
-            patch("experiments.v15.sources.aossm_calendar",
-                  return_value=([], {"status": "patched"})),
-        ]
-        for p in patches:
-            p.start()
-        try:
-            prepare_preview(Path("x"), tools, web=tools, edition="morning")
-        except Exception:
-            pass
-        finally:
-            for p in patches:
-                p.stop()
-        self.assertTrue(captured.get("called"), "academic() must run for the morning edition")
+        for day in ("2026-11-27", "2026-11-28", "2026-11-30", "2026-12-01"):
+            with self.subTest(day=day), TemporaryDirectory() as folder, ExitStack() as stack:
+                clock = stack.enter_context(patch.object(pipeline, "datetime", wraps=datetime))
+                clock.now.return_value = datetime.fromisoformat(day + "T06:30:00+08:00")
+                collect = stack.enter_context(patch.object(pipeline, "collect", return_value=({day: []}, {})))
+                stack.enter_context(patch.object(pipeline, "SourceHealth"))
+                stack.enter_context(patch("pni.curation.widen", return_value=([], {})))
+                academic = stack.enter_context(patch("experiments.v15.sources.academic", return_value=([], {})))
+                stack.enter_context(patch("experiments.v15.sources.alerts", return_value=([], 0)))
+                stack.enter_context(patch("experiments.v15.sources.aossm_calendar",
+                                          return_value=([], {"status": "patched"})))
+                tools = FakeTools(rows=[])
+                pipeline.prepare_preview(Path(folder) / "result.json", tools, web=tools, edition="morning")
+                self.assertEqual(collect.call_args.args[0][0].isoformat(), day)
+                academic.assert_called_once_with(tools, day, pipeline.verify_citation)
 
 
 class EveningEventGapFill(TestCase):

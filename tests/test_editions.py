@@ -127,17 +127,58 @@ class EditionTests(TestCase):
         self.assertEqual(other.data["budgets"][DAY[:7]]["reserved"], DAILY)
         self.assertIsNone(claim(other, DAY, "daily", "2", "evening"))
 
-    def test_schedule_uses_configured_cron_instead_of_actual_start_hour(self):
+    def test_schedule_accepts_only_current_beijing_slot_within_window(self):
         environment = {"GITHUB_EVENT_NAME": "schedule", "GITHUB_REF": "refs/heads/main",
-                       "RUNNER_TEMP": str(self.root), "PNI_TRIAL_START": "2000-01-01"}
-        with patch.dict(os.environ, environment, clear=True), patch("pni.production.execute") as run:
+                       "RUNNER_TEMP": str(self.root), "PNI_TRIAL_START": "2026-11-28"}
+        cases = (
+            ("2026-11-28T06:30:00+08:00", "morning", True),
+            ("2026-12-01T07:45:00+08:00", "morning", True),
+            ("2026-12-01T19:30:00+08:00", "evening", True),
+            ("2026-11-28T04:10:00+08:00", "evening", False),
+            ("2026-12-01T04:10:00+08:00", "evening", False),
+            ("2026-11-28T06:29:59+08:00", "morning", False),
+            ("2026-11-28T08:30:00+08:00", "morning", False),
+            ("2026-11-28T21:30:00+08:00", "evening", False),
+            ("2026-11-27T19:30:00+08:00", "evening", False),
+        )
+        with patch.dict(os.environ, environment, clear=True), patch("pni.production.execute") as run, \
+                patch("pni.production.datetime", wraps=datetime) as clock:
+            clock.now.return_value = datetime.fromisoformat(cases[0][0])
             with self.assertRaisesRegex(ValueError, "Unrecognized PNI schedule"):
                 main()
             run.assert_not_called()
-            for name, config in EDITIONS.items():
-                with patch.dict(os.environ, {"PNI_SCHEDULE_CRON": config["cron"]}):
+            for stamp, edition, allowed in cases:
+                with self.subTest(stamp=stamp, edition=edition), \
+                        patch.dict(os.environ, {"PNI_SCHEDULE_CRON": EDITIONS[edition]["cron"]}):
+                    run.reset_mock()
+                    clock.now.return_value = datetime.fromisoformat(stamp)
                     main()
-                self.assertEqual(run.call_args.args[-1], name)
+                    if allowed:
+                        run.assert_called_once_with("daily", self.root / "pni", edition)
+                    else:
+                        run.assert_not_called()
+
+    def test_manual_morning_catch_up_is_dated_and_keeps_preview_default(self):
+        environment = {"GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REF": "refs/heads/main",
+                       "RUNNER_TEMP": str(self.root), "PNI_TRIAL_START": "2026-11-28"}
+        with patch.dict(os.environ, environment, clear=True), patch("pni.production.execute") as run, \
+                patch("pni.production.archived_preview") as preview, \
+                patch("pni.production.datetime", wraps=datetime) as clock:
+            main()
+            preview.assert_called_once_with(self.root / "pni")
+            run.assert_not_called()
+            clock.now.return_value = datetime.fromisoformat("2026-11-28T07:50:00+08:00")
+            with patch.dict(os.environ, {"PNI_MORNING_CATCH_UP_DATE": "2026-11-27"}):
+                with self.assertRaisesRegex(RuntimeError, "requires today's Beijing date"):
+                    main()
+            run.assert_not_called()
+            with patch.dict(os.environ, {"PNI_MORNING_CATCH_UP_DATE": "2026-11-28"}):
+                main()
+                run.assert_called_once_with("daily", self.root / "pni", "morning")
+                clock.now.return_value = datetime.fromisoformat("2026-11-28T19:30:00+08:00")
+                with self.assertRaisesRegex(RuntimeError, "between 06:30 and 19:30"):
+                    main()
+                self.assertEqual(run.call_count, 1)
 
     def test_morning_deep_copy_and_final_html(self):
         result, briefs = replay(self.root, "morning")
