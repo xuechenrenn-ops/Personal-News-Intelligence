@@ -25,6 +25,20 @@ POLICY_SOURCE = {
     "encoding": "utf-8",
     "keywords": ["医保", "用药", "药学", "医疗服务"], "max_items": 4,
 }
+WORLD_SOURCE = {
+    "label": "中国载人航天工程办公室", "url": "https://www.cmse.gov.cn/xwzx/zhxw/",
+    "path_pattern": r"^/xwzx/\d{6}/t\d{8}_\d+\.html$",
+    "path_date": r"/t(20\d{2})(\d{2})(\d{2})_", "max_age_days": 3,
+    "fresh_only": True, "encoding": "utf-8", "max_items": 3,
+    "timeout": 8,
+}
+TECH_SOURCE = {
+    "label": "工业和信息化部", "url": "https://www.miit.gov.cn/xbymdz/zwgk/index.html",
+    "path_pattern": r"^/(?:zwgk|jgsj)/.+/art/20\d{2}/art_[\da-f]+\.html$",
+    "detail_date": r"发布时间\s*[:：]\s*(20\d{2})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2}))?",
+    "max_age_days": 3, "fresh_only": True, "encoding": "utf-8", "max_items": 3, "timeout": 8,
+    "keywords": ["通信网", "工业互联网", "算力", "半导体", "人工智能", "智能制造", "芯片", "标准", "新能源"],
+}
 NON_ORIGINAL = {"Editorial", "News", "Comment", "Published Erratum",
                 "Retracted Publication", "Retraction of Publication"}
 COUNTRIES = {"中国": r"\bChina\b", "日本": r"\bJapan\b", "韩国": r"\b(?:South Korea|Republic of Korea)\b",
@@ -76,13 +90,14 @@ def medical_card(item, *, allow_possible=False):
             "date": published, "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
             "pmid": pmid, "region": region_for(rec.get("affiliations", [])),
             "primary": True, "evidence": abstract[:2000],
+            "original_abstract": (rec.get("original_abstract") or rec.get("abstract") or "").strip(),
             "mesh": rec.get("mesh", []), "publication_types": sorted(types)}
     if rec.get("doi"):
         card["doi"] = rec["doi"]
     return card
 
 
-def news_card(item, lane, now, *, secondary=False):
+def news_card(item, lane, now, *, secondary=False, hours=48):
     stamp = item["published_at"]
     full = full_date(stamp)
     if not full:
@@ -90,17 +105,20 @@ def news_card(item, lane, now, *, secondary=False):
     parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=CST)
-    if not timedelta(0) <= now - parsed <= timedelta(hours=48):
+    if not timedelta(0) <= now - parsed <= timedelta(hours=hours):
         return None
     url = item["url"]
     if urlsplit(url).scheme != "https":
         return None
     if lane == "policy" and not secondary and item.get("evidence_status") != "detail_fetched":
         return None
+    evidence_scope = {"source_scope": "官方原文节选", "official": True} if (
+        item.get("evidence_status") == "detail_fetched" and lane == "world") else {}
     return {"id": ("policy-" if lane == "policy" else "") + item["id"],
             "lane": lane, "title": _strip_html(item["title"]), "source": item["source"],
             "date": parsed.astimezone(CST).date().isoformat(), "url": url,
-            "primary": True, "evidence": _strip_html(item.get("summary", ""))[:720]}
+            "primary": True, "evidence": _strip_html(item.get("summary", ""))[:(1250 if evidence_scope else 720)],
+            **evidence_scope}
 
 
 def secondary_policy_cards(rows, now):
@@ -113,18 +131,23 @@ def secondary_policy_cards(rows, now):
             yield card
 
 
-def collect_live_cards(skip_official=False, *, include_academic=True, wider=False):
+def collect_live_cards(skip_official=False, *, include_academic=True, wider=False,
+                       major_official=False, technology_official=False, discovery=None):
     now = datetime.now(CST)
     print(f"RUN_STARTED={now.isoformat()}", flush=True)
     labels = {"中国新闻网-即时", "BBC-World", "Al Jazeera"}
     if wider:
         labels.update({"中国新闻网-国际", "中国新闻网-财经"})
     feeds = [feed for feed in GENERAL_FEEDS if feed[0] in labels]
+    reporting = {"trace": discovery} if discovery is not None else {}
     with ThreadPoolExecutor(max_workers=5) as pool:
         academic = pool.submit(fetch_pubmed_candidates) if include_academic else None
         policy = None if skip_official else pool.submit(fetch_official_page_candidates, [POLICY_SOURCE])
-        news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 48)
+        news = [pool.submit(fetch_candidates, [feed], f"G{idx}-", 72 if major_official else 48, **reporting)
                 for idx, feed in enumerate(feeds)]
+        official = [pool.submit(fetch_official_page_candidates, [source], **reporting)
+                    for source in ([WORLD_SOURCE] if major_official else []) +
+                    ([TECH_SOURCE] if technology_official else [])]
     academic_raw = [item for item in academic.result() if medical_card(item)] if academic else []
     academic_ranked = balance_medical_candidates(academic_raw, max_per_lane=4, max_total=12)
     # Keep both clinical and AI lanes while using fresh publications first within each.
@@ -143,14 +166,29 @@ def collect_live_cards(skip_official=False, *, include_academic=True, wider=Fals
         print(f"POLICY_FALLBACK candidates={len(policy_rows)}", flush=True)
     world = []
     seen = set()
-    for future in news:
-        for item in future.result()[:7 if wider else 3]:
-            card = news_card(item, "world", now)
-            if card:
+    official_rows = [[{**item, "id": f"W-{idx}-" + item["id"]} for item in future.result()]
+                     for idx, future in enumerate(official)]
+    rows_by_source = official_rows + [future.result() for future in news]
+    for rows in rows_by_source:
+        for index, item in enumerate(rows):
+            reason = None
+            card = news_card(item, "world", now, hours=72 if major_official else 48)
+            if index >= (7 if wider else 3):
+                reason = "source_cap"
+            elif item["id"].startswith("W-") and item.get("evidence_status") != "detail_fetched":
+                reason = "official_detail_unavailable"
+            elif card:
                 key = _normalized_title(card["title"])
                 if key and key not in seen:
                     world.append(card)
                     seen.add(key)
+                else:
+                    reason = "duplicate_title"
+            else:
+                reason = "date_or_url"
+            if discovery is not None:
+                discovery.append({k: item[k] for k in ("id", "title", "source", "url")} |
+                                 {"outcome": reason or "collected"})
     cards = shortlisted + policy_rows + world
     print(f"FREE_DISCOVERY academic_verified={len(academic_raw)} "
           f"academic_shortlist={len(shortlisted)} policy={len(policy_rows)} world={len(world)}",

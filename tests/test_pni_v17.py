@@ -63,8 +63,9 @@ class V17Tests(TestCase):
         self.assertEqual(curation.field(rows["model"]), "ortho-ai")
         self.assertEqual(curation.field({"title": "No Difference Detected Between Two Targeted Cut Angles in Knee Arthroplasty",
                                          "evidence": "METHODS: measured resection with computer navigation."}), "clinical")
-        ranked = curation.candidates(list(rows.values()), {}, DAY.isoformat(), limit=3, reserve=False)
-        self.assertEqual([row["id"] for row in ranked], ["robot", "other", "model"])
+        self.assertEqual(curation.field(rows["robot"]), "clinical")
+        ranked = curation.candidates(list(rows.values()), {}, DAY.isoformat(), limit=3)
+        self.assertEqual([row["id"] for row in ranked], ["model", "other", "guide"])
 
     def test_month_ceiling_projects_remaining_production(self):
         self.assertLessEqual(check_month({}, DAY)["projected_month_max"], 10_000_000)
@@ -82,7 +83,9 @@ class V17Tests(TestCase):
                          "Constant–Murley肩关节评分（CMS）")
 
     def test_rejected_part_does_not_record_history_or_retry_unknown(self):
-        rows = plan(A.format(1, "甲" * 800, "a"), E, DAY, limit=6500)
+        pro = A.format(1, "甲" * 800, "a")
+        one = measure(plan(pro, "", DAY)[0].html)["utf8_bytes"]
+        rows = plan(pro, E, DAY, limit=one + 200)
         self.assertEqual(len(rows), 2)
         state = Mock(data={})
         sender = Mock()

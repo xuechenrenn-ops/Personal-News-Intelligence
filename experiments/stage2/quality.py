@@ -11,7 +11,9 @@ from experiments.run import eligible
 ACCIDENT = re.compile(r"fuel tanker|hostage.tak|(?:crash|fire) (?:kills|killed)|FIFA|celebrity|"
                       r"娱乐|网红|油罐车|交通事故|火灾|起火|明星", re.I)
 EXCEPTION = re.compile(r"nationwide|one hundred|states of emergency|全国|百人|重大制度", re.I)
-NUMBER = re.compile(r"(?<![A-Za-z0-9.])[-+−]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)%?")
+# A digit may follow a Latin letter (DRG/DIP2.0). The sign stays attached so
+# ResNet-50 and COVID-19 normalize identically in both source and draft.
+NUMBER = re.compile(r"(?<![0-9.])[-+−]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)%?")
 STATISTICS = (
     (r"优势比|比值比|\bOR\b", r"odds ratio|\ba?OR\b"),
     (r"风险比（HR）|危险比|\bHR\b", r"hazard ratio|\ba?HR\b"),
@@ -71,8 +73,8 @@ def number_set(text):
             + ("%" if match.endswith("%") else "") for match in NUMBER.findall(unicodedata.normalize("NFKC", text))}
 
 
-def verify_fact(value, source, *, question=False):
-    if not isinstance(value, str) or not value.strip() or len(value) > 290:
+def verify_fact(value, source, *, question=False, max_chars=290):
+    if not isinstance(value, str) or not value.strip() or (max_chars is not None and len(value) > max_chars):
         return False
     if not number_set(value) <= number_set(source):
         return False

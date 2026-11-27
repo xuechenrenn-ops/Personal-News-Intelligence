@@ -162,7 +162,7 @@ def grade(draft, output, audit, spec, pool):
 
 def render(selected, cards, as_of):
     by_id = {card["id"]: card for card in cards}
-    groups = {lane: [] for lane in ("medical", "policy", "world")}
+    groups = {lane: [] for lane in ("medical", "policy", "world", "technology")}
     for item in selected:
         src = by_id[item["id"]]
         if urlsplit(src["url"]).scheme != "https":
@@ -171,16 +171,37 @@ def render(selected, cards, as_of):
         lines = [f"### {title}", f"{src['source']} ｜ {src['date']}"]
         if src.get("region"):
             lines[-1] += f" ｜ {src['region']}"
+        if item.get("lead"):
+            lines.append(f"**导读**　{item['lead']}")
+        if item.get("topic"):
+            label = {"ortho-ai": "骨科 × AI", "medical-ai": "医疗 AI", "guideline": "骨科指南",
+                     "clinical": "骨科临床"}.get(item["topic"])
+            if label:
+                lines.append(f"**栏目**　{label}")
         if item["lane"] == "medical":
             original = clean_text(src["title"])
             age = (date.fromisoformat(as_of) - date.fromisoformat(src["date"])).days
             if age > 7:
-                lines[-1] += " ｜ 近期研究解读"
+                lines[1] += " ｜ 近期研究解读"
             if item.get("localized_title"):
                 lines.append(f"原始题名　{original}")
             if item.get("scope"):
                 lines.append(f"证据范围　{item['scope']}")
-            for field, label in FIELD_LABELS.items():
+            if item.get("research_edition"):
+                missing = "未能从摘要核实。"
+                lines.append(f"**研究目的**　{item.get('question', missing)}")
+                first, *paragraphs = item["result"].splitlines()
+                lines.extend([f"**研究方法与结果**　{first}", *paragraphs])
+                conclusion = item.get("conclusion", "").strip()
+                evaluation = item.get("evaluation", "").strip()
+                if conclusion and evaluation:
+                    joiner = "" if conclusion[-1] in "。！？；" else " "
+                    lines.append(f"**结论**　{conclusion}{joiner}{evaluation}")
+                else:
+                    lines.append(f"**结论**　{conclusion or evaluation or missing}")
+            for field, label in (() if item.get("research_edition") else FIELD_LABELS.items()):
+                if item.get("topic") == "guideline":
+                    label = {"design": "适用人群与制定依据", "result": "核心推荐"}.get(field, label)
                 if field == "insight" and item.get("clinical"):
                     lines.append(f"**临床意义（分析）**　{item['clinical']}")
                 if field == "question" and item.get("question") == original:
@@ -208,13 +229,14 @@ def render(selected, cards, as_of):
         if src.get("doi"):
             link += f" ｜ DOI {src['doi']}"
         lines.append(link)
-        groups[item["lane"]].append("\n\n".join(lines))
+        groups[item.get("section", item["lane"])].append("\n\n".join(lines))
 
     fallback = "本次暂无达到来源和质量条件的资讯。"
     return ("\n\n".join([f"# 专业情报｜{as_of}", *(groups["medical"] or [fallback])]) + "\n",
             "\n\n".join([f"# 拓展阅读｜{as_of}", "## 国内医疗民生",
                          *(groups["policy"] or [fallback]), "## 国内外重大事件",
-                         *(groups["world"] or [fallback])]) + "\n")
+                         *(groups["world"] or [fallback]),
+                         *(["## 科技与产业", *groups["technology"]] if groups["technology"] else [])]) + "\n")
 
 
 def run_stage2(identifier, plan, output):

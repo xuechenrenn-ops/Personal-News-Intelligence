@@ -13,8 +13,8 @@ from pni.production import FILES
 def reviewed_messages(root, audit, keep):
     records = audit["selected"]
     permitted = {row["pmid"]: row for row in records if row.get("pmid")}
-    if len(set(keep)) != len(keep) or not 2 <= len(keep) <= 3 or set(keep) - permitted.keys():
-        raise RuntimeError("Review must match two or three original selected studies")
+    if len(set(keep)) != len(keep) or not 2 <= len(keep) <= 4 or set(keep) - permitted.keys():
+        raise RuntimeError("Review must match two to four original selected studies")
     sources = _pubmed_records(keep)
     if {row["pmid"] for row in sources} != set(keep):
         raise RuntimeError("Original evidence is unavailable during review")
@@ -22,9 +22,10 @@ def reviewed_messages(root, audit, keep):
     for row in sources:
         pmid = row["pmid"]
         card = {**permitted[pmid], "evidence": row["abstract"]}
-        if curation.field(card) not in {"ortho-ai", "medical-ai"}:
-            raise RuntimeError("Reviewed AI study is not supported by its original evidence")
-        details[pmid] = ai_study_details(pmid, row["abstract"])
+        topic = curation.field(card)
+        if topic not in curation.SLOT:
+            raise RuntimeError("Reviewed study does not match a professional category")
+        details[pmid] = ai_study_details(pmid, row["abstract"]) if topic in {"ortho-ai", "medical-ai"} else {}
 
     archived = root / "news-preview"
     pro = (archived / FILES["professional"]).read_text(encoding="utf-8")

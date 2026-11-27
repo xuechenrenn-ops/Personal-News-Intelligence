@@ -14,11 +14,14 @@ from experiments.discover import CST
 from experiments.run import Flash
 from experiments.v14.pipeline import identities, prepare_preview
 from experiments.v15.sources import SearchFetch, TOOL_PRICE
-from pni.presentation import measure, plan
+from pni.editions import EDITIONS, edition_for_cron
+from pni.presentation import measure, plan, plan_edition
 
-DAILY = 300_000
+DAILY = 300_000  # Production ceiling; unchanged for monthly protection.
 MONTHLY = 10_000_000
 TOOLS = 5
+V17_MODEL_REQUESTS = 10  # Allow rank, targeted repair, verify and one bounded reserve pass.
+PREVIEW_RESERVATION = {"morning": 1_000_000, "evening": 1_000_000}  # Research-only, local preview.
 STATE_BRANCH = "pni-production-state"
 STATE_FILE = "pni-state.json"
 ACCEPTANCE_PATH = Path(".github/pni-acceptance.json")
@@ -60,7 +63,7 @@ class GitHubState:
         cutoff = (datetime.fromisoformat(day).date() - timedelta(days=7)).isoformat()
         for run_day, record in self.data.get("runs", {}).items():
             run_id = str(record.get("run_id", ""))
-            if run_day > cutoff or record.get("logs_expired") is True or not re.fullmatch(r"\d+", run_id):
+            if run_day[:10] > cutoff or record.get("logs_expired") is True or not re.fullmatch(r"\d+", run_id):
                 continue
             try:
                 response = self.transport.delete(f"{self.base}/actions/runs/{run_id}/logs",
@@ -74,23 +77,28 @@ class GitHubState:
         self.save()
 
 
-def claim(state, day, mode, run_id):
+def claim(state, day, mode, run_id, edition=None):
     d = state.data
     runs = d.setdefault("runs", {})
-    if day in runs or (mode == "acceptance" and d.get("acceptance")):
+    key = f"{day}:{edition}" if edition else day
+    if (key in runs or day in runs or (edition is None and any(f"{day}:{slot}" in runs for slot in EDITIONS))
+            or (mode == "acceptance" and d.get("acceptance"))):
         return None
     month = day[:7]
     budgets = d.setdefault("budgets", {})
     ledger = budgets.setdefault(month, {"reserved": 0, "observed": 0})
-    if ledger["reserved"] + DAILY > MONTHLY:
+    reservation = EDITIONS[edition]["reservation"] if edition else DAILY
+    if ledger["reserved"] + reservation > MONTHLY:
         raise RuntimeError("Monthly reservation would exceed CNY 10")
-    ledger["reserved"] += DAILY
+    ledger["reserved"] += reservation
     batch = {"run_id": run_id, "mode": mode, "state": "reserved", "lanes": {}}
-    runs[day] = batch
+    if edition:
+        batch.update(edition=edition, reservation_micro_cny=reservation)
+    runs[key] = batch
     if mode == "acceptance":
         d["acceptance"] = {"day": day, "run_id": run_id}
     cutoff = (datetime.fromisoformat(day).date() - timedelta(days=30)).isoformat()
-    d["runs"] = {key: entry for key, entry in runs.items() if key >= cutoff}
+    d["runs"] = {key: entry for key, entry in runs.items() if key[:10] >= cutoff}
     d["history"] = [row for row in d.get("history", []) if row["day"] >= cutoff]
     d["budgets"] = {key: row for key, row in sorted(budgets.items())[-12:]}
     state.save()
@@ -175,6 +183,16 @@ def add_history(state, records, day):
             remembered.add((day, tuple(keys)))
 
 
+def exclusion_history(data):
+    """Confirmed deliveries plus a separate hold on submitted but unconfirmed articles."""
+    holds = [{"day": key[:10], "keys": keys}
+             for key, run in data.get("runs", {}).items()
+             for part in run.get("lanes", {}).values()
+             if part.get("status") in {"accepted", "submission_unknown"}
+             for keys in part.get("pending_keys", [])]
+    return [*data.get("history", []), *holds]
+
+
 def deliver(state, batch, day, briefs, records, alerts, transport):
     transport.authenticate()
     for lane, title in LANES.items():
@@ -226,6 +244,12 @@ def deliver_html(state, batch, day, messages, records, alerts, transport):
             continue
         details = {"sha256": sha256(message.html.encode()).hexdigest(),
                    "title": message.title, **measure(message.html)}
+        edition = batch.get("edition")
+        urls = ({article.source_url for article in message.articles if article.source_url} if edition else
+                {url for article in message.articles for url in article.urls})
+        included = [item for item in [*records, *alerts] if item.get("url") in urls]
+        if edition:
+            details["pending_keys"] = [sorted(keys) for item in included if (keys := identities(item))]
         for attempt in range(1, 3):
             part = {**details, "status": "submission_unknown", "attempt": attempt}
             batch["lanes"][key] = part
@@ -237,9 +261,10 @@ def deliver_html(state, batch, day, messages, records, alerts, transport):
                 part.update(transport.lookup(code))
             if part["status"] != "delivery_failed" or batch["mode"] != "daily":
                 break
-        if part["status"] in {"accepted", "sent"}:
-            urls = {url for article in message.articles for url in article.urls}
-            add_history(state, [item for item in [*records, *alerts] if item.get("url") in urls], day)
+        if part["status"] == "sent" or (not edition and part["status"] == "accepted"):
+            add_history(state, included, day)
+        if part["status"] not in {"accepted", "submission_unknown"}:
+            part.pop("pending_keys", None)
         state.save()
     statuses = {part["status"] for part in batch["lanes"].values()}
     batch["state"] = ("sent" if statuses == {"sent"} else "accepted_waiting_status"
@@ -247,9 +272,25 @@ def deliver_html(state, batch, day, messages, records, alerts, transport):
     state.save()
 
 
-def execute(mode, output):
+def edition_messages(briefs, day, edition, result, **kwargs):
+    scores = result.get("scores", {})
+    news_value = result.get("candidate_audit", {}).get("news_value", {})
+    priorities = {card["url"]: (scores.get(card["id"], {}).get("weighted", 0) if edition == "morning" else
+                              news_value.get(card["id"], 4) * 2 + (card["date"] == day))
+                  for card in result["selected"]}
+    return plan_edition(briefs["professional"], briefs["extended"], date.fromisoformat(day), edition,
+                        priorities=priorities, **kwargs)
+
+
+def execute(mode, output, edition=None):
     now = datetime.now(CST)
     day = now.date().isoformat()
+    settings = EDITIONS[edition] if edition else {}
+    if mode == "preview" and edition in PREVIEW_RESERVATION:
+        reservation = PREVIEW_RESERVATION[edition]
+    else:
+        reservation = settings.get("reservation", DAILY)
+    tools = settings.get("tools", TOOLS)
     key = os.environ["DEEPSEEK_API_KEY"]
     sender = None
     state = None
@@ -259,14 +300,14 @@ def execute(mode, output):
         if not sender.token:
             raise RuntimeError("PushPlus token is missing")
         state = GitHubState(os.environ["GITHUB_REPOSITORY"], os.environ["GH_TOKEN"])
-        batch = claim(state, day, mode, os.environ["GITHUB_RUN_ID"])
+        batch = claim(state, day, mode, os.environ["GITHUB_RUN_ID"], edition)
         if batch is None:
             print("Duplicate batch skipped before any paid request or send.", flush=True)
             return
-    provider = Flash(key, DAILY - TOOLS * TOOL_PRICE, max_reservation=DAILY)
-    if provider.check_balance() < DAILY:
+    provider = Flash(key, reservation - tools * TOOL_PRICE, max_reservation=reservation, max_requests=V17_MODEL_REQUESTS)
+    if provider.check_balance() < reservation:
         raise RuntimeError("DeepSeek balance below the complete daily reservation")
-    web = SearchFetch(provider.headers, TOOLS)
+    web = SearchFetch(provider.headers, tools)
     from tempfile import TemporaryDirectory
 
     output.mkdir(parents=True, exist_ok=True)
@@ -275,10 +316,10 @@ def execute(mode, output):
         history = runtime / "history.json"
         source_health = runtime / "source-health.json"
         data = state.data if state else {}
-        history.write_text(json.dumps(data.get("history", [])), encoding="utf-8")
+        history.write_text(json.dumps(exclusion_history(data)), encoding="utf-8")
         source_health.write_text(json.dumps(data.get("source_health", {})), encoding="utf-8")
         result = prepare_preview(output / "result.json", provider, history_path=history,
-                                 source_state=source_health, web=web, final_edit=True, v17=True)
+                                 source_state=source_health, web=web, final_edit=True, v17=True, edition=edition)
         if result["as_of"] != day:
             raise RuntimeError("Date crossed during the acquisition; the reservation is still recorded")
         observed = sum(row.get("peak_estimate_micro_cny", row["reserved_micro_cny"]) for row in provider.calls)
@@ -286,35 +327,58 @@ def execute(mode, output):
         summary = {"mode": mode, "day": day, "counts": result["counts"],
                    "estimate_micro_cny": observed, "model_calls": len(provider.calls),
                    "web_calls": len(web.calls), "provider_errors": len(result["errors"])}
+        if edition:
+            summary["reserved_micro_cny"] = reservation
+            summary["model_tokens"] = {field: sum(row.get(field, 0) for row in provider.calls)
+                                       for field in ("prompt_tokens", "completion_tokens")}
+        summary.update(selection=result["selection"], candidate_audit=result["candidate_audit"],
+                       field_gate=result["gate"])
+        audit = result.get("run_audit")
+        if audit:
+            summary["run_audit"] = audit
         if mode == "daily":
             age = trial_age(day, os.environ.get("PNI_TRIAL_START"))
             if age is not None and 0 <= age < 7:
                 summary["trial_day"] = age + 1
         render_error = None
-        if state:
-            state.data["source_health"] = json.loads(source_health.read_text(encoding="utf-8"))
-            state.data["budgets"][day[:7]]["observed"] += observed
-            batch["estimate_micro_cny"] = observed
-            batch["state"] = "prepared"
-            state.save()
+        if state or edition:
+            if state:
+                state.data["source_health"] = json.loads(source_health.read_text(encoding="utf-8"))
+                state.data["budgets"][day[:7]]["observed"] += observed
+                batch["estimate_micro_cny"] = observed
+                batch["state"] = "prepared"
+                state.save()
             briefs = {lane: (output / "news-preview" / filename).read_text(encoding="utf-8")
                       for lane, filename in FILES.items()}
             try:
-                messages = plan(briefs["professional"], briefs["extended"], date.fromisoformat(day))
+                if edition:
+                    messages, removed = edition_messages(briefs, day, edition, result)
+                    summary.update(edition=edition, removed_for_capacity=removed,
+                                   planned_articles=sum(len(message.articles) for message in messages))
+                else:
+                    messages = plan(briefs["professional"], briefs["extended"], date.fromisoformat(day))
             except ValueError as exc:
                 render_error = exc
-                batch.update(state="render_failed", render_error=str(exc))
-                state.save()
+                if state:
+                    batch.update(state="render_failed", render_error=str(exc))
+                    state.save()
             else:
                 for index, message in enumerate(messages, 1):
                     (output / "news-preview" / f"part-{index}.html").write_text(message.html, encoding="utf-8")
-                deliver_html(state, batch, day, messages, result["selected"], result["alerts"], sender)
-            summary["delivery"] = batch
-            state.purge_logs(day)
+                if state:
+                    if messages:
+                        deliver_html(state, batch, day, messages, result["selected"], result["alerts"], sender)
+                    else:
+                        batch["state"] = "no_publishable_articles"
+                        state.save()
+            if state:
+                summary["delivery"] = batch
+                state.purge_logs(day)
         # Acquisition files are confined to this run's temporary directory.
         (output / "run-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
                                                 encoding="utf-8")
-        print(json.dumps(summary, ensure_ascii=False), flush=True)
+        print(json.dumps({key: value for key, value in summary.items()
+                          if key not in {"candidate_audit", "field_gate"}}, ensure_ascii=False), flush=True)
         if render_error:
             raise render_error
         if state and batch["state"] == "needs_review":
@@ -359,7 +423,9 @@ def main():
         return archived_preview(Path(os.environ["RUNNER_TEMP"]) / "pni")
     else:
         raise RuntimeError("Unrecognized event")
-    execute(mode, Path(os.environ["RUNNER_TEMP"]) / "pni")
+    cron = os.environ.get("PNI_SCHEDULE_CRON") if mode == "daily" else None
+    edition = edition_for_cron(cron) if cron else None
+    execute(mode, Path(os.environ["RUNNER_TEMP"]) / "pni", edition)
 
 
 if __name__ == "__main__":

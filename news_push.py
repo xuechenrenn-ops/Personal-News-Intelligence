@@ -66,7 +66,7 @@ MORNING_LINES = [
 "不因一时的停顿，就低估长期坚持的价值。","愿每一份认真都有回响，每一步前行都有意义。"
 ]
 
-def fetch_candidates(feeds, prefix, age_hours):
+def fetch_candidates(feeds, prefix, age_hours, *, trace=None):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=age_hours)
     items, seen = [], set()
     headers = {"User-Agent": "PersonalNewsIntelligence/1.0"}
@@ -78,6 +78,9 @@ def fetch_candidates(feeds, prefix, age_hours):
             feed = feedparser.parse(response.content)
         except Exception as exc:
             status = getattr(getattr(exc, "response", None), "status_code", None)
+            if trace is not None:
+                trace.append({"source": feed_label, "outcome": "fetch_error",
+                              "error": type(exc).__name__, "http": status})
             retry_after = getattr(getattr(exc, "response", None), "headers", {}).get("Retry-After")
             print(
                 f"警告：RSS读取失败：{feed_label}｜HTTP={status or 'unknown'}｜"
@@ -88,6 +91,8 @@ def fetch_candidates(feeds, prefix, age_hours):
         if feed.bozo:
             print(f"提示：RSS格式存在解析警告：{feed_label}", flush=True)
         if not feed.entries:
+            if trace is not None:
+                trace.append({"source": feed_label, "outcome": "empty_feed", "http": response.status_code})
             print(f"提示：RSS没有返回新闻条目：{feed_label}｜HTTP {response.status_code}", flush=True)
             continue
         source_fallback = str(feed.feed.get("title") or feed_label).strip()
@@ -111,6 +116,9 @@ def fetch_candidates(feeds, prefix, age_hours):
                 "url": link, "summary": summary, "source_category": feed_label})
             accepted += 1
         print(f"RSS采集结果：{feed_label}｜有效候选{accepted}条", flush=True)
+        if trace is not None:
+            trace.append({"source": feed_label, "outcome": "fetched", "considered": min(8, len(feed.entries)),
+                          "accepted": accepted, "http": response.status_code})
     return items
 
 
@@ -138,7 +146,7 @@ class _AnchorCollector(HTMLParser):
             self.text = []
 
 
-def fetch_official_page_candidates(sources):
+def fetch_official_page_candidates(sources, *, trace=None):
     candidates = []
     headers = {'User-Agent': 'PersonalNewsIntelligence/1.0'}
     for source in sources:
@@ -147,7 +155,7 @@ def fetch_official_page_candidates(sources):
             print(f"跳过不可自动访问的官方来源：{label}｜{source.get('access_note', 'disabled')}", flush=True)
             continue
         try:
-            response = requests.get(url, headers=headers, timeout=20)
+            response = requests.get(url, headers=headers, timeout=source.get("timeout", 20))
             response.raise_for_status()
             parser = _AnchorCollector()
             if source.get("encoding"):
@@ -155,9 +163,12 @@ def fetch_official_page_candidates(sources):
             parser.feed(response.text)
         except Exception as exc:
             status = getattr(getattr(exc, 'response', None), 'status_code', None)
+            if trace is not None:
+                trace.append({"source": label, "outcome": "fetch_error",
+                              "error": type(exc).__name__, "http": status})
             print(f'官方页面读取失败：{label}｜HTTP={status or "unknown"}｜{type(exc).__name__}', flush=True)
             continue
-        accepted, seen = 0, set()
+        accepted, checked, seen = 0, 0, set()
         host = urlparse(url).netloc
         keywords = source.get('keywords', [])
         for href, title in parser.links:
@@ -176,22 +187,26 @@ def fetch_official_page_candidates(sources):
             seen.add(full_url)
             date_match = re.search(r'(20\d{2})[-年/.](\d{1,2})[-月/.](\d{1,2})日?', title)
             if not date_match:
-                date_match = re.search(r"/(20\d{2})/(\d{1,2})/(\d{1,2})/", parsed.path)
+                date_match = re.search(source.get("path_date", r"/(20\d{2})/(\d{1,2})/(\d{1,2})/"), parsed.path)
             published = '网页未提供'
             if date_match:
                 try:
                     published = datetime(int(date_match.group(1)), int(date_match.group(2)), int(date_match.group(3)), tzinfo=timezone.utc).isoformat()
                 except ValueError:
                     pass
-            if source.get("fresh_only") and (
+            if source.get("fresh_only") and not source.get("detail_date") and (
                 published == "网页未提供"
-                or datetime.now(timezone.utc) - datetime.fromisoformat(published) > timedelta(days=2)
+                or datetime.now(timezone.utc) - datetime.fromisoformat(published) > timedelta(days=source.get("max_age_days", 2))
             ):
                 continue
+            if source.get("detail_date"):
+                if checked >= int(source.get("max_items", 5)):
+                    break
+                checked += 1
             excerpt, detail_status = "", "listing_only"
             try:
                 detail_response = requests.get(
-                    full_url, headers=headers, timeout=15
+                    full_url, headers=headers, timeout=source.get("timeout", 15)
                 )
                 detail_response.raise_for_status()
                 if source.get("encoding"):
@@ -211,9 +226,17 @@ def fetch_official_page_candidates(sources):
                             ).isoformat()
                         except ValueError:
                             pass
+                if source.get("detail_date"):
+                    detail_date = re.search(source["detail_date"], _strip_html(detail_response.text))
+                    if detail_date:
+                        parts = [int(x or 0) for x in detail_date.groups()]
+                        published = datetime(*parts, tzinfo=timezone(timedelta(hours=8))).isoformat()
                 detail_status = "detail_fetched" if excerpt else "detail_no_text"
             except Exception as detail_exc:
                 print(f"官方详情页读取失败：{title[:70]}｜{type(detail_exc).__name__}", flush=True)
+            if source.get("detail_date") and (published == "网页未提供" or not timedelta(0) <=
+                    datetime.now(timezone.utc) - datetime.fromisoformat(published) <= timedelta(days=source["max_age_days"])):
+                continue
             candidates.append({
                 'id': f'O{len(candidates)+1}', 'title': title[:400],
                 'source': label, 'published_at': published, 'url': full_url,
@@ -225,6 +248,9 @@ def fetch_official_page_candidates(sources):
             if accepted >= int(source.get('max_items', 5)):
                 break
         print(f'官方页面采集：{label}｜候选{accepted}条｜HTTP {response.status_code}', flush=True)
+        if trace is not None:
+            trace.append({"source": label, "outcome": "fetched", "accepted": accepted,
+                          "http": response.status_code})
     return candidates
 
 
@@ -636,8 +662,9 @@ def _pubmed_records(pmids):
                 online_date = date(*(int(online.findtext(key)) for key in ("Year", "Month", "Day"))).isoformat()
             except (TypeError, ValueError):
                 pass
+        abstract = "\n".join(abstract_parts)
         records.append({
-            "pmid": pmid, "title": title, "abstract": "\n".join(abstract_parts)[:6500],
+            "pmid": pmid, "title": title, "abstract": abstract[:6500], "original_abstract": abstract,
             "doi": doi, "journal": journal, "publication_date": pubdate, "online_date": online_date,
             "affiliations": [a.text for a in node.findall(".//Author/AffiliationInfo/Affiliation")
                              if a.text],

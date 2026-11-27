@@ -282,7 +282,8 @@ def crossref_record(doi, row):
                     for entry in author.get("affiliation", []) if entry.get("name")]
     return {"id": doi, "lane": "medical", "title": title, "source": journal,
             "date": date(*dates).isoformat(), "url": "https://doi.org/" + doi,
-            "doi": doi, "region": region_for(affiliations), "primary": True, "evidence": abstract[:6000]}
+            "doi": doi, "region": region_for(affiliations), "primary": True, "evidence": abstract[:6000],
+            "original_abstract": abstract}
 
 
 CROSSREF_LANES = {
@@ -310,7 +311,8 @@ def crossref_discover(label, query, as_of, health):
 
 
 def metadata(rows):
-    return {key: value for key, value in rows.items() if key not in {"evidence", "segments"}}
+    return {key: value for key, value in rows.items()
+            if key not in {"evidence", "segments", "open_sections", "original_abstract"}}
 
 
 def collect(days, *, key=None, credit_limit=0, state=None, allow_possible=False,

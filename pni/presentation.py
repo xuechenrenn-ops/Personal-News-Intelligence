@@ -1,9 +1,11 @@
 """Render the existing brief Markdown as compact HTML and split only between articles."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from html import escape
 import re
 from urllib.parse import urlsplit
+
+from pni.editions import EDITIONS
 
 # The published 20,000-字 limit doesn't define units or HTML accounting.
 # Full source HTML must fit both bounds, with a 10% local safety margin.
@@ -23,6 +25,8 @@ LANES = {"professional": "专业情报", "extended": "拓展阅读"}
 INTRO = "每天五分钟，读懂值得关注的世界。"
 LINK = re.compile(r"\[([^\]\n]+)\]\(([^\s)]+)\)")
 FIELD = re.compile(r"^\*\*([^*]+)\*\*\s*(.*)", re.S)
+BARE_METRIC = re.compile(r"^(?:\d[.％%]|κ|F1\b|AUC\b|AUROC\b|ICC\b|P\s*[<=>]|"
+                         r"(?:总体|内部|外部)?(?:准确率|分型准确率|敏感性|特异性|一致性))", re.I)
 
 
 
@@ -37,6 +41,15 @@ class Article:
     @property
     def urls(self):
         return frozenset(url for block in self.text for _, url in LINK.findall(block) if valid_link(url))
+
+    @property
+    def source_url(self):
+        for block in reversed(self.text):
+            if block.startswith("["):
+                for label, url in LINK.findall(block):
+                    if valid_link(url) and (label in {"来源", "报道来源"} or self.section in {"国自然动态", "会议提醒"}):
+                        return url
+        return None
 
 
 @dataclass(frozen=True)
@@ -74,7 +87,9 @@ def parse_brief(markdown, lane, start=0):
 
     def flush():
         if title:
-            result.append(Article(lane, section, start + len(result) + 1, title, tuple(body)))
+            topic = next((match[2] for row in body if (match := FIELD.match(row)) and
+                          match[1] == "栏目" and match[2] in {"骨科 × AI", "医疗 AI", "骨科指南", "骨科临床"}), section)
+            result.append(Article(lane, topic, start + len(result) + 1, title, tuple(body)))
 
     for line in markdown.splitlines():
         if line.startswith(("## ", "### ")):
@@ -83,7 +98,9 @@ def parse_brief(markdown, lane, start=0):
             body = []
             if line.startswith("### "):
                 title = line[4:].strip()
-            elif line[3:].strip() not in {"国内医疗民生", "国内外重大事件", "国自然动态", "会议提醒"}:
+            elif line[3:].strip() == "会议公告":
+                section = title = "会议提醒"
+            elif line[3:].strip() not in {"国内医疗民生", "国内外重大事件", "科技与产业", "国自然动态", "会议提醒"}:
                 section = "日程与申报"
                 title = line[3:].strip()
             else:
@@ -96,22 +113,25 @@ def parse_brief(markdown, lane, start=0):
     return result
 
 
+def readable_lead(value):
+    return (20 <= len(value.strip()) <= 105 and not BARE_METRIC.match(value.lstrip())
+            and "原文短引" not in value and "来源摘录" not in value
+            and len(re.findall(r"[\u4e00-\u9fff]", value)) >= 14
+            and len(re.findall(r"。", value)) <= 1)
+
+
 def focus(article):
-    for row in article.text:
-        field = FIELD.match(row)
-        if field and field[1] == "原文主要结果":
-            finding = field[2]
-            if finding.startswith("结果段原文短引"):
-                return "摘要未提取到可直接概述的主要结局数据，正文保留原文及来源。"
-            return re.split(r"(?<=。)(?=[^（])", finding, maxsplit=1)[0]
-    for row in article.text:
-        field = FIELD.match(row)
-        if field and field[1] == "发生了什么":
-            return field[2].split("。", 1)[0] + "。"
-    for row in article.text:
-        if len(row) > 35 and row.endswith(("。", "”")) and not row.startswith(("原始题名", "[")):
-            return row.split("。", 1)[0].rstrip("”") + "。"
-    return article.title + "。"
+    fields = {match[1]: match[2] for row in article.text if (match := FIELD.match(row))}
+    lead = fields.get("导读", "")
+    if readable_lead(lead):
+        return lead
+    title = article.title.rstrip("。！？?!")
+    for key in ("研究方法与结果", "原文主要结果", "核心推荐", "发生了什么"):
+        value = fields.get(key, "")
+        sentence = re.split(r"(?<=。)(?=[^（])", value, maxsplit=1)[0]
+        if readable_lead(sentence) and len(title) + len(sentence) <= 126:
+            return f"{title}。{sentence.rstrip('。')}。"
+    return title + "。"
 
 
 def render_article(article):
@@ -130,9 +150,11 @@ def render_article(article):
         field = FIELD.match(row)
         if field:
             name, value = field.groups()
+            if name in {"导读", "栏目"}:
+                continue
             label = {"原文主要结果": "关键结果", "临床意义（分析）": "临床意义",
                      "科研启发（待验证）": "科研启发 · 待验证"}.get(name, name)
-            background = ' style="background:#edf4fb;border-left:3px solid #587ea7;padding:8px 10px"' if name == "原文主要结果" else ""
+            background = ' style="background:#edf4fb;color:#243449;border-left:3px solid #587ea7;padding:8px 10px"' if name in {"原文主要结果", "核心推荐"} else ""
             content.append(f'<p{background}><b style="color:#234368">{escape(label)}</b>　{inline(value)}</p>')
         elif row.startswith("[") or " ｜ " in row or row.startswith("证据范围"):
             content.append(f'<p style="font-size:13px;color:#526478">{inline(row)}</p>')
@@ -144,13 +166,13 @@ def render_article(article):
 def render(articles, day, *, context=""):
     weekday = WEEKDAYS[day.weekday()]
     heading = (
-        '<div style="max-width:640px;margin:auto;padding:12px 14px;color:#243449;font-size:15px;line-height:1.65;overflow-wrap:anywhere">'
+        '<div style="max-width:640px;margin:auto;padding:12px 14px;background-color:#fff;color:#243449;color-scheme:only light;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;font-size:16px;line-height:1.65;overflow-wrap:anywhere">'
         '<div style="background:#153451;color:#ffffff;border-radius:9px;padding:18px 15px">'
         '<p style="font-size:12px;letter-spacing:1.1px;margin:0;color:#e1edf9">PERSONAL NEWS INTELLIGENCE</p>'
         f'<p style="font-size:20px;font-weight:bold;margin:6px 0">{INTRO}</p>'
         f'<p style="font-size:13px;margin:0;color:#d7e6f5">{day:%Y年%m月%d日} · 星期{weekday}{escape(context)}</p></div>'
         f'<p style="color:#36516b;padding:5px 0"><b>每日寄语</b>　{SAYINGS[day.toordinal() % len(SAYINGS)]}</p>'
-        '<div style="background:#f1f5fa;border-radius:7px;padding:9px 12px;margin:0 0 12px">'
+        '<div style="background:#f1f5fa;color:#243449;border-radius:7px;padding:9px 12px;margin:0 0 12px">'
         '<h2 style="font-size:16px;color:#173a61;margin:0 0 8px">30秒今日导读</h2>'
     )
     for article in articles:
@@ -208,3 +230,38 @@ def document(markup):
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>Personal News Intelligence</title><body style="margin:0;background:#fff;'
             'font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">' + markup + "</body></html>")
+
+
+def plan_edition(professional, extended, day, edition, *, priorities=None, limit=SAFE_LIMIT):
+    """Fit one final payload by removing complete articles, then renumbering it."""
+    name = EDITIONS[edition]["title"]
+    priorities = priorities or {}
+    sections = parse_brief(extended, "extended")
+    articles = (parse_brief(professional, "professional") +
+                [a for a in sections if a.section in {"国自然动态", "会议提醒"}]) if edition == "morning" else [
+                    a for a in sections if a.section in {"国内医疗民生", "国内外重大事件", "科技与产业"}]
+    removed = []
+    while articles:
+        numbered = tuple(replace(article, number=i) for i, article in enumerate(articles, 1))
+        markup = render(numbered, day, context=" · " + name)
+        lengths = measure(markup)
+        if max(lengths["utf8_bytes"], lengths["utf16_units"]) <= limit:
+            return [Message(f"{name}｜{day.isoformat()}", markup, numbered)], removed
+
+        def drop_key(article):
+            protection = 0
+            if edition == "morning":
+                if article.section in {"国自然动态", "会议提醒", "骨科指南"}:
+                    protection = 3
+                elif article.section == "医疗 AI":
+                    protection = 0
+                else:
+                    direction = {"骨科指南", "骨科临床"} if article.section == "骨科临床" else {article.section}
+                    protection = 2 if sum(a.section in direction for a in articles) == 1 else 1
+            return protection, priorities.get(article.source_url, 0), -article.number
+
+        dropped = min(articles, key=drop_key)
+        articles.remove(dropped)
+        removed.append({"title": dropped.title, "section": dropped.section, "url": dropped.source_url,
+                        "reason": "payload_capacity"})
+    return [], removed

@@ -15,7 +15,7 @@ from experiments.run import Flash
 from experiments.v14.pipeline import prepare_preview
 from experiments.v15.sources import SearchFetch, TOOL_PRICE
 from pni.presentation import document, measure, plan
-from pni.production import DAILY, MONTHLY, TOOLS, FILES, GitHubState, PushPlus, deliver_html
+from pni.production import DAILY, MONTHLY, TOOLS, V17_MODEL_REQUESTS, FILES, GitHubState, PushPlus, deliver_html
 
 IDENTIFIER = "pni-v17-selection-acceptance-20261126"
 
@@ -57,7 +57,8 @@ def generate(output):
     state = GitHubState(os.environ["GITHUB_REPOSITORY"], os.environ["GH_TOKEN"]).data
     budget = check_month(state, day)
     claim_once("generate")
-    provider = Flash(os.environ["DEEPSEEK_API_KEY"], DAILY - TOOLS * TOOL_PRICE, max_reservation=DAILY)
+    provider = Flash(os.environ["DEEPSEEK_API_KEY"], DAILY - TOOLS * TOOL_PRICE,
+                     max_reservation=DAILY, max_requests=V17_MODEL_REQUESTS)
     web = SearchFetch(provider.headers, TOOLS)
     report = {"day": day.isoformat(), "budget": budget}
     output.mkdir(parents=True, exist_ok=True)
@@ -81,7 +82,8 @@ def generate(output):
             (output / f"payload-{index}.txt").write_bytes(markup)
             (output / f"preview-{index}.html").write_text(document(msg.html), encoding="utf-8")
             manifest.append({"sha256": sha256(markup).hexdigest(), "title": msg.title, **measure(msg.html)})
-        report.update({key: result[key] for key in ("selection", "counts", "errors", "selected", "gate", "discovery")})
+        report.update({key: result[key] for key in ("selection", "counts", "errors", "selected", "gate", "discovery",
+                                                   "news_candidates", "news_ranked", "candidate_audit")})
         report["parts"] = manifest
     finally:
         report.update(model_calls=provider.calls, search_fetch_calls=web.calls)

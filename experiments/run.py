@@ -71,11 +71,13 @@ def peak_cost(usage, input_limit, output_limit):
 
 
 class Flash:
-    def __init__(self, key, reserved, *, max_reservation=MAX_RUN_RESERVATION):
+    def __init__(self, key, reserved, *, max_reservation=MAX_RUN_RESERVATION, max_requests=MAX_REQUESTS):
         self.headers = {"Authorization": "Bearer " + key, "Content-Type": "application/json"}
         self.reserved = reserved
         self.remaining = reserved
+        self.observed_spent = 0
         self.calls = []
+        self.max_requests = max_requests
         if not 0 < reserved <= max_reservation:
             raise RuntimeError("Invalid run reservation")
 
@@ -105,7 +107,7 @@ class Flash:
         if not candidates:
             return []
         user, input_limit, estimate = self.reservation(prompt, candidates, max_tokens)
-        if len(self.calls) >= MAX_REQUESTS or estimate > self.remaining:
+        if len(self.calls) >= self.max_requests or estimate > self.remaining:
             raise RuntimeError("Run reservation exhausted")
         # Never recycle this request's estimate, even after a timeout or a smaller bill.
         self.remaining -= estimate
@@ -126,6 +128,7 @@ class Flash:
         )
         usage = response.get("usage") or {}
         entry["peak_estimate_micro_cny"] = peak_cost(usage, input_limit, max_tokens)
+        self.observed_spent += entry["peak_estimate_micro_cny"]
         for field in ("prompt_tokens", "completion_tokens", "prompt_cache_hit_tokens",
                       "prompt_cache_miss_tokens"):
             if type(usage.get(field)) is int:
