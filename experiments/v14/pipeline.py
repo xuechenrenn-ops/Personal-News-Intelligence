@@ -436,9 +436,9 @@ def appraisal_fits(provider, selected, verification):
         return True
     mandatory = provider.reservation(VERIFY, verification, 640)[2]
     optional = provider.reservation(APPRAISE, [selected], 2800)[2]
-    # Keep slack for the verified appraisal text and fallback title translation.
-    budget_left = provider.reserved - provider.observed_spent
-    return mandatory + optional + 12_000 <= budget_left
+    # Optional appraisal must yield to mandatory verification: gate on the
+    # conservative reservation ledger so the verified copy always fits.
+    return mandatory + optional + 12_000 <= provider.remaining
 
 
 def write_verified(provider, cards, *, supplementary=None, targeted_repair=False, v17=False, reserve=False, edition=None):
