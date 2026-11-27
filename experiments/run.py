@@ -137,13 +137,21 @@ class Flash:
         if type(details.get("reasoning_tokens")) is int:
             entry["reasoning_tokens"] = details["reasoning_tokens"]
         entry["seconds"] = round(time.monotonic() - started, 2)
-        print("USAGE " + json.dumps(entry), flush=True)
+        print("USAGE " + json.dumps({k: v for k, v in entry.items() if k != "raw_content"},
+                                    ensure_ascii=False), flush=True)
         if any((usage.get("server_tool_use") or {}).values()):
             raise RuntimeError("Unexpected server tool usage")
         choice = response["choices"][0]
+        entry["finish_reason"] = choice.get("finish_reason", "")
+        raw = choice["message"]["content"]
+        entry["raw_content"] = raw
         if choice["finish_reason"] != "stop":
             raise RuntimeError("Incomplete model output")
-        return json.loads(choice["message"]["content"])["items"]
+        try:
+            return json.loads(raw)["items"]
+        except (ValueError, KeyError, TypeError) as error:
+            entry["parse_error"] = f"{type(error).__name__}: {error}"
+            raise
 
 
 def eligible(cards, as_of):

@@ -68,9 +68,34 @@ def segments(source):
     return [p[:1250] for p in pieces if len(p) > 15][:28]
 
 
+# English number words and month names so cross-language rendering
+# (e.g. "three millimeters" vs "3毫米", "October" vs "10月") still matches.
+_NUMBER_WORDS = {w: str(n) for w, n in [
+    ("zero", 0), ("one", 1), ("two", 2), ("three", 3), ("four", 4),
+    ("five", 5), ("six", 6), ("seven", 7), ("eight", 8), ("nine", 9),
+    ("ten", 10), ("eleven", 11), ("twelve", 12), ("thirteen", 13),
+    ("fourteen", 14), ("fifteen", 15), ("sixteen", 16), ("seventeen", 17),
+    ("eighteen", 18), ("nineteen", 19), ("twenty", 20),
+]}
+_MONTH_NUMBERS = {w: str(n) for w, n in [
+    ("january", 1), ("february", 2), ("march", 3), ("april", 4),
+    ("may", 5), ("june", 6), ("july", 7), ("august", 8),
+    ("september", 9), ("october", 10), ("november", 11), ("december", 12),
+]}
+_WORD_NUMBER_RE = re.compile(
+    r"\b(" + "|".join(list(_NUMBER_WORDS) + list(_MONTH_NUMBERS)) + r")\b", re.I)
+
+
 def number_set(text):
-    return {str(Decimal(match.replace(",", "").replace("%", "").replace("−", "-")).normalize())
-            + ("%" if match.endswith("%") else "") for match in NUMBER.findall(unicodedata.normalize("NFKC", text))}
+    normalized = unicodedata.normalize("NFKC", text)
+    result = {str(Decimal(match.replace(",", "").replace("%", "").replace("−", "-")).normalize())
+              + ("%" if match.endswith("%") else "") for match in NUMBER.findall(normalized)}
+    # Also recognise English number words and month names written as words.
+    for match in _WORD_NUMBER_RE.finditer(normalized):
+        word = match.group(1).lower()
+        value = _NUMBER_WORDS.get(word) or _MONTH_NUMBERS.get(word)
+        result.add(str(Decimal(value).normalize()))
+    return result
 
 
 def verify_fact(value, source, *, question=False, max_chars=290):
