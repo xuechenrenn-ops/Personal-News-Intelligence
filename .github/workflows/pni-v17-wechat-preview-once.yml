@@ -1,0 +1,104 @@
+name: V1.7 one-time WeChat preview
+
+on:
+  push:
+    branches: ["ops/pni-v17-wechat-preview-20261127"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pni-v17-wechat-preview-20261127
+  cancel-in-progress: false
+
+jobs:
+  send-preview:
+    if: github.run_attempt == 1 && github.ref == 'refs/heads/ops/pni-v17-wechat-preview-20261127'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Submit the exact reviewed HTML at most once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+
+          title = "【V1.7上线验收】晚间实时新闻"
+          expected = "63e853903d2704b77ad9b46cd7b7b2a7b4161e38ef5082f424f8007e3332249b"
+          raw = Path("ops-preview/reviewed-evening.html").read_bytes()
+          token = os.environ["PUSHPLUS_TOKEN"].strip()
+          if not token or hashlib.sha256(raw).hexdigest() != expected:
+              raise SystemExit("Missing send token or reviewed HTML digest mismatch")
+          body = raw.decode("utf-8")
+          if max(len(raw), len(body.encode("utf-16-le")) // 2) > 18000:
+              raise SystemExit("Reviewed HTML exceeds the existing safety limit")
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          opener = urllib.request.build_opener(NoRedirect)
+
+          def post(url, data, headers):
+              request = urllib.request.Request(
+                  url, json.dumps(data, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json", **headers},
+              )
+              return opener.open(request, timeout=20)
+
+          claim = {
+              "ref": "refs/heads/ops/pni-v17-wechat-preview-20261127-claimed",
+              "sha": os.environ["GITHUB_SHA"],
+          }
+          try:
+              with post("https://api.github.com/repos/" + os.environ["GITHUB_REPOSITORY"] + "/git/refs",
+                        claim, {"Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                                "Accept": "application/vnd.github+json"}) as response:
+                  if response.status != 201:
+                      raise SystemExit("Single-use claim was not confirmed; no send attempted")
+          except urllib.error.HTTPError as exc:
+              raise SystemExit(f"Single-use claim unavailable (HTTP {exc.code}); no send attempted") from None
+
+          audit = {"title": title, "html_sha256": expected, "utf8_bytes": len(raw),
+                   "submission_attempts": 1, "status": "submission_unknown"}
+          try:
+              payload = {"token": token, "title": title, "content": body, "template": "html", "channel": "wechat"}
+              with post("https://www.pushplus.plus/send", payload, {}) as response:
+                  if response.status == 200:
+                      doc = json.load(response)
+                      if isinstance(doc, dict):
+                          code = doc.get("code")
+                          if type(code) is int:
+                              audit["provider_code"] = code
+                              audit["status"] = "accepted" if code == 200 else "rejected"
+                          receipt = doc.get("data")
+                          if isinstance(receipt, dict):
+                              receipt = receipt.get("shortCode")
+                          if code == 200 and isinstance(receipt, str) and re.fullmatch(r"[A-Za-z0-9_-]{8,100}", receipt):
+                              audit["receipt"] = receipt[:4] + "…" + receipt[-4:]
+          except (OSError, ValueError):
+              pass
+          out = Path(os.environ["RUNNER_TEMP"]) / "pni-wechat-preview-receipt.json"
+          out.write_text(json.dumps(audit, ensure_ascii=False) + "\n", encoding="utf-8")
+          print(json.dumps(audit, ensure_ascii=False), flush=True)
+          if audit["status"] != "accepted":
+              raise SystemExit("Provider acceptance unconfirmed. Do not retry this preview.")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pni-wechat-preview-receipt
+          path: ${{ runner.temp }}/pni-wechat-preview-receipt.json
+          retention-days: 7
+          if-no-files-found: ignore
