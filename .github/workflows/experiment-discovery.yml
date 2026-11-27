@@ -1,7 +1,7 @@
 name: News free discovery
 on:
   push:
-    branches: [upgrade/news-pipeline-v1]
+    branches: [upgrade/news-pipeline-v1, upgrade/news-pni-v1.7]
     paths: [experiments/discover.py, .github/workflows/experiment-discovery.yml]
 permissions:
   contents: read

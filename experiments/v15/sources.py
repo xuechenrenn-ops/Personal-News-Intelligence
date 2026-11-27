@@ -104,6 +104,36 @@ def enrich_news(tools, cards):
     return trace
 
 
+def evening_events(tools, as_of, seen_urls):
+    """Bounded gap-fill for evening major events. One search, no repeat queries.
+
+    Triggered only when the collected world pool is thin. Returns world-lane
+    cards shaped like news_card output, deduped against already-known URLs.
+    """
+    day = date.fromisoformat(as_of)
+    rows = tools.search(
+        f"重大政策 公共卫生 科技突破 重要决定 lang:zh,en after:{day - timedelta(days=3)}")
+    cards = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        title, url = row.get("title"), row.get("url")
+        if not isinstance(title, str) or not isinstance(url, str) or url in seen_urls:
+            continue
+        if not on_site(url, NEWS + ("gov.cn", "miit.gov.cn", "cmse.gov.cn")):
+            continue
+        stamp = str(row.get("date") or "")[:10]
+        if stamp != as_of:
+            continue
+        cards.append({"id": "EVT-" + re.sub(r"\W+", "", url)[-12:], "lane": "world",
+                      "title": title, "source": urlsplit(url).hostname or "",
+                      "date": as_of, "url": url, "primary": True,
+                      "evidence": excerpt(str(row.get("content") or row.get("snippet") or ""),
+                                          title)[:720],
+                      "source_scope": "DeepSeek Search 节选"})
+    return cards, {"results": len(rows), "added": len(cards)}
+
+
 def alerts(tools, as_of, old):
     """Separate the two discovery queries to retain domestic and society coverage."""
     day = date.fromisoformat(as_of)

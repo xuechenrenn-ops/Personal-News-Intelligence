@@ -690,8 +690,12 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
                 state.record("domestic-policy", any(c["lane"] == "policy" and not c.get("verification_note") for c in headlines))
                 state.save()
         if edition != "evening":
+            tavily_key = os.environ.get("TAVILY_KEY", "").strip()
             dated, source_report = collect([date.fromisoformat(as_of)], state=state_path, allow_possible=True,
-                                           crossref_search=True)
+                                           crossref_search=True,
+                                           key=tavily_key or None,
+                                           credit_limit=EDITIONS.get(edition, {}).get("tavily_credits", 0)
+                                           if tavily_key else 0)
             cards = dated[as_of]
     else:
         as_of, cards, headlines, source_report = evaluation
@@ -706,9 +710,11 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
     dated_alerts = []
     if web and edition != "evening":
         from experiments.v15.sources import academic, alerts, aossm_calendar
-        if edition is None:
+        if edition is None or edition == "morning":
             supplement, academic_trace = academic(web, as_of, verify_citation)
-            source_report["deepseek_search"] = {**academic_trace, "new": [c["id"] for c in supplement
+            source_report["deepseek_search"] = {**academic_trace,
+                                                "trigger": "bounded_gap_fill_morning",
+                                                "new": [c["id"] for c in supplement
                                                 if not any(identities(c) & identities(row) for row in cards)]}
             cards = cards + supplement
         notices, notice_count = alerts(web, as_of, old)
@@ -719,6 +725,16 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
             source_health.save()
             source_report["official_calendar"] = calendar
             dated_alerts = [notice for notice in meetings if not identities(notice) & old]
+    elif web and edition == "evening":
+        from experiments.v15.sources import evening_events
+        seen_urls = {c.get("url", "") for c in headlines} | {c.get("url", "") for c in cards}
+        strong = [c for c in headlines if c["lane"] == "world" and c.get("official")]
+        if len(strong) < 1 and len(web.calls) < web.limit:
+            supplement, event_trace = evening_events(web, as_of, seen_urls)
+            source_report["evening_events"] = {**event_trace, "trigger": "thin_major_event_coverage",
+                                               "strong_existing": len(strong)}
+            headlines = headlines + [c for c in supplement
+                                     if not any(identities(c) & identities(row) for row in headlines)]
     raw_cards = cards
     available = [c for c in raw_cards if not identities(c) & old]
     cards = active_cards(available, as_of)
@@ -968,6 +984,14 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
         store_index(history_path, history, [table[r["id"]] for r in emitted] + dated_alerts, today)
     # Local-only audit: full abstracts, evidence, raw model scores/drafts and rejection details.
     # No credentials are collected; this dict is written to result.json/run-summary.json only.
+    published_ids = {row["id"] for row in emitted}
+    channel_contribution = {}
+    for row in [*cards, *headlines]:
+        for ch in row.get("channels", []) or []:
+            bucket = channel_contribution.setdefault(ch, {"candidates": 0, "published": 0})
+            bucket["candidates"] += 1
+            if row["id"] in published_ids:
+                bucket["published"] += 1
     run_audit = {
         "scores": scores,
         "rank_batches": trace.get("rank_batches", []),
@@ -975,6 +999,11 @@ def prepare_preview(output, provider, *, history_path=None, evaluation=None, enh
         "news_value": trace.get("news_value", {}),
         "drafts": drafts,
         "gate": {key: value[1] for key, value in results.items()},
+        "source_report": source_report,
+        "tool_calls": [{"tool": c.get("tool"), "status": c.get("status"),
+                        "observed_peak_micro_cny": c.get("observed_peak_micro_cny", c.get("max_micro_cny", 0))}
+                       for c in (web.calls if web else [])],
+        "channel_contribution": channel_contribution,
         "medical": {row["id"]: {
             "original_abstract": row.get("original_abstract", ""),
             "evidence": abstract_packet(row) if not (edition == "morning") else {"u": row.get("original_abstract", "")},

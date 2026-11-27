@@ -336,6 +336,9 @@ def execute(mode, output, edition=None):
         audit = result.get("run_audit")
         if audit:
             summary["run_audit"] = audit
+        summary["source_report"] = result.get("discovery") or audit.get("source_report", {})
+        summary["tool_calls"] = audit.get("tool_calls", []) if audit else []
+        summary["channel_contribution"] = audit.get("channel_contribution", {}) if audit else {}
         if mode == "daily":
             age = trial_age(day, os.environ.get("PNI_TRIAL_START"))
             if age is not None and 0 <= age < 7:

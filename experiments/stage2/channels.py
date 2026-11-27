@@ -139,6 +139,10 @@ def search_web(key, days, credit_limit, health, account):
         return results
     account["available_before"] = before["room"] >= credit_limit + 16
     account["paygo_counter_available"] = type(before["paygo"]) is int
+    if type(before["paygo"]) is int and before["paygo"] > 0:
+        account["quota_failure"] = "paygo_active_free_quota_exhausted"
+        account["quota_unavailable"] = True
+        return results
     if not account["available_before"]:
         return results
     for as_of in days:

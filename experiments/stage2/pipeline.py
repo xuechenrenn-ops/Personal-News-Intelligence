@@ -235,8 +235,8 @@ def render(selected, cards, as_of):
     return ("\n\n".join([f"# 专业情报｜{as_of}", *(groups["medical"] or [fallback])]) + "\n",
             "\n\n".join([f"# 拓展阅读｜{as_of}", "## 国内医疗民生",
                          *(groups["policy"] or [fallback]), "## 国内外重大事件",
-                         *(groups["world"] or [fallback]),
-                         *(["## 科技与产业", *groups["technology"]] if groups["technology"] else [])]) + "\n")
+                         *(groups["world"] or [fallback]), "## 科技与产业",
+                         *(groups["technology"] or [fallback])]) + "\n")
 
 
 def run_stage2(identifier, plan, output):
