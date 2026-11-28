@@ -1,35 +1,54 @@
-name: Validate News Pipeline
+name: PNI Cloudflare Schedule Probe
+run-name: PNI probe · ${{ inputs.beijing_date }} ${{ inputs.edition }}
 
 on:
-  push:
-    branches:
-      - upgrade/news-pipeline-v1
-      - upgrade/news-pni-v1.7
-      - 'release/**'
-  pull_request:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      beijing_date:
+        required: true
+        type: string
+      edition:
+        required: true
+        type: string
+      scheduled_beijing:
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  validate:
+  probe:
+    if: github.ref == 'refs/heads/ops/pni-cloudflare-probe'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
         with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Validate Python syntax
-        run: python -m py_compile news_push.py cache_manager.py tavily_search.py source_check.py
-      - name: Validate JSON configuration
+          persist-credentials: false
+      - name: Measure entry time and validate dated slot
+        env:
+          PROBE_DATE: ${{ inputs.beijing_date }}
+          PROBE_EDITION: ${{ inputs.edition }}
+          PROBE_SLOT: ${{ inputs.scheduled_beijing }}
         run: |
-          python -m json.tool sources.json > /dev/null
-      - name: Run unit tests
-        run: python -m unittest discover -s tests -v
+          python3 -B - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pni.schedule_inputs import parse_dispatch_slot
+
+          now = datetime.now(timezone.utc)
+          nominal = parse_dispatch_slot(os.environ["PROBE_DATE"], os.environ["PROBE_EDITION"], os.environ["PROBE_SLOT"])
+          delay = (now - nominal).total_seconds()
+          print(json.dumps({
+              "event": "schedule_probe",
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "edition": os.environ["PROBE_EDITION"],
+              "planned_beijing": nominal.isoformat(),
+              "entered_beijing": now.astimezone(nominal.tzinfo).isoformat(),
+              "lag_seconds": round(delay, 3),
+          }), flush=True)
+          if not 0 <= delay <= 600:
+              raise SystemExit("Probe did not enter within ten minutes of the scheduled slot")
+          PY
