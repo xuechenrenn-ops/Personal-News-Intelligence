@@ -71,3 +71,18 @@ test("rejects an expired slot with no outbound requests", async (t) => {
   assert.equal(calls.length, 0);
   assert.equal(messages.at(-1).event, "invalid_or_expired_slot");
 });
+
+test("empty and whitespace targets use the probe; unknown targets fail closed", async (t) => {
+  const scheduledTime = Date.parse("2026-12-01T11:30:00Z");
+  const { calls, messages } = setup(t, scheduledTime, [
+    new Response(null, { status: 204 }),
+    new Response(null, { status: 204 }),
+  ]);
+  const controller = { cron: "30 11 * * *", scheduledTime };
+  for (const target of ["", "   ", "unknown"]) {
+    await worker.scheduled(controller, { ...env, PNI_DISPATCH_TARGET: target });
+  }
+  assert.equal(calls.length, 2);
+  assert.ok(calls.every((call) => call.body.ref === "ops/pni-cloudflare-probe"));
+  assert.equal(messages.at(-1).event, "invalid_schedule_configuration");
+});

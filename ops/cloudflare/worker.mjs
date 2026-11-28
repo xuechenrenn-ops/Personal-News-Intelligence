@@ -8,7 +8,7 @@ const WINDOW_MS = 2 * 60 * 60 * 1000;
 
 export default {
   async scheduled(controller, env) {
-    const mode = env.PNI_DISPATCH_TARGET ?? "probe";
+    const mode = env.PNI_DISPATCH_TARGET?.trim() || "probe";
     const target = Object.hasOwn(TARGETS, mode) ? TARGETS[mode] : null;
     const edition = EDITIONS[controller.cron];
     const scheduledMs = controller.scheduledTime;
