@@ -22,7 +22,7 @@ class CloudflareDispatchTests(unittest.TestCase):
             ("2026-12-01T06:29:59+08:00", "2026-12-01T06:30:00+08:00", "morning", False),
             ("2026-12-01T21:30:00+08:00", "2026-12-01T19:30:00+08:00", "evening", False),
         )
-        with patch("pni.production.execute") as execute, patch("pni.production.datetime") as clock:
+        with patch("pni.production.execute") as execute, patch("pni.production.datetime", wraps=datetime) as clock:
             for now, slot, edition, expected in cases:
                 with self.subTest(now=now, edition=edition):
                     clock.now.return_value = datetime.fromisoformat(now)

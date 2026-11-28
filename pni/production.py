@@ -496,19 +496,16 @@ def main():
             if nominal.date() != now.date() or not timedelta(0) <= elapsed < SCHEDULE_WINDOW:
                 print("Cloudflare slot is on another Beijing date or outside its two-hour window.", flush=True)
                 return
-            if not daily_enabled(now.date().isoformat(), os.environ.get("PNI_TRIAL_START")):
-                print("The approved production start date has not been reached.", flush=True)
-                return
-            return execute("daily", output, edition)
-        if not requested_day:
+        elif requested_day:
+            now = datetime.now(CST)
+            morning = scheduled_time(now, EDITIONS["morning"]["cron"])
+            evening = scheduled_time(now, EDITIONS["evening"]["cron"])
+            print(f"Morning catch-up: requested={requested_day!r}, beijing_now={now.isoformat()}", flush=True)
+            if requested_day != now.date().isoformat() or not morning <= now < evening:
+                raise RuntimeError("Morning catch-up requires today's Beijing date, between 06:30 and 19:30")
+            edition = "morning"
+        else:
             return archived_preview(output)
-        now = datetime.now(CST)
-        morning = scheduled_time(now, EDITIONS["morning"]["cron"])
-        evening = scheduled_time(now, EDITIONS["evening"]["cron"])
-        print(f"Morning catch-up: requested={requested_day!r}, beijing_now={now.isoformat()}", flush=True)
-        if requested_day != now.date().isoformat() or not morning <= now < evening:
-            raise RuntimeError("Morning catch-up requires today's Beijing date, between 06:30 and 19:30")
-        edition = "morning"
         mode = "daily"
     else:
         raise RuntimeError("Unrecognized event")
