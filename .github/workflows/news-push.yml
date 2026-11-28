@@ -19,9 +19,6 @@ on:
       scheduled_beijing:
         description: 'Cloudflare planned time (ISO 8601 with +08:00).'
         type: string
-  schedule:
-    - cron: '30 22 * * *'
-    - cron: '30 11 * * *'
 
 permissions:
   contents: write
@@ -33,9 +30,7 @@ concurrency:
 
 jobs:
   news:
-    if: >-
-      github.ref == 'refs/heads/main' &&
-      (github.event_name != 'schedule' || vars.PNI_SCHEDULE_SOURCE != 'cloudflare')
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -55,7 +50,6 @@ jobs:
           PUSHPLUS_SECRET_KEY: ${{ secrets.PUSHPLUS_SECRET_KEY }}
           TAVILY_KEY: ${{ vars.PNI_ENABLE_TAVILY == 'true' && secrets.TAVILY_KEY || '' }}
           PNI_TRIAL_START: ${{ vars.PNI_TRIAL_START }}
-          PNI_SCHEDULE_CRON: ${{ github.event.schedule }}
           PNI_MORNING_CATCH_UP_DATE: ${{ inputs.morning_catch_up_date }}
           PNI_SCHEDULE_SOURCE: ${{ vars.PNI_SCHEDULE_SOURCE }}
           PNI_DISPATCH_DATE: ${{ inputs.beijing_date }}
