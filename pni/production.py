@@ -16,6 +16,7 @@ from experiments.v14.pipeline import identities, prepare_preview
 from experiments.v15.sources import SearchFetch, TOOL_PRICE
 from pni.editions import EDITIONS, edition_for_cron
 from pni.presentation import measure, plan, plan_edition
+from pni.schedule_inputs import parse_dispatch_slot
 
 DAILY = 300_000  # Production ceiling; unchanged for monthly protection.
 MONTHLY = 10_000_000
@@ -475,6 +476,30 @@ def main():
         mode = "daily"
     elif event == "workflow_dispatch":
         requested_day = os.environ.get("PNI_MORNING_CATCH_UP_DATE", "").strip()
+        dispatched_slot = (
+            os.environ.get("PNI_DISPATCH_DATE", ""),
+            os.environ.get("PNI_DISPATCH_EDITION", ""),
+            os.environ.get("PNI_DISPATCH_SCHEDULED_BEIJING", ""),
+        )
+        if any(dispatched_slot):
+            if requested_day:
+                raise ValueError("Cloudflare dispatch and manual morning catch-up are mutually exclusive")
+            if os.environ.get("PNI_SCHEDULE_SOURCE") != "cloudflare":
+                print("Cloudflare production dispatch is disabled.", flush=True)
+                return
+            _, edition, _ = dispatched_slot
+            nominal = parse_dispatch_slot(*dispatched_slot)
+            now = datetime.now(CST)
+            elapsed = now - nominal
+            print(f"Cloudflare slot: edition={edition}, planned_beijing={nominal.isoformat()}, "
+                  f"beijing_now={now.isoformat()}, lag_seconds={elapsed.total_seconds():.3f}", flush=True)
+            if nominal.date() != now.date() or not timedelta(0) <= elapsed < SCHEDULE_WINDOW:
+                print("Cloudflare slot is on another Beijing date or outside its two-hour window.", flush=True)
+                return
+            if not daily_enabled(now.date().isoformat(), os.environ.get("PNI_TRIAL_START")):
+                print("The approved production start date has not been reached.", flush=True)
+                return
+            return execute("daily", output, edition)
         if not requested_day:
             return archived_preview(output)
         now = datetime.now(CST)

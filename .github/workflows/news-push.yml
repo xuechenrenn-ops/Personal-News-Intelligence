@@ -10,6 +10,15 @@ on:
         description: 'Beijing date (YYYY-MM-DD) for an approved morning catch-up. Leave blank for archived preview.'
         type: string
         required: false
+      beijing_date:
+        description: 'Cloudflare edition date (YYYY-MM-DD, Beijing).'
+        type: string
+      edition:
+        description: 'Cloudflare edition name (morning or evening).'
+        type: string
+      scheduled_beijing:
+        description: 'Cloudflare planned time (ISO 8601 with +08:00).'
+        type: string
   schedule:
     - cron: '30 22 * * *'
     - cron: '30 11 * * *'
@@ -24,7 +33,9 @@ concurrency:
 
 jobs:
   news:
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name != 'schedule' || vars.PNI_SCHEDULE_SOURCE != 'cloudflare')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -46,6 +57,10 @@ jobs:
           PNI_TRIAL_START: ${{ vars.PNI_TRIAL_START }}
           PNI_SCHEDULE_CRON: ${{ github.event.schedule }}
           PNI_MORNING_CATCH_UP_DATE: ${{ inputs.morning_catch_up_date }}
+          PNI_SCHEDULE_SOURCE: ${{ vars.PNI_SCHEDULE_SOURCE }}
+          PNI_DISPATCH_DATE: ${{ inputs.beijing_date }}
+          PNI_DISPATCH_EDITION: ${{ inputs.edition }}
+          PNI_DISPATCH_SCHEDULED_BEIJING: ${{ inputs.scheduled_beijing }}
           GH_TOKEN: ${{ github.token }}
         run: python -m pni.production
       - uses: actions/upload-artifact@v4
